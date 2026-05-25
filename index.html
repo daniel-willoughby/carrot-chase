@@ -1705,7 +1705,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <Button variant="outline" size={isMobile ? 'sm' : 'md'} onClick={() => setShowInviteModal(true)}>✉️ Invite Lead</Button>
-          <Button size={isMobile ? 'sm' : 'md'} onClick={() => { setEditGroup(null); setNewForm({ name: '', lead: '' }); setShowNewModal(true); }}>+ New Group</Button>
+          <Button size={isMobile ? 'sm' : 'md'} onClick={() => { setEditGroup(null); setNewForm({ name: '', type: 'Running Club', lead: '' }); setShowNewModal(true); }}>+ New Group</Button>
         </div>
       </div>
 
@@ -1720,7 +1720,9 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               <Badge label={`${g.members} runners`} bg={C.orangeLight} color={C.orange} />
             </div>
             <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{g.name}</div>
-            {g.type && <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>{g.type}</div>}
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>
+              {g.type}{g.lead ? ` · Lead: ${g.lead}` : ''}
+            </div>
             <div style={{ display: 'flex', gap: 20, marginBottom: 16 }}>
               <div>
                 <div style={{ fontSize: 11, color: C.muted }}>Last event</div>
@@ -1757,7 +1759,16 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               {GROUP_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
-          <Field label="Lead (optional)" value={newForm.lead} onChange={v => setNewForm(f => ({ ...f, lead: v }))} placeholder="e.g. James Carter" capitalize="words" />
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Lead (optional)</label>
+            <select value={newForm.lead} onChange={e => setNewForm(f => ({ ...f, lead: e.target.value }))}
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}>
+              <option value="">— Unassigned —</option>
+              {leadInvites.filter(i => i.status === 'accepted').map(i => (
+                <option key={i.id} value={i.name || i.email}>{i.name || i.email}</option>
+              ))}
+            </select>
+          </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
             <Button variant="secondary" onClick={() => setShowNewModal(false)}>Cancel</Button>
             <Button
@@ -1766,9 +1777,10 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
                 if (!newForm.name.trim()) return;
                 setGroups(gs => [...gs, {
                   id: Date.now(), name: newForm.name.trim(), type: newForm.type,
-                  members: 0, lastEvent: '—', nextEvent: '—',
+                  lead: newForm.lead || '', members: 0, lastEvent: '—', nextEvent: '—',
                 }]);
                 setShowNewModal(false);
+                setNewForm({ name: '', type: 'Running Club', lead: '' });
               }}
             >
               Create Group
@@ -1791,6 +1803,16 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               {GROUP_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Lead</label>
+            <select value={editGroup.lead || ''} onChange={e => setEditGroup(g => ({ ...g, lead: e.target.value }))}
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}>
+              <option value="">— Unassigned —</option>
+              {leadInvites.filter(i => i.status === 'accepted').map(i => (
+                <option key={i.id} value={i.name || i.email}>{i.name || i.email}</option>
+              ))}
+            </select>
+          </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', marginTop: 8 }}>
             <Button variant="danger" onClick={() => {
               if (!window.confirm(`Delete "${editGroup.name}"? This cannot be undone.`)) return;
@@ -1804,7 +1826,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               <Button
                 disabled={!editGroup.name.trim()}
                 onClick={() => {
-                  setGroups(gs => gs.map(g => g.id === editGroup.id ? { ...g, name: editGroup.name, type: editGroup.type } : g));
+                  setGroups(gs => gs.map(g => g.id === editGroup.id ? { ...g, name: editGroup.name, type: editGroup.type, lead: editGroup.lead || '' } : g));
                   setEditGroup(null);
                 }}
               >
@@ -2056,14 +2078,11 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
             )}
           </p>
         </div>
-        {!isMobile && (
-          <div style={{ display: 'flex', gap: 10 }}>
-            <Button variant="ghost" size="sm" onClick={downloadCSVTemplate}>⬇ Template</Button>
-            <Button variant="secondary" onClick={() => csvRef.current?.click()}>⬆ Import CSV</Button>
-            <Button onClick={() => setShowAddModal(true)}>+ Add Runner</Button>
-          </div>
-        )}
-        {isMobile && <Button size="sm" onClick={() => setShowAddModal(true)}>+ Add</Button>}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {!isMobile && <Button variant="ghost" size="sm" onClick={downloadCSVTemplate}>⬇ Template</Button>}
+          <Button variant="secondary" size={isMobile ? 'sm' : 'md'} onClick={() => csvRef.current?.click()}>⬆ CSV</Button>
+          <Button size={isMobile ? 'sm' : 'md'} onClick={() => setShowAddModal(true)}>+ Add</Button>
+        </div>
       </div>
 
       <Card style={{ padding: isMobile ? 12 : 24 }}>
