@@ -3197,10 +3197,15 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                     <div key={i} style={{ marginBottom: 6 }}>
                       <div
                         onClick={() => {
-                          if (isDNF) { const np=[...positions]; np[i]=null; setPositions(np); setSelectedPos(i); return; }
-                          if (hasName) {
-                            // Unassign: clear the position
+                          if (isDNF) {
                             const np=[...positions]; np[i]=null; setPositions(np); setSelectedPos(i); return;
+                          }
+                          if (hasName) {
+                            // Unassign: clear position AND free the runner on the right
+                            const removedName = positions[i];
+                            const np=[...positions]; np[i]=null; setPositions(np); setSelectedPos(i);
+                            setAssignedRunners(prev => { const s = new Set(prev); s.delete(removedName); return s; });
+                            return;
                           }
                           setSelectedPos(i);
                         }}
@@ -3286,7 +3291,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
               </div>
             )}
 
-            {!showDNFPicker && unaccountedRunners.length > 0 && emptyPositions === 0 && (
+            {!showDNFPicker && unaccountedRunners.length > 0 && (
               <Button
                 variant="outline"
                 style={{ width: '100%', justifyContent: 'center', marginBottom: 12, borderColor: C.danger, color: C.danger }}
