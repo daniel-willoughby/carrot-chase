@@ -131,6 +131,10 @@ function useIsMobile() {
   return mobile;
 }
 
+// ── Term / Series config ─────────────────────────────────────────────────────
+// A "series" is a school term. Points, standings and PBs all reset each term.
+const CURRENT_TERM = 'Spring Term 2026';
+
 // ── Colours & shared tokens ──────────────────────────────────────────────────
 const C = {
   orange: '#D4520A',
@@ -155,18 +159,18 @@ const C = {
 // ── Mock Data ────────────────────────────────────────────────────────────────
 const RUNNERS = [
   // Level 1 = elite/Olympic  ·  Level 99 = beginner  ·  levels decrease as runners improve
-  { id: 'CC-0001', name: 'Emma Johnson',    level: 55, pb: '6:12', groups: ['Year 5 Running Club', 'Breakfast Club'],       streak: 8,  points: 1240, times: [372, 368, 381, 374, 370], badges: ['First Finish','🔥 5-Event Streak'] },
-  { id: 'CC-0002', name: 'Oliver Smith',    level: 38, pb: '5:44', groups: ['Year 6 Running Club'],                           streak: 12, points: 1890, times: [344, 340, 353, 347, 342], badges: ['First Finish','🔥 10-Event Streak','Top 3'] },
-  { id: 'CC-0003', name: 'Sophie Williams', level: 62, pb: '6:45', groups: ['Year 5 Running Club'],                           streak: 3,  points: 980,  times: [405, 398, 416, 408, 401], badges: ['First Finish'] },
-  { id: 'CC-0004', name: 'Liam Brown',      level: 29, pb: '5:21', groups: ['Year 6 Running Club', 'PE Class 4B'],            streak: 15, points: 2340, times: [321, 318, 330, 324, 320], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter'] },
-  { id: 'CC-0005', name: 'Isla Davis',      level: 71, pb: '7:18', groups: ['Breakfast Club'],                                streak: 2,  points: 620,  times: [438, 430, 451, 441, 435], badges: ['First Finish'] },
-  { id: 'CC-0006', name: 'Noah Wilson',     level: 45, pb: '5:58', groups: ['Year 6 Running Club'],                           streak: 7,  points: 1560, times: [358, 354, 367, 361, 356], badges: ['First Finish','🔥 5-Event Streak','Consistent'] },
-  { id: 'CC-0007', name: 'Ava Taylor',      level: 58, pb: '6:28', groups: ['PE Class 4B', 'Year 5 Running Club'],            streak: 5,  points: 1100, times: [388, 383, 398, 391, 386], badges: ['First Finish','🔥 5-Event Streak'] },
-  { id: 'CC-0008', name: 'James Anderson',  level: 22, pb: '5:02', groups: ['Year 6 Running Club'],                           streak: 20, points: 2780, times: [302, 299, 311, 305, 301], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter','Consistent'] },
-  { id: 'CC-0009', name: 'Grace Thomas',    level: 67, pb: '7:01', groups: ['Breakfast Club', 'Year 5 Running Club'],         streak: 4,  points: 810,  times: [421, 415, 433, 424, 418], badges: ['First Finish'] },
-  { id: 'CC-0010', name: 'Harry Jackson',   level: 41, pb: '5:49', groups: ['Year 5 Running Club'],                           streak: 9,  points: 1710, times: [349, 345, 358, 352, 347], badges: ['First Finish','🔥 5-Event Streak','Top 3'] },
-  { id: 'CC-0011', name: 'Lily White',      level: 53, pb: '6:08', groups: ['PE Class 4B'],                                   streak: 6,  points: 1320, times: [368, 364, 378, 371, 366], badges: ['First Finish','🔥 5-Event Streak'] },
-  { id: 'CC-0012', name: 'Ethan Harris',    level: 34, pb: '5:33', groups: ['Year 6 Running Club'],                           streak: 11, points: 2050, times: [333, 329, 342, 336, 331], badges: ['First Finish','🔥 10-Event Streak','Consistent'] },
+  { id: 'CC-0001', name: 'Emma Johnson',    level: 55, pb: '6:44', groups: ['Year 5 Running Club', 'Breakfast Club'],       streak: 8,  points: 1240, times: [410, 404, 423, 413, 407], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0002', name: 'Oliver Smith',    level: 38, pb: '6:15', groups: ['Year 6 Running Club'],                           streak: 12, points: 1890, times: [381, 375, 393, 384, 378], badges: ['First Finish','🔥 10-Event Streak','Top 3'] },
+  { id: 'CC-0003', name: 'Sophie Williams', level: 62, pb: '6:58', groups: ['Year 5 Running Club'],                           streak: 3,  points: 980,  times: [424, 418, 437, 427, 421], badges: ['First Finish'] },
+  { id: 'CC-0004', name: 'Liam Brown',      level: 29, pb: '5:57', groups: ['Year 6 Running Club', 'PE Class 4B'],            streak: 15, points: 2340, times: [363, 357, 374, 365, 360], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter'] },
+  { id: 'CC-0005', name: 'Isla Davis',      level: 71, pb: '7:20', groups: ['Breakfast Club'],                                streak: 2,  points: 620,  times: [446, 440, 459, 449, 443], badges: ['First Finish'] },
+  { id: 'CC-0006', name: 'Noah Wilson',     level: 45, pb: '6:27', groups: ['Year 6 Running Club'],                           streak: 7,  points: 1560, times: [393, 387, 405, 396, 390], badges: ['First Finish','🔥 5-Event Streak','Consistent'] },
+  { id: 'CC-0007', name: 'Ava Taylor',      level: 58, pb: '6:50', groups: ['PE Class 4B', 'Year 5 Running Club'],            streak: 5,  points: 1100, times: [416, 410, 429, 419, 413], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0008', name: 'James Anderson',  level: 22, pb: '5:42', groups: ['Year 6 Running Club'],                           streak: 20, points: 2780, times: [348, 342, 356, 350, 345], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter','Consistent'] },
+  { id: 'CC-0009', name: 'Grace Thomas',    level: 67, pb: '7:09', groups: ['Breakfast Club', 'Year 5 Running Club'],         streak: 4,  points: 810,  times: [435, 429, 448, 438, 432], badges: ['First Finish'] },
+  { id: 'CC-0010', name: 'Harry Jackson',   level: 41, pb: '6:21', groups: ['Year 5 Running Club'],                           streak: 9,  points: 1710, times: [386, 381, 398, 389, 383], badges: ['First Finish','🔥 5-Event Streak','Top 3'] },
+  { id: 'CC-0011', name: 'Lily White',      level: 53, pb: '6:39', groups: ['PE Class 4B'],                                   streak: 6,  points: 1320, times: [405, 399, 418, 408, 402], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0012', name: 'Ethan Harris',    level: 34, pb: '6:06', groups: ['Year 6 Running Club'],                           streak: 11, points: 2050, times: [372, 366, 384, 375, 369], badges: ['First Finish','🔥 10-Event Streak','Consistent'] },
 ];
 
 const ORGS = [
@@ -309,7 +313,7 @@ function StatCard({ label, value, sub, color }) {
   return (
     <Card style={{ flex: 1, minWidth: 160 }}>
       <div style={{ color: C.muted, fontSize: 13, fontWeight: 500, marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: color || C.text }}>{value}</div>
+      <div style={{ fontSize: 24, fontWeight: 800, color: color || C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{sub}</div>}
     </Card>
   );
@@ -1271,8 +1275,8 @@ function OrganisationsPage({ setPage }) {
           <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Organisations</h1>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <Button variant="outline" onClick={() => setShowInviteModal(true)}>✉️ Invite Admin</Button>
-          {tab === 'orgs' && <Button onClick={() => setShowNewModal(true)}>+ Add</Button>}
+          <Button variant="outline" size="sm" onClick={() => setShowInviteModal(true)}>{isMobile ? '✉️ Invite' : '✉️ Invite Admin'}</Button>
+          {tab === 'orgs' && <Button size="sm" onClick={() => setShowNewModal(true)}>+ Add</Button>}
         </div>
       </div>
 
@@ -1500,12 +1504,16 @@ function SchoolAdminDashboard({ setPage, runners }) {
   const liveRunners = runners || RUNNERS;
   const leader = liveRunners.reduce((best, r) => (!best || r.points > best.points) ? r : best, null);
   const leaderName = leader ? leader.name.split(' ')[0] + ' ' + leader.name.split(' ')[1]?.[0] + '.' : '—';
+  const schoolOrg = ORGS.find(o => o.id === 1) || ORGS[0];
 
   return (
     <div className="fade-in">
-      <div style={{ marginBottom: isMobile ? 16 : 28 }}>
-        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>Hampton Primary School — Welcome back, Sarah!</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: isMobile ? 16 : 28 }}>
+        <OrgLogo org={schoolOrg} size={isMobile ? 44 : 52} />
+        <div>
+          <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
+          <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 13 : 14 }}>Hampton Primary — Welcome back, Sarah!</p>
+        </div>
       </div>
 
       <div style={{
@@ -1661,7 +1669,7 @@ function LeadDashboard({ setPage }) {
             style={{ background: C.white, color: C.orange, flexShrink: 0 }}
             size={isMobile ? 'sm' : 'lg'}
           >
-            ▶ Run Event
+            Run Event
           </Button>
         </div>
       </Card>
@@ -1825,14 +1833,14 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexWrap: 'wrap', gap: 10, marginBottom: isMobile ? 16 : 28 }}>
         <div>
           <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Groups</h1>
           <p style={{ color: C.muted, marginTop: 4, fontSize: isMobile ? 13 : 14 }}>Manage your running groups</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button variant="outline" size={isMobile ? 'sm' : 'md'} onClick={() => setShowInviteModal(true)}>✉️ Invite Lead</Button>
-          <Button size={isMobile ? 'sm' : 'md'} onClick={() => { setEditGroup(null); setNewForm({ name: '', type: 'Running Club', lead: '' }); setShowNewModal(true); }}>+ New Group</Button>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <Button variant="outline" size="sm" onClick={() => setShowInviteModal(true)}>{isMobile ? '✉️ Invite' : '✉️ Invite Lead'}</Button>
+          <Button size="sm" onClick={() => { setEditGroup(null); setNewForm({ name: '', type: 'Running Club', lead: '' }); setShowNewModal(true); }}>+ New Group</Button>
         </div>
       </div>
 
@@ -2134,7 +2142,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
 
       {/* Add Runner Modal */}
       {showAddModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '64px 16px 16px', overflowY: 'auto' }}>
           <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 400, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
             <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 20 }}>Add Runner</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
@@ -2458,7 +2466,7 @@ function EventsPage({ setPage }) {
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <Button variant="secondary" onClick={() => setPage('createevent')}>+ Create Event</Button>
-          <Button onClick={() => setPage('runevent')}>▶ Run Event</Button>
+          <Button onClick={() => setPage('runevent')}>Run Event</Button>
         </div>
       </div>
 
@@ -2778,6 +2786,8 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
   const [selectedPos, setSelectedPos] = useState(0);
   const [assignedRunners, setAssignedRunners] = useState(new Set());
   const [dnfRunnerNames, setDnfRunnerNames] = useState(new Set());
+  const [showDNFPicker, setShowDNFPicker] = useState(false);
+  const [dnfPickerSel, setDnfPickerSel] = useState(new Set());
   const intervalRef = useRef(null);
   const [raceTime, setRaceTime] = useState(0);
   const raceRef = useRef(null);
@@ -2794,15 +2804,13 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
   const groupFast = sortByTarget(presentRunners.filter(r => r.level < 45));    // L1–44: elite, start last
   const startGroups = [groupSlow, groupMid, groupFast].filter(g => g.length > 0);
 
-  // Dynamic stagger gap: diff between group targets, clamped 10-60s
+  // Dynamic stagger gap: difference between group average carrot targets, clamped 10–120s
   function staggerGap(gi) {
     if (gi + 1 >= startGroups.length) return 0;
-    const slowGroup = startGroups[gi];
-    const fastGroup = startGroups[gi + 1];
-    const slowTarget = carrotTarget(slowGroup[slowGroup.length - 1]);
-    const fastTarget = carrotTarget(fastGroup[0]);
-    if (!slowTarget || !fastTarget) return 10;
-    return Math.min(60, Math.max(10, Math.round(Math.abs(slowTarget - fastTarget) / 2)));
+    const avg = arr => arr.reduce((s, r) => s + (carrotTarget(r) || 420), 0) / arr.length;
+    const slowAvg = avg(startGroups[gi]);
+    const fastAvg = avg(startGroups[gi + 1]);
+    return Math.min(120, Math.max(10, Math.round(slowAvg - fastAvg)));
   }
 
   useEffect(() => {
@@ -2861,6 +2869,21 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
     setDnfRunnerNames(prev => new Set([...prev, runnerName]));
   }
 
+  function confirmDNFPicker() {
+    // Mark selected runners as DNF
+    setDnfRunnerNames(prev => new Set([...prev, ...dnfPickerSel]));
+    // Fill remaining empty positions with __DNF__
+    setPositions(prev => {
+      const np = [...prev];
+      for (let i = 0; i < tapCount; i++) {
+        if (np[i] === null) np[i] = '__DNF__';
+      }
+      return np;
+    });
+    setShowDNFPicker(false);
+    setDnfPickerSel(new Set());
+  }
+
   function handleUndoDNF(runnerName) {
     setDnfRunnerNames(prev => { const s = new Set(prev); s.delete(runnerName); return s; });
   }
@@ -2916,16 +2939,13 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                   {presentCount}/{RUN_RUNNERS.length} present
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <div style={{ fontSize: 12, color: C.muted }}>
-                  Tap a runner to mark present · DNS = did not start
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
                 <button
                   onClick={() => setAttendance(Object.fromEntries(RUN_RUNNERS.map(r => [r.id, true])))}
                   style={{
                     background: C.successLight, color: C.success, border: `1px solid ${C.success}`,
                     borderRadius: 8, padding: '5px 10px', fontSize: 11, fontWeight: 700,
-                    cursor: 'pointer', fontFamily: 'Inter, sans-serif', flexShrink: 0, marginLeft: 8,
+                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
                   }}
                 >
                   ✓ All present
@@ -2933,17 +2953,16 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
               </div>
               {runList.map(r => {
                 const present = attendance[r.id] === true;
-                const dns = attendance[r.id] === false;
                 const lc = levelColor(r.level);
                 return (
                   <div
                     key={r.id}
-                    onClick={() => !dns && setAttendance(prev => ({ ...prev, [r.id]: prev[r.id] === true ? null : true }))}
+                    onClick={() => setAttendance(prev => ({ ...prev, [r.id]: prev[r.id] === true ? null : true }))}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '11px 8px', borderBottom: `1px solid ${C.border}`,
-                      cursor: dns ? 'default' : 'pointer', borderRadius: 8,
-                      background: present ? '#f0fdf4' : dns ? '#fff5f5' : 'transparent',
+                      cursor: 'pointer', borderRadius: 8,
+                      background: present ? '#f0fdf4' : 'transparent',
                       marginLeft: -8, marginRight: -8,
                       transition: 'background 0.15s',
                     }}
@@ -2955,54 +2974,21 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontWeight: 700, fontSize: 12, color: lc.color, flexShrink: 0,
                       }}>L{r.level}</div>
-                      <span style={{
-                        fontWeight: 600, fontSize: 15,
-                        color: dns ? C.muted : C.text,
-                        textDecoration: dns ? 'line-through' : 'none',
-                      }}>{r.name}</span>
+                      <span style={{ fontWeight: 600, fontSize: 15, color: C.text }}>{r.name}</span>
                     </div>
 
-                    {/* Right: status */}
-                    {present && (
-                      <span style={{
-                        background: C.successLight, color: C.success, borderRadius: 999,
-                        padding: '4px 12px', fontSize: 13, fontWeight: 700, flexShrink: 0,
-                      }}>✓</span>
-                    )}
-                    {dns && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                        <span style={{
-                          background: C.dangerLight, color: C.danger, borderRadius: 999,
-                          padding: '4px 10px', fontSize: 12, fontWeight: 700,
-                        }}>DNS</span>
-                        <button
-                          onClick={e => { e.stopPropagation(); setAttendance(prev => ({ ...prev, [r.id]: null })); }}
-                          style={{
-                            background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
-                            padding: '3px 8px', fontSize: 11, color: C.muted, cursor: 'pointer',
-                            fontFamily: 'Inter',
-                          }}
-                        >Undo</button>
-                      </div>
-                    )}
-                    {!present && !dns && (
-                      <button
-                        onClick={e => { e.stopPropagation(); setAttendance(prev => ({ ...prev, [r.id]: false })); }}
-                        style={{
-                          background: 'none', border: 'none', padding: '4px 2px',
-                          fontSize: 12, color: C.muted, cursor: 'pointer',
-                          fontFamily: 'Inter', fontWeight: 600, flexShrink: 0,
-                          opacity: 0.6,
-                        }}
-                      >DNS</button>
-                    )}
+                    {/* Right: tick */}
+                    <span style={{
+                      fontSize: 18, fontWeight: 700, flexShrink: 0, lineHeight: 1,
+                      color: present ? C.success : '#e5e7eb',
+                    }}>✓</span>
                   </div>
                 );
               })}
             </Card>
             {/* Late arrival modal */}
             {showLateModal && (
-              <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '64px 16px 16px', overflowY: 'auto' }}>
                 <div style={{ background: C.white, borderRadius: 20, padding: 24, width: '100%', maxWidth: 360, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }} onClick={e => e.stopPropagation()}>
                   <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Late Arrival</div>
                   <div style={{ fontSize: 13, color: C.muted, marginBottom: 16 }}>Add a runner who turned up after registration closed.</div>
@@ -3191,56 +3177,54 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
           const allResolved = allRunnersAccountedFor && allPositionsFilled;
           const unaccountedRunners = presentRunners.filter(r =>
             !assignedRunners.has(r.name) && !dnfRunnerNames.has(r.name)
-          ).length;
+          );
           const emptyPositions = positions.slice(0, tapCount).filter(p => p === null).length;
+          const finisherPositionsFilled = positions.slice(0, tapCount).filter(p => p !== null && p !== '__DNF__').length;
+
           return (
           <div className="fade-in">
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Match finish positions to runners</div>
-            <div style={{ fontSize: 12, color: C.muted, marginBottom: 16 }}>Tap a position, then tap a runner to assign. Use DNF for runners who didn't finish.</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 16 }}>Tap a position to select or unassign it, then tap a runner to assign.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '45% 55%', gap: 8, marginBottom: 16 }}>
               {/* Positions */}
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 8, textTransform: 'uppercase' }}>Positions</div>
                 {tapTimes.map((t, i) => {
                   const isDNF = positions[i] === '__DNF__';
                   const isSel = selectedPos === i;
+                  const hasName = positions[i] && !isDNF;
                   return (
                     <div key={i} style={{ marginBottom: 6 }}>
                       <div
-                        onClick={() => !isDNF && setSelectedPos(i)}
+                        onClick={() => {
+                          if (isDNF) { const np=[...positions]; np[i]=null; setPositions(np); setSelectedPos(i); return; }
+                          if (hasName) {
+                            // Unassign: clear the position
+                            const np=[...positions]; np[i]=null; setPositions(np); setSelectedPos(i); return;
+                          }
+                          setSelectedPos(i);
+                        }}
                         style={{
                           padding: '8px 10px', borderRadius: 10,
-                          border: `2px solid ${isSel ? C.orange : isDNF ? C.danger : C.border}`,
-                          background: isDNF ? C.dangerLight : isSel ? C.orangeLight : C.white,
-                          cursor: isDNF ? 'default' : 'pointer', fontSize: 13,
+                          border: `2px solid ${isSel ? C.orange : isDNF ? C.danger : hasName ? C.success : C.border}`,
+                          background: isDNF ? C.dangerLight : isSel ? C.orangeLight : hasName ? C.successLight : C.white,
+                          cursor: 'pointer', fontSize: 13,
                           display: 'flex', alignItems: 'center', gap: 6,
                         }}
                       >
-                        <span style={{ fontWeight: 700, color: isDNF ? C.danger : C.orange, minWidth: 26, fontSize: 12 }}>{ordinalPos(i+1)}</span>
-                        <span style={{ flex: 1, fontWeight: 600, color: positions[i] && !isDNF ? C.text : C.muted, fontSize: 13 }}>
+                        <span style={{ fontWeight: 700, color: isDNF ? C.danger : hasName ? C.success : C.orange, minWidth: 26, fontSize: 12 }}>{ordinalPos(i+1)}</span>
+                        <span style={{ flex: 1, fontWeight: 600, color: hasName ? C.text : C.muted, fontSize: 12,
+                          overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                           {isDNF ? 'DNF' : positions[i] || '—'}
                         </span>
-                        <span style={{ fontSize: 11, color: C.muted }}>{fmtSecs(t)}</span>
-                        {isDNF && (
-                          <button onClick={(e) => { e.stopPropagation(); const np=[...positions]; np[i]=null; setPositions(np); setSelectedPos(i); }}
-                            style={{ background:'none', border:'none', color:C.muted, cursor:'pointer', fontSize:16, lineHeight:1, padding:'0 2px', fontFamily:'Inter' }}>
-                            ✕
-                          </button>
-                        )}
-                        {!isDNF && !positions[i] && allRunnersAccountedFor && (
-                          <button onClick={(e) => { e.stopPropagation(); const np=[...positions]; np[i]='__DNF__'; setPositions(np); }}
-                            style={{ background:C.dangerLight, border:`1px solid ${C.danger}`, color:C.danger, cursor:'pointer',
-                              fontSize:10, borderRadius:6, padding:'2px 6px', fontWeight:700, whiteSpace:'nowrap', fontFamily:'Inter' }}>
-                            DNF
-                          </button>
-                        )}
+                        <span style={{ fontSize: 10, color: C.muted, flexShrink: 0 }}>{fmtSecs(t)}</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Runners */}
+              {/* Runners — no inline DNF buttons */}
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 8, textTransform: 'uppercase' }}>Runners</div>
                 {[...presentRunners].sort((a,b) => a.name.localeCompare(b.name)).map(r => {
@@ -3248,56 +3232,74 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                   const isDNF = dnfRunnerNames.has(r.name);
                   return (
                     <div key={r.id} style={{ marginBottom: 6 }}>
-                      {isDNF ? (
-                        <div style={{
-                          padding: '10px 12px', borderRadius: 10,
-                          border: `2px solid ${C.danger}`, background: C.dangerLight,
-                          display: 'flex', alignItems: 'center', gap: 6,
-                        }}>
-                          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.danger, textDecoration: 'line-through' }}>{r.name}</span>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: C.danger, letterSpacing: 0.5 }}>DNF</span>
-                          <button onClick={() => handleUndoDNF(r.name)}
-                            style={{ background:'none', border:`1px solid ${C.muted}`, color:C.muted, cursor:'pointer',
-                              fontSize:10, borderRadius:6, padding:'2px 6px', fontFamily:'Inter' }}>
-                            Undo
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', gap: 5, alignItems: 'stretch' }}>
-                          <div onClick={() => !isAssigned && handleAssign(r.name)} style={{
-                            flex: 1, padding: '10px 10px', borderRadius: 10,
-                            border: `2px solid ${isAssigned ? '#e5e7eb' : C.border}`,
-                            background: isAssigned ? '#f9fafb' : C.white,
-                            cursor: isAssigned ? 'default' : 'pointer', fontSize: 13,
-                            opacity: isAssigned ? 0.4 : 1,
-                            textDecoration: isAssigned ? 'line-through' : 'none',
-                            fontWeight: 500, color: C.text,
-                            display: 'flex', alignItems: 'center',
-                          }}>
-                            {r.name}
-                          </div>
-                          {!isAssigned && (
-                            <button onClick={() => handleMarkDNF(r.name)} style={{
-                              background: C.dangerLight, color: C.danger,
-                              border: `2px solid ${C.danger}`,
-                              borderRadius: 10, padding: '0 10px', fontSize: 12, fontWeight: 700,
-                              cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'Inter',
-                            }}>
-                              DNF
-                            </button>
-                          )}
-                        </div>
-                      )}
+                      <div onClick={() => !isAssigned && !isDNF && handleAssign(r.name)} style={{
+                        padding: '10px 8px', borderRadius: 10,
+                        border: `2px solid ${isDNF ? C.danger : isAssigned ? '#e5e7eb' : C.border}`,
+                        background: isDNF ? C.dangerLight : isAssigned ? '#f9fafb' : C.white,
+                        cursor: isAssigned || isDNF ? 'default' : 'pointer', fontSize: 13,
+                        opacity: isAssigned || isDNF ? 0.45 : 1,
+                        textDecoration: isAssigned || isDNF ? 'line-through' : 'none',
+                        fontWeight: 500, color: isDNF ? C.danger : C.text,
+                        display: 'flex', alignItems: 'center',
+                        overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+                      }}>
+                        {r.name}
+                      </div>
                     </div>
                   );
                 })}
               </div>
             </div>
 
+            {/* DNF Picker */}
+            {showDNFPicker && (
+              <div style={{ background: C.dangerLight, border: `1.5px solid ${C.danger}`, borderRadius: 14, padding: 16, marginBottom: 14 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: C.danger, marginBottom: 10 }}>Who didn't finish?</div>
+                {unaccountedRunners.length === 0
+                  ? <div style={{ fontSize: 13, color: C.muted }}>All runners are accounted for.</div>
+                  : unaccountedRunners.map(r => {
+                    const sel = dnfPickerSel.has(r.name);
+                    return (
+                      <label key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0',
+                        borderBottom: `1px solid rgba(220,38,38,0.15)`, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={sel}
+                          onChange={() => setDnfPickerSel(prev => {
+                            const s = new Set(prev);
+                            sel ? s.delete(r.name) : s.add(r.name);
+                            return s;
+                          })}
+                          style={{ width: 16, height: 16, accentColor: C.danger, cursor: 'pointer' }}
+                        />
+                        <span style={{ fontSize: 14, fontWeight: 600 }}>{r.name}</span>
+                      </label>
+                    );
+                  })
+                }
+                <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+                  <Button onClick={confirmDNFPicker} style={{ flex: 1, background: C.danger, justifyContent: 'center' }}>
+                    Confirm DNF{dnfPickerSel.size > 0 ? ` (${dnfPickerSel.size})` : ''}
+                  </Button>
+                  <Button variant="secondary" onClick={() => { setShowDNFPicker(false); setDnfPickerSel(new Set()); }}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {!showDNFPicker && unaccountedRunners.length > 0 && emptyPositions === 0 && (
+              <Button
+                variant="outline"
+                style={{ width: '100%', justifyContent: 'center', marginBottom: 12, borderColor: C.danger, color: C.danger }}
+                onClick={() => { setShowDNFPicker(true); setDnfPickerSel(new Set()); }}
+              >
+                Mark DNF ({unaccountedRunners.length} runner{unaccountedRunners.length !== 1 ? 's' : ''} unaccounted)
+              </Button>
+            )}
+
             {!allResolved && (() => {
               const parts = [];
               if (emptyPositions > 0) parts.push(`${emptyPositions} position${emptyPositions !== 1 ? 's' : ''} unassigned`);
-              if (unaccountedRunners > 0) parts.push(`${unaccountedRunners} runner${unaccountedRunners !== 1 ? 's' : ''} need${unaccountedRunners === 1 ? 's' : ''} assigning or DNF`);
+              if (unaccountedRunners.length > 0) parts.push(`${unaccountedRunners.length} runner${unaccountedRunners.length !== 1 ? 's' : ''} need${unaccountedRunners.length === 1 ? 's' : ''} assigning or DNF`);
               return (
                 <div style={{
                   background: C.warningLight, border: `1px solid #fde68a`, borderRadius: 10,
@@ -3335,7 +3337,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                 const allFinishers = [...finishers, ...dnfRunners.map(r => ({ runnerId: r.id, runnerName: r.name, dnf: true }))];
 
                 // DNS runners = those marked absent
-                const dnsRunners = RUN_RUNNERS.filter(r => attendance[r.id] === false);
+                const dnsRunners = RUN_RUNNERS.filter(r => attendance[r.id] !== true);
 
                 setRaceResult({ finishers: allFinishers, presentRunners, dnsRunners, startGroups, staggerFn: staggerGap });
                 setPage('results');
@@ -3744,7 +3746,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
             Save & Done
           </Button>
           <Button size="lg" variant="outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { commitResults(); setPage('leaderboard'); }}>
-            View Leaderboard
+            Save & View Leaderboard
           </Button>
         </div>
         {committed && <div style={{ textAlign: 'center', fontSize: 12, color: C.success, marginTop: 12 }}>✓ Results saved — levels, points and badges updated</div>}
@@ -3812,7 +3814,7 @@ function RunnerProfilePage({ runner, setPage, runners }) {
         <StatCard label="Personal Best" value={runner.pb} sub="Fastest time" />
         <StatCard label="Events Run" value={String(Math.max(runner.times?.length || 0, Math.floor(runner.points / 80)))} sub="All time" />
         <StatCard label="Current Streak" value={runner.streak} sub="events" color={C.orange} />
-        <StatCard label="Total Points" value={runner.points.toLocaleString()} sub="This season" color={C.purple} />
+        <StatCard label="Total Points" value={runner.points.toLocaleString()} sub={CURRENT_TERM} color={C.purple} />
       </div>
 
       {/* Level chart */}
@@ -3828,34 +3830,32 @@ function RunnerProfilePage({ runner, setPage, runners }) {
       {/* Recent events */}
       <Card style={{ marginBottom: 20 }}>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Recent Events</div>
-        <div style={{ overflowX: 'auto', marginLeft: -4, marginRight: -4 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, minWidth: 340 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-              {['Date', 'Event', 'Position', 'Time', 'Points'].map(h => (
-                <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 12 }}>{h}</th>
-              ))}
+              <th style={{ padding: '6px 8px 6px 0', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 11 }}>Date</th>
+              <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 11 }}>Pos</th>
+              <th style={{ padding: '6px 8px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 11 }}>Time</th>
+              <th style={{ padding: '6px 0 6px 8px', textAlign: 'right', fontWeight: 600, color: C.muted, fontSize: 11 }}>Pts</th>
             </tr>
           </thead>
           <tbody>
             {eventHistory.map((ev, i) => (
               <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}>
-                <td style={{ padding: '10px', color: C.muted, fontSize: 12 }}>{ev.date}</td>
-                <td style={{ padding: '10px', fontWeight: 600, fontSize: 13 }}>{ev.event}</td>
-                <td style={{ padding: '10px' }}>
+                <td style={{ padding: '9px 8px 9px 0', color: C.muted, fontSize: 11 }}>{ev.date}</td>
+                <td style={{ padding: '9px 8px' }}>
                   <Badge
                     label={ev.pos}
                     bg={ev.pos === '1st' ? '#fef9c3' : ev.pos === '2nd' ? '#f1f5f9' : C.bg}
                     color={ev.pos === '1st' ? '#92400e' : C.muted}
                   />
                 </td>
-                <td style={{ padding: '10px', fontWeight: 600 }}>{ev.time}</td>
-                <td style={{ padding: '10px', fontWeight: 700, color: C.orange }}>+{ev.pts}</td>
+                <td style={{ padding: '9px 8px', fontWeight: 600 }}>{ev.time}</td>
+                <td style={{ padding: '9px 0 9px 8px', fontWeight: 700, color: C.orange, textAlign: 'right' }}>+{ev.pts}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        </div>
       </Card>
 
       {/* Awards */}
@@ -3897,7 +3897,7 @@ function LeaderboardPage({ runners }) {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Leaderboard</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>Series standings — Spring Term 2026</p>
+        <p style={{ color: C.muted, marginTop: 4 }}>Series standings — {CURRENT_TERM}</p>
       </div>
 
       {/* Top 3 podium */}
@@ -3961,7 +3961,7 @@ function LeaderboardPage({ runners }) {
                   {/* Name + group */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
-                    <div style={{ fontSize: 11, color: C.muted }}>{rGroups(r).join(', ') || '—'}</div>
+                    <div style={{ fontSize: 11, color: C.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{rGroups(r).join(', ') || '—'}</div>
                   </div>
                   {/* Level badge */}
                   <span style={{
