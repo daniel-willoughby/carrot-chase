@@ -1,1 +1,18 @@
+# Internal docs — keep local only
 requirements-matrix.md
+*.md
+
+# Claude Code
+.claude/
+
+# macOS
+.DS_Store
+
+# Credentials / env files
+.env
+.env.*
+secrets.*
+
+# Editor
+.vscode/
+.idea/
