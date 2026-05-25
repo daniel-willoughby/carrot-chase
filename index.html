@@ -1628,13 +1628,19 @@ function SchoolAdminDashboard({ setPage, runners }) {
 }
 
 // ── LEAD DASHBOARD ───────────────────────────────────────────────────────────
-function LeadDashboard({ setPage }) {
+function LeadDashboard({ setPage, user }) {
   const isMobile = useIsMobile();
+
+  // Derive group from the lead invites data using the logged-in user's name
+  const leadRecord = SEED_LEAD_INVITES.find(l => l.name === user?.name);
+  const myGroupName = leadRecord?.groups?.[0] || 'My Group';
+  const firstName = user?.name?.split(' ')[0] || 'there';
+
   const upcoming = EVENTS.filter(e => e.status === 'upcoming');
   const recent = EVENTS.filter(e => e.status === 'completed');
 
   // Stats derived from group runners
-  const myRunners = RUNNERS.filter(r => rGroups(r).includes('Year 6 Running Club'));
+  const myRunners = RUNNERS.filter(r => rGroups(r).includes(myGroupName));
   const streakLeader = myRunners.reduce((best, r) => (!best || r.streak > best.streak) ? r : best, null);
   const mostImproved = myRunners.reduce((best, r) => (!best || r.level < best.level) ? r : best, null); // lowest level = fastest/best
 
@@ -1642,7 +1648,7 @@ function LeadDashboard({ setPage }) {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>Year 6 Running Club — Welcome back, James!</p>
+        <p style={{ color: C.muted, marginTop: 4 }}>{myGroupName} — Welcome back, {firstName}!</p>
       </div>
 
       {/* Stats row */}
@@ -4070,7 +4076,7 @@ function App() {
       case 'dashboard':
         if (role === 'superadmin')  return <SuperAdminDashboard setPage={setPage} runners={runners} />;
         if (role === 'schooladmin') return <SchoolAdminDashboard setPage={setPage} runners={runners} />;
-        if (role === 'lead')        return <LeadDashboard setPage={setPage} />;
+        if (role === 'lead')        return <LeadDashboard setPage={setPage} user={user} />;
         break;
       case 'organisations':
         return <OrganisationsPage setPage={setPage} />;
