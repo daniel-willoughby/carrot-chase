@@ -1,0 +1,3367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carrot Chase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #FAF6F1; color: #1a1a1a; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes flash {
+      0%, 100% { background: #D4520A; }
+      50% { background: #ff7a2f; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes countdown {
+      from { stroke-dashoffset: 0; }
+      to { stroke-dashoffset: 283; }
+    }
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      animation: confettiFall linear forwards;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .tap-flash {
+      animation: flash 0.3s ease;
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Password gate -->
+<div id="gate" style="display:none; position:fixed; inset:0; background:#FAF6F1; z-index:9999;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;">
+  <div style="width:100%; max-width:380px;">
+    <div style="text-align:center; margin-bottom:32px;">
+      <div style="font-size:52px; margin-bottom:12px;">🥕</div>
+      <div style="font-size:24px; font-weight:800; color:#1a1a1a; font-family:'Inter',sans-serif;">Carrot Chase</div>
+      <div style="font-size:14px; color:#6b7280; margin-top:6px; font-family:'Inter',sans-serif;">Enter the access code to continue</div>
+    </div>
+    <div style="background:#fff; border-radius:16px; padding:28px; box-shadow:0 2px 16px rgba(0,0,0,0.08);">
+      <input id="gate-input" type="password" placeholder="Access code"
+        style="width:100%; padding:14px 16px; border:2px solid #e5e7eb; border-radius:10px;
+          font-size:16px; font-family:'Inter',sans-serif; outline:none; margin-bottom:12px;
+          box-sizing:border-box; background:#fafafa; color:#1a1a1a;"
+        onkeydown="if(event.key==='Enter') checkGate()" />
+      <div id="gate-error" style="color:#dc2626; font-size:13px; font-family:'Inter',sans-serif;
+        margin-bottom:10px; display:none; text-align:center;">Incorrect access code</div>
+      <button onclick="checkGate()"
+        style="width:100%; padding:14px; background:#D4520A; color:#fff; border:none;
+          border-radius:10px; font-size:15px; font-weight:700; font-family:'Inter',sans-serif;
+          cursor:pointer; transition:background 0.15s;">
+        Continue →
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="root" style="display:none;"></div>
+
+<script>
+  const HASH = '06c4b0df2342f92584e4218410bef91bd1f0b305ef93ca7e474ef0b1140d782f';
+
+  async function checkGate() {
+    const val = document.getElementById('gate-input').value;
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
+    const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    if (hex === HASH) {
+      sessionStorage.setItem('cc_auth', '1');
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('root').style.display = '';
+    } else {
+      document.getElementById('gate-error').style.display = 'block';
+      document.getElementById('gate-input').style.borderColor = '#dc2626';
+      document.getElementById('gate-input').value = '';
+      setTimeout(() => {
+        document.getElementById('gate-error').style.display = 'none';
+        document.getElementById('gate-input').style.borderColor = '#e5e7eb';
+      }, 2000);
+    }
+  }
+
+  // On load: if already authed this session, skip gate
+  if (sessionStorage.getItem('cc_auth') === '1') {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('root').style.display = '';
+  } else {
+    document.getElementById('gate').style.display = 'flex';
+    setTimeout(() => document.getElementById('gate-input').focus(), 100);
+  }
+</script>
+
+<script type="text/babel">
+
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── Mobile breakpoint hook ───────────────────────────────────────────────────
+function useIsMobile() {
+  const [mobile, setMobile] = React.useState(window.innerWidth <= 640);
+  React.useEffect(() => {
+    const handler = () => setMobile(window.innerWidth <= 640);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return mobile;
+}
+
+// ── Colours & shared tokens ──────────────────────────────────────────────────
+const C = {
+  orange: '#D4520A',
+  orangeLight: '#FFF0E8',
+  bg: '#FAF6F1',
+  white: '#FFFFFF',
+  border: '#E8E0D8',
+  text: '#1a1a1a',
+  muted: '#6b6b6b',
+  success: '#16a34a',
+  successLight: '#dcfce7',
+  danger: '#dc2626',
+  dangerLight: '#fee2e2',
+  warning: '#d97706',
+  warningLight: '#fef3c7',
+  blue: '#2563eb',
+  blueLight: '#dbeafe',
+  purple: '#7c3aed',
+  purpleLight: '#ede9fe',
+};
+
+// ── Mock Data ────────────────────────────────────────────────────────────────
+const RUNNERS = [
+  // Level 1 = elite/Olympic  ·  Level 99 = beginner  ·  levels decrease as runners improve
+  { id: 'CC-0001', name: 'Emma Johnson',    level: 55, pb: '6:12', group: 'Year 5 Running Club', streak: 8,  points: 1240, times: [372, 368, 381, 374, 370], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0002', name: 'Oliver Smith',    level: 38, pb: '5:44', group: 'Year 6 Running Club', streak: 12, points: 1890, times: [344, 340, 353, 347, 342], badges: ['First Finish','🔥 10-Event Streak','Top 3'] },
+  { id: 'CC-0003', name: 'Sophie Williams', level: 62, pb: '6:45', group: 'Year 5 Running Club', streak: 3,  points: 980,  times: [405, 398, 416, 408, 401], badges: ['First Finish'] },
+  { id: 'CC-0004', name: 'Liam Brown',      level: 29, pb: '5:21', group: 'Year 6 Running Club', streak: 15, points: 2340, times: [321, 318, 330, 324, 320], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter'] },
+  { id: 'CC-0005', name: 'Isla Davis',      level: 71, pb: '7:18', group: 'Breakfast Club',       streak: 2,  points: 620,  times: [438, 430, 451, 441, 435], badges: ['First Finish'] },
+  { id: 'CC-0006', name: 'Noah Wilson',     level: 45, pb: '5:58', group: 'Year 6 Running Club', streak: 7,  points: 1560, times: [358, 354, 367, 361, 356], badges: ['First Finish','🔥 5-Event Streak','Consistent'] },
+  { id: 'CC-0007', name: 'Ava Taylor',      level: 58, pb: '6:28', group: 'PE Class 4B',          streak: 5,  points: 1100, times: [388, 383, 398, 391, 386], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0008', name: 'James Anderson',  level: 22, pb: '5:02', group: 'Year 6 Running Club', streak: 20, points: 2780, times: [302, 299, 311, 305, 301], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter','Consistent'] },
+  { id: 'CC-0009', name: 'Grace Thomas',    level: 67, pb: '7:01', group: 'Breakfast Club',       streak: 4,  points: 810,  times: [421, 415, 433, 424, 418], badges: ['First Finish'] },
+  { id: 'CC-0010', name: 'Harry Jackson',   level: 41, pb: '5:49', group: 'Year 5 Running Club', streak: 9,  points: 1710, times: [349, 345, 358, 352, 347], badges: ['First Finish','🔥 5-Event Streak','Top 3'] },
+  { id: 'CC-0011', name: 'Lily White',      level: 53, pb: '6:08', group: 'PE Class 4B',          streak: 6,  points: 1320, times: [368, 364, 378, 371, 366], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0012', name: 'Ethan Harris',    level: 34, pb: '5:33', group: 'Year 6 Running Club', streak: 11, points: 2050, times: [333, 329, 342, 336, 331], badges: ['First Finish','🔥 10-Event Streak','Consistent'] },
+];
+
+const ORGS = [
+  { id: 1, name: 'Hampton Primary School',    type: 'Primary School',     location: 'London, UK',      runners: 142, events: 48, admin: 'Sarah Mitchell',   status: 'active'   },
+  { id: 2, name: 'Riverside Academy',          type: 'Secondary School',   location: 'Bristol, UK',     runners: 89,  events: 31, admin: 'Tom Clarke',       status: 'active'   },
+  { id: 3, name: "St Mary's C of E",           type: 'Primary School',     location: 'Manchester, UK',  runners: 67,  events: 22, admin: 'Helen Pearce',     status: 'active'   },
+  { id: 4, name: 'Oakwood Secondary',          type: 'Secondary School',   location: 'Birmingham, UK',  runners: 203, events: 71, admin: 'David Nguyen',     status: 'active'   },
+  { id: 5, name: 'Thames Valley Running Club', type: 'Running Club',       location: 'Reading, UK',     runners: 45,  events: 19, admin: 'Rachel Patel',     status: 'trial'    },
+  { id: 6, name: 'Hillside Business Group',    type: 'Corporate',          location: 'Edinburgh, UK',   runners: 28,  events: 12, admin: 'Mark Stevenson',   status: 'inactive' },
+];
+
+const GROUPS = [
+  { id: 1, name: 'Year 5 Running Club', type: 'Running Club',   members: 24, lastEvent: '14 May 2026', nextEvent: '21 May 2026' },
+  { id: 2, name: 'Year 6 Running Club', type: 'Running Club',   members: 28, lastEvent: '13 May 2026', nextEvent: '20 May 2026' },
+  { id: 3, name: 'Breakfast Club',      type: 'Breakfast Club', members: 18, lastEvent: '12 May 2026', nextEvent: '19 May 2026' },
+  { id: 4, name: 'PE Class 4B',         type: 'PE Class',       members: 30, lastEvent: '10 May 2026', nextEvent: '17 May 2026' },
+];
+
+const EVENTS = [
+  { id: 1, name: 'Year 6 Handicap Run #14', group: 'Year 6 Running Club', date: '20 May 2026', format: 'Handicap', runners: 18, status: 'upcoming' },
+  { id: 2, name: 'Year 5 Handicap Run #12', group: 'Year 5 Running Club', date: '21 May 2026', format: 'Handicap', runners: 22, status: 'upcoming' },
+  { id: 3, name: 'Breakfast Club Sprint #8', group: 'Breakfast Club',     date: '19 May 2026', format: 'Scratch',  runners: 14, status: 'upcoming' },
+  { id: 4, name: 'Year 6 Handicap Run #13', group: 'Year 6 Running Club', date: '13 May 2026', format: 'Handicap', runners: 20, status: 'completed' },
+  { id: 5, name: 'PE 4B Team Relay #3',     group: 'PE Class 4B',         date: '10 May 2026', format: 'Relay',    runners: 28, status: 'completed' },
+];
+
+const GROWTH_DATA = [420, 610, 890, 1240, 1780, 2340, 2890, 3450, 4100, 4620, 5280, 5842];
+const MONTHS = ['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'];
+
+// ── localStorage helpers ─────────────────────────────────────────────────────
+function loadLS(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+function saveLS(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+
+// ── Carrot Algorithm ─────────────────────────────────────────────────────────
+// Target = second-fastest of last 5 event times (seconds)
+function carrotTarget(runner) {
+  if (!runner.times || runner.times.length < 2) return null;
+  return [...runner.times].sort((a, b) => a - b)[1];
+}
+
+function fmtSecs(s) {
+  if (s === null || s === undefined) return '—';
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${String(sec).padStart(2, '0')}`;
+}
+
+// Position → points lookup
+const POS_POINTS = [200, 170, 145, 125, 110, 95, 85, 75, 65, 55];
+function posPoints(i) { return POS_POINTS[i] ?? 45; }
+
+// ── Utility helpers ──────────────────────────────────────────────────────────
+// Level 1 = elite/Olympic (fastest), Level 99 = beginner (slowest)
+function levelColor(level) {
+  if (level <= 20) return { bg: '#fef3c7', color: '#92400e', border: '#fde68a' }; // amber  = elite
+  if (level <= 45) return { bg: '#dcfce7', color: '#166534', border: '#bbf7d0' }; // green  = good
+  if (level <= 70) return { bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' }; // blue   = developing
+  return { bg: '#f3f4f6', color: '#374151', border: '#e5e7eb' };
+}
+
+function statusBadge(status) {
+  const map = {
+    active:   { bg: C.successLight, color: C.success, label: 'Active' },
+    trial:    { bg: C.warningLight, color: C.warning,  label: 'Trial'  },
+    inactive: { bg: C.dangerLight,  color: C.danger,   label: 'Inactive' },
+    upcoming: { bg: C.blueLight,    color: C.blue,     label: 'Upcoming' },
+    completed:{ bg: '#f3f4f6',      color: '#6b7280',  label: 'Completed'},
+  };
+  return map[status] || map.active;
+}
+
+// ── Shared UI components ─────────────────────────────────────────────────────
+
+function Card({ children, style }) {
+  return (
+    <div style={{
+      background: C.white, borderRadius: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+      padding: 24, ...style
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function Button({ children, onClick, variant='primary', size='md', disabled, style }) {
+  const base = {
+    borderRadius: 999, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+    fontFamily: 'Inter, sans-serif', fontWeight: 600, transition: 'all 0.15s',
+    display: 'inline-flex', alignItems: 'center', gap: 6, opacity: disabled ? 0.5 : 1,
+  };
+  const sizes = {
+    sm: { padding: '6px 14px', fontSize: 13 },
+    md: { padding: '10px 20px', fontSize: 14 },
+    lg: { padding: '14px 28px', fontSize: 16 },
+    xl: { padding: '18px 36px', fontSize: 18 },
+  };
+  const variants = {
+    primary:   { background: C.orange, color: C.white },
+    secondary: { background: '#f3f0ec', color: C.text },
+    outline:   { background: 'transparent', color: C.orange, border: `2px solid ${C.orange}` },
+    ghost:     { background: 'transparent', color: C.muted },
+    danger:    { background: C.danger, color: C.white },
+    success:   { background: C.success, color: C.white },
+  };
+  return (
+    <button
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      style={{ ...base, ...sizes[size], ...variants[variant], ...style }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Badge({ label, bg, color }) {
+  return (
+    <span style={{
+      background: bg, color, borderRadius: 999, padding: '3px 10px',
+      fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+    }}>
+      {label}
+    </span>
+  );
+}
+
+function StatCard({ label, value, sub, color }) {
+  return (
+    <Card style={{ flex: 1, minWidth: 160 }}>
+      <div style={{ color: C.muted, fontSize: 13, fontWeight: 500, marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: color || C.text }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{sub}</div>}
+    </Card>
+  );
+}
+
+// ── SVG Line Chart ───────────────────────────────────────────────────────────
+function LineChart({ data, labels, title, height=200, color=C.orange }) {
+  const W = 560, H = height;
+  const pad = { top: 20, right: 20, bottom: 30, left: 50 };
+  const w = W - pad.left - pad.right;
+  const h = H - pad.top - pad.bottom;
+  const min = 0, max = Math.max(...data) * 1.1;
+  const xs = data.map((_, i) => pad.left + (i / (data.length - 1)) * w);
+  const ys = data.map(v => pad.top + h - ((v - min) / (max - min)) * h);
+  const path = xs.map((x, i) => `${i === 0 ? 'M' : 'L'} ${x},${ys[i]}`).join(' ');
+  const area = `${path} L ${xs[xs.length-1]},${pad.top+h} L ${xs[0]},${pad.top+h} Z`;
+  const yTicks = [0, max*0.25, max*0.5, max*0.75, max].map(v => Math.round(v));
+
+  return (
+    <div>
+      {title && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>{title}</div>}
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H }} xmlns="http://www.w3.org/2000/svg">
+        {yTicks.map((v, i) => {
+          const y = pad.top + h - (v / (max || 1)) * h;
+          return (
+            <g key={i}>
+              <line x1={pad.left} x2={W-pad.right} y1={y} y2={y} stroke="#e8e0d8" strokeWidth={1} />
+              <text x={pad.left-6} y={y+4} textAnchor="end" fontSize={11} fill={C.muted}>
+                {v >= 1000 ? `${(v/1000).toFixed(1)}k` : v}
+              </text>
+            </g>
+          );
+        })}
+        <defs>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.15" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#areaGrad)" />
+        <path d={path} fill="none" stroke={color} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+        {xs.map((x, i) => (
+          <circle key={i} cx={x} cy={ys[i]} r={3.5} fill={color} stroke={C.white} strokeWidth={2} />
+        ))}
+        {labels && labels.map((l, i) => (
+          <text key={i} x={xs[i]} y={H-2} textAnchor="middle" fontSize={10} fill={C.muted}>{l}</text>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
+  const isMobile = useIsMobile();
+  if (isMobile) return null;
+
+  const navs = {
+    superadmin: [
+      { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
+      { id: 'organisations', icon: '🏫', label: 'Organisations' },
+      { id: 'billing', icon: '💳', label: 'Billing' },
+    ],
+    schooladmin: [
+      { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
+      { id: 'groups', icon: '👥', label: 'Groups' },
+      { id: 'members', icon: '🏃', label: 'Members' },
+      { id: 'events', icon: '📅', label: 'Events' },
+      { id: 'leaderboard', icon: '🏆', label: 'Leaderboard' },
+    ],
+    lead: [
+      { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
+      { id: 'events', icon: '📅', label: 'Events' },
+      { id: 'runevent', icon: '▶', label: 'Run Event' },
+    ],
+  };
+
+  const items = navs[role] || [];
+
+  return (
+    <div style={{
+      width: 240, minHeight: '100vh', background: C.white,
+      borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column',
+      position: 'fixed', top: 0, left: 0, zIndex: 100,
+    }}>
+      {/* Logo */}
+      <div style={{ padding: '20px 20px 16px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 28 }}>🥕</span>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 16, color: C.orange }}>Carrot Chase</div>
+            <div style={{ fontSize: 11, color: C.muted }}>
+              {role === 'superadmin' ? 'Super Admin' : role === 'schooladmin' ? 'School Admin' : 'Lead'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '12px 12px' }}>
+        {items.map(item => {
+          const active = page === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setPage(item.id)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', borderRadius: 999, border: 'none',
+                background: active ? C.orange : 'transparent',
+                color: active ? C.white : C.text,
+                fontFamily: 'Inter, sans-serif', fontWeight: active ? 600 : 500,
+                fontSize: 14, cursor: 'pointer', marginBottom: 2,
+                transition: 'all 0.15s',
+              }}
+            >
+              <span style={{ fontSize: 16 }}>{item.icon}</span>
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* User */}
+      <div style={{ padding: '16px', borderTop: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%', background: C.orangeLight,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, fontWeight: 700, color: C.orange,
+          }}>
+            {user.name[0]}
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>{user.name}</div>
+            <div style={{ fontSize: 11, color: C.muted }}>{user.email}</div>
+          </div>
+        </div>
+        <button
+          onClick={onLogout}
+          style={{
+            width: '100%', padding: '8px', borderRadius: 999, border: `1px solid ${C.border}`,
+            background: 'transparent', color: C.muted, fontSize: 13, fontWeight: 500,
+            cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+          }}
+        >
+          Sign out
+        </button>
+        {onResetData && (
+          <button onClick={onResetData} style={{
+            width: '100%', padding: '6px', borderRadius: 999, border: 'none',
+            background: 'transparent', color: C.muted, fontSize: 11,
+            cursor: 'pointer', fontFamily: 'Inter, sans-serif', marginTop: 4, opacity: 0.6,
+          }}>
+            Reset demo data
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Layout wrapper for authed pages ─────────────────────────────────────────
+function AppLayout({ role, page, setPage, user, onLogout, onResetData, children }) {
+  const isMobile = useIsMobile();
+
+  const navs = {
+    superadmin: [
+      { id: 'dashboard',     icon: '⊞', label: 'Dashboard'    },
+      { id: 'organisations', icon: '🏫', label: 'Orgs'         },
+      { id: 'billing',       icon: '💳', label: 'Billing'      },
+    ],
+    schooladmin: [
+      { id: 'dashboard',    icon: '⊞', label: 'Dashboard'  },
+      { id: 'groups',       icon: '👥', label: 'Groups'     },
+      { id: 'members',      icon: '🏃', label: 'Members'    },
+      { id: 'events',       icon: '📅', label: 'Events'     },
+      { id: 'leaderboard',  icon: '🏆', label: 'Leaderboard'},
+    ],
+    lead: [
+      { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
+      { id: 'events',    icon: '📅', label: 'Events'    },
+      { id: 'runevent',  icon: '▶',  label: 'Run Event' },
+    ],
+  };
+  const items = navs[role] || [];
+
+  // Derive a page title for the mobile header
+  const pageTitles = {
+    dashboard: 'Dashboard', organisations: 'Organisations', billing: 'Billing',
+    groups: 'Groups', members: 'Members', events: 'Events',
+    leaderboard: 'Leaderboard', runnerprofile: 'Runner', createevent: 'Create Event',
+    runevent: 'Run Event', results: 'Results',
+  };
+  const pageTitle = pageTitles[page] || 'Carrot Chase';
+
+  if (isMobile) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: C.bg }}>
+        {/* Top header */}
+        <header style={{
+          position: 'fixed', top: 0, left: 0, right: 0, height: 56, zIndex: 200,
+          background: C.white, borderBottom: `1px solid ${C.border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 22 }}>🥕</span>
+            <span style={{ fontWeight: 800, fontSize: 15, color: C.orange }}>Carrot Chase</span>
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 14, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            {pageTitle}
+          </div>
+          <div
+            style={{
+              width: 34, height: 34, borderRadius: '50%', background: C.orangeLight,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 15, fontWeight: 700, color: C.orange, cursor: 'pointer',
+            }}
+            onClick={() => { if (window.confirm('Sign out?')) onLogout(); }}
+            title="Sign out"
+          >
+            {user.name[0]}
+          </div>
+        </header>
+
+        {/* Main content */}
+        <main style={{
+          flex: 1,
+          marginTop: 56,
+          paddingBottom: 80,
+          padding: '16px 16px 80px 16px',
+          minHeight: 'calc(100vh - 56px)',
+        }}>
+          {children}
+        </main>
+
+        {/* Bottom nav */}
+        <nav style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, height: 60, zIndex: 200,
+          background: C.white, borderTop: `1px solid ${C.border}`,
+          display: 'flex', alignItems: 'stretch',
+        }}>
+          {items.map(item => {
+            const active = page === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setPage(item.id)}
+                style={{
+                  flex: 1, display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', gap: 2,
+                  border: 'none', background: 'transparent', cursor: 'pointer',
+                  color: active ? C.orange : C.muted,
+                  fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{item.icon}</span>
+                <span style={{ fontSize: 10, fontWeight: active ? 700 : 500 }}>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: C.bg }}>
+      <Sidebar role={role} page={page} setPage={setPage} user={user} onLogout={onLogout} onResetData={onResetData} />
+      <main style={{ flex: 1, marginLeft: 240, minHeight: '100vh', padding: 32 }}>
+        {children}
+      </main>
+    </div>
+  );
+}
+
+// ── LOGIN PAGE ───────────────────────────────────────────────────────────────
+function LoginPage({ onLogin }) {
+  const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError]       = useState('');
+  const [openCred, setOpenCred] = useState(null);
+  const [pendingUser, setPendingUser] = useState(null);
+  const [twoFACode, setTwoFACode] = useState('');
+  const [twoFAError, setTwoFAError] = useState('');
+  const DEMO_CODE = '482716';
+  const isMobile = useIsMobile();
+
+  const CREDS = [
+    { label: 'Super Admin',   email: 'super@carrotchase.com',    password: 'demo1234', role: 'superadmin', name: 'Alex Morgan'    },
+    { label: 'School Admin',  email: 'sarah@hamptonprimary.co.uk', password: 'demo1234', role: 'schooladmin', name: 'Sarah Mitchell' },
+    { label: 'Lead',          email: 'james@hamptonprimary.co.uk', password: 'demo1234', role: 'lead',       name: 'James Carter'   },
+  ];
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const match = CREDS.find(c => c.email === email && c.password === password);
+    if (match) { setPendingUser({ email: match.email, role: match.role, name: match.name }); }
+    else { setError('Invalid credentials. Try the demo credentials below.'); }
+  }
+
+  function handleVerify(e) {
+    e.preventDefault();
+    if (twoFACode === DEMO_CODE) { onLogin(pendingUser); }
+    else { setTwoFAError('Incorrect code. Try the demo code shown above.'); }
+  }
+
+  // ── 2FA screen ──────────────────────────────────────────────────────────────
+  if (pendingUser) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: C.bg, padding: 24 }}>
+        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔐</div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Two-factor authentication</h1>
+          <p style={{ color: C.muted, marginBottom: 24 }}>We've sent a 6-digit code to <strong>{pendingUser.email}</strong></p>
+          <div style={{ background: C.orangeLight, borderRadius: 12, padding: '12px 20px', marginBottom: 24, fontSize: 14, color: C.orange, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <span>Demo code: <strong style={{ fontSize: 20, letterSpacing: 4 }}>{DEMO_CODE}</strong></span>
+            <button
+              type="button"
+              onClick={() => { setTwoFACode(DEMO_CODE); setTwoFAError(''); }}
+              style={{
+                background: C.orange, color: C.white, border: 'none', borderRadius: 8,
+                padding: '6px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif', flexShrink: 0,
+              }}
+            >
+              Fill ↓
+            </button>
+          </div>
+          <form onSubmit={handleVerify}>
+            <input
+              value={twoFACode}
+              onChange={e => { setTwoFACode(e.target.value); setTwoFAError(''); }}
+              placeholder="Enter 6-digit code"
+              maxLength={6}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 12, border: `2px solid ${twoFAError ? C.danger : C.border}`,
+                fontSize: 22, textAlign: 'center', letterSpacing: 6, fontFamily: 'Inter', marginBottom: 12,
+                background: C.white, boxSizing: 'border-box',
+              }}
+            />
+            {twoFAError && <div style={{ color: C.danger, fontSize: 13, marginBottom: 12 }}>{twoFAError}</div>}
+            <Button style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }}>Verify →</Button>
+          </form>
+          <button onClick={() => { setPendingUser(null); setTwoFACode(''); setTwoFAError(''); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter' }}>
+            ← Back to login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh' }}>
+      {/* Top/Left — orange panel */}
+      <div style={{
+        flex: isMobile ? 'none' : 1,
+        background: C.orange, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: isMobile ? '28px 20px' : 48,
+        color: C.white,
+      }}>
+        <span style={{ fontSize: isMobile ? 40 : 72, marginBottom: isMobile ? 10 : 24 }}>🥕</span>
+        <h1 style={{ fontSize: isMobile ? 26 : 40, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>Carrot Chase</h1>
+        <p style={{ fontSize: isMobile ? 14 : 20, fontWeight: 400, marginBottom: isMobile ? 16 : 48, opacity: 0.9, textAlign: 'center' }}>
+          The golf handicap of running
+        </p>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', flexWrap: 'wrap', gap: isMobile ? 8 : 14, width: '100%', maxWidth: 360, justifyContent: 'center' }}>
+          {[
+            '400% more participation',
+            '£1,000 avg school return',
+            '99 levels of competition',
+          ].map(stat => (
+            <div key={stat} style={{
+              border: '2px solid rgba(255,255,255,0.6)', borderRadius: 999,
+              padding: isMobile ? '6px 12px' : '12px 24px',
+              fontSize: isMobile ? 11 : 15, fontWeight: 600, textAlign: 'center',
+              backdropFilter: 'blur(4px)', background: 'rgba(255,255,255,0.08)',
+            }}>
+              {stat}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom/Right — cream panel */}
+      <div style={{
+        flex: isMobile ? 'none' : 1,
+        background: C.bg, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: isMobile ? '24px 16px' : 48,
+      }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+          <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Sign in</h2>
+          <p style={{ color: C.muted, marginBottom: 32, fontSize: 14 }}>
+            Welcome back! Sign in to your account.
+          </p>
+
+          <form onSubmit={handleLogin}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                Email address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 12,
+                  border: `1.5px solid ${C.border}`, fontSize: 14,
+                  fontFamily: 'Inter, sans-serif', background: C.white, outline: 'none',
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 12,
+                  border: `1.5px solid ${C.border}`, fontSize: 14,
+                  fontFamily: 'Inter, sans-serif', background: C.white, outline: 'none',
+                }}
+              />
+            </div>
+            {error && (
+              <div style={{
+                background: C.dangerLight, color: C.danger, borderRadius: 10,
+                padding: '10px 14px', fontSize: 13, marginBottom: 16,
+              }}>
+                {error}
+              </div>
+            )}
+            <Button size="lg" style={{ width: '100%', justifyContent: 'center', marginBottom: 24 }}>
+              Sign in
+            </Button>
+          </form>
+
+          {/* Demo credentials */}
+          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginBottom: 12 }}>
+              Demo Credentials
+            </div>
+            {CREDS.map((cred, i) => (
+              <div key={i} style={{ marginBottom: 8 }}>
+                <button
+                  onClick={() => setOpenCred(openCred === i ? null : i)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
+                    background: openCred === i ? C.orangeLight : C.white,
+                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    fontSize: 13, fontWeight: 600, color: C.text,
+                  }}
+                >
+                  <span>▶ {cred.label}</span>
+                  <span style={{ fontSize: 11, color: C.muted }}>{openCred === i ? '▲' : '▼'}</span>
+                </button>
+                {openCred === i && (
+                  <div style={{
+                    border: `1px solid ${C.border}`, borderTop: 'none', borderRadius: '0 0 10px 10px',
+                    padding: '12px 14px', background: C.white,
+                  }}>
+                    <div style={{ fontSize: 12, color: C.muted, marginBottom: 8 }}>
+                      <span style={{ fontWeight: 600 }}>Email:</span> {cred.email}<br/>
+                      <span style={{ fontWeight: 600 }}>Password:</span> {cred.password}
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => { setEmail(cred.email); setPassword(cred.password); setOpenCred(null); }}
+                    >
+                      Auto-fill
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SUPER ADMIN DASHBOARD ────────────────────────────────────────────────────
+function SuperAdminDashboard({ setPage }) {
+  const isMobile = useIsMobile();
+  return (
+    <div className="fade-in">
+      <div style={{ marginBottom: isMobile ? 16 : 28 }}>
+        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
+        <p style={{ color: C.muted, marginTop: 4 }}>Welcome back, Alex. Here's what's happening.</p>
+      </div>
+
+      {/* Stats */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+        gap: isMobile ? 10 : 16,
+        marginBottom: isMobile ? 16 : 28,
+      }}>
+        <StatCard label="Total Organisations" value="24" sub="+3 this month" />
+        <StatCard label="Total Runners" value="5,842" sub="+218 this month" color={C.orange} />
+        <StatCard label="Total Events" value="486" sub="All time" />
+        <StatCard label="Monthly Revenue" value="£1,176" sub="+£205 this month" color={C.success} />
+      </div>
+
+      {/* Chart */}
+      <Card style={{ marginBottom: 28 }}>
+        <LineChart
+          data={GROWTH_DATA}
+          labels={MONTHS}
+          title="Runner Growth (Last 12 Months)"
+          height={220}
+        />
+      </Card>
+
+      {/* Recent orgs */}
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>Recent Organisations</div>
+          <Button variant="outline" size="sm" onClick={() => setPage('organisations')}>View all</Button>
+        </div>
+        <OrgTable orgs={ORGS.slice(0,3)} compact isMobile={isMobile} onView={() => setPage('organisations')} />
+      </Card>
+    </div>
+  );
+}
+
+// ── ORGANISATIONS PAGE ───────────────────────────────────────────────────────
+function OrgTable({ orgs, compact, isMobile, onView }) {
+  if (isMobile) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {orgs.map(org => {
+          const s = statusBadge(org.status);
+          return (
+            <div key={org.id} style={{
+              border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 14px',
+              background: C.bg,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{org.name}</div>
+                <Badge label={s.label} bg={s.bg} color={s.color} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: 12 }}>
+                <div><span style={{ color: C.muted }}>Type </span><span style={{ fontWeight: 600 }}>{org.type}</span></div>
+                <div><span style={{ color: C.muted }}>Location </span><span style={{ fontWeight: 600 }}>{org.location}</span></div>
+                <div><span style={{ color: C.muted }}>Runners </span><span style={{ fontWeight: 600 }}>{org.runners}</span></div>
+                <div><span style={{ color: C.muted }}>Events </span><span style={{ fontWeight: 600 }}>{org.events}</span></div>
+                <div style={{ gridColumn: '1 / -1' }}><span style={{ color: C.muted }}>Admin </span><span style={{ fontWeight: 600 }}>{org.admin}</span></div>
+              </div>
+              {!compact && (
+                <div style={{ marginTop: 10 }}>
+                  <Button size="sm" variant="outline" onClick={() => onView(org)}>View →</Button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+        <thead>
+          <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+            {['Name', 'Type', 'Location', 'Runners', 'Events', 'Admin', 'Status', ''].map(h => (
+              <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 12, whiteSpace: 'nowrap' }}>
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {orgs.map(org => {
+            const s = statusBadge(org.status);
+            return (
+              <tr key={org.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                <td style={{ padding: '12px 12px', fontWeight: 600 }}>{org.name}</td>
+                <td style={{ padding: '12px 12px', color: C.muted }}>{org.type}</td>
+                <td style={{ padding: '12px 12px', color: C.muted }}>{org.location}</td>
+                <td style={{ padding: '12px 12px', fontWeight: 600 }}>{org.runners}</td>
+                <td style={{ padding: '12px 12px', color: C.muted }}>{org.events}</td>
+                <td style={{ padding: '12px 12px', color: C.muted }}>{org.admin}</td>
+                <td style={{ padding: '12px 12px' }}><Badge label={s.label} bg={s.bg} color={s.color} /></td>
+                <td style={{ padding: '12px 12px' }}>
+                  {!compact && (
+                    <Button size="sm" variant="ghost" onClick={() => onView(org)}>
+                      View →
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function OrganisationsPage({ setPage }) {
+  const isMobile = useIsMobile();
+  const [orgs, setOrgs] = React.useState(ORGS);
+  const [viewOrg, setViewOrg] = React.useState(null);
+  const [showNewModal, setShowNewModal] = React.useState(false);
+  const [newForm, setNewForm] = React.useState({ name: '', type: 'School', location: '', admin: '' });
+
+  const inputStyle = {
+    width: '100%', padding: '10px 14px', borderRadius: 12,
+    border: `1.5px solid ${C.border}`, fontSize: 14,
+    fontFamily: 'Inter, sans-serif', background: C.white,
+    boxSizing: 'border-box',
+  };
+
+  function handleAddOrg() {
+    if (!newForm.name.trim()) return;
+    const next = {
+      id: `org-${Date.now()}`,
+      name: newForm.name.trim(),
+      type: newForm.type,
+      location: newForm.location.trim() || '—',
+      admin: newForm.admin.trim() || '—',
+      runners: 0,
+      events: 0,
+      status: 'active',
+    };
+    setOrgs([...orgs, next]);
+    setNewForm({ name: '', type: 'School', location: '', admin: '' });
+    setShowNewModal(false);
+  }
+
+  // ── Org detail panel ──────────────────────────────────────────────────────
+  if (viewOrg) {
+    const s = statusBadge(viewOrg.status);
+    return (
+      <div className="fade-in">
+        <button
+          onClick={() => setViewOrg(null)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter', marginBottom: 16 }}
+        >
+          ← Back to Organisations
+        </button>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+            <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>{viewOrg.name}</h1>
+            <Badge label={s.label} bg={s.bg} color={s.color} />
+          </div>
+          <p style={{ color: C.muted }}>{viewOrg.type} · {viewOrg.location}</p>
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+          gap: isMobile ? 10 : 16,
+          marginBottom: 24,
+        }}>
+          <StatCard label="Runners" value={viewOrg.runners} sub="Registered" color={C.orange} />
+          <StatCard label="Events" value={viewOrg.events} sub="All time" />
+          <StatCard label="Plan" value="Pro" sub="Active licence" color={C.success} />
+          <StatCard label="Admin" value={viewOrg.admin.split(' ')[0]} sub={viewOrg.admin} />
+        </div>
+        <Card style={{ marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Organisation Details</div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
+            {[
+              ['Name', viewOrg.name],
+              ['Type', viewOrg.type],
+              ['Location', viewOrg.location],
+              ['Admin Contact', viewOrg.admin],
+              ['Status', s.label],
+            ].map(([label, val]) => (
+              <div key={label}>
+                <div style={{ fontSize: 12, color: C.muted, fontWeight: 600, marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{val}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Button variant="secondary" onClick={() => setViewOrg(null)}>Close</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main list ─────────────────────────────────────────────────────────────
+  return (
+    <div className="fade-in">
+      {/* Add Organisation modal */}
+      {showNewModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 500,
+          background: 'rgba(0,0,0,0.35)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', padding: 16,
+        }}>
+          <div style={{
+            background: C.white, borderRadius: 20, padding: 28,
+            width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+          }}>
+            <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 20 }}>New Organisation</div>
+            {[
+              { label: 'Name', key: 'name', placeholder: 'e.g. Riverside Academy' },
+              { label: 'Location', key: 'location', placeholder: 'e.g. London' },
+              { label: 'Admin Contact', key: 'admin', placeholder: 'e.g. Jane Smith' },
+            ].map(f => (
+              <div key={f.key} style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>{f.label}</label>
+                <input
+                  value={newForm[f.key]}
+                  onChange={e => setNewForm({ ...newForm, [f.key]: e.target.value })}
+                  placeholder={f.placeholder}
+                  style={inputStyle}
+                />
+              </div>
+            ))}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Type</label>
+              <select
+                value={newForm.type}
+                onChange={e => setNewForm({ ...newForm, type: e.target.value })}
+                style={inputStyle}
+              >
+                {['School', 'Academy', 'Running Club', 'Business'].map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Button style={{ flex: 1 }} onClick={handleAddOrg}>Add Organisation</Button>
+              <Button variant="secondary" style={{ flex: 1 }} onClick={() => setShowNewModal(false)}>Cancel</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 28 }}>
+        <div>
+          <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Organisations</h1>
+          <p style={{ color: C.muted, marginTop: 4 }}>{orgs.length} registered</p>
+        </div>
+        <Button onClick={() => setShowNewModal(true)}>+ Add Organisation</Button>
+      </div>
+      <Card style={{ padding: isMobile ? 12 : 24 }}>
+        <OrgTable orgs={orgs} isMobile={isMobile} onView={setViewOrg} />
+      </Card>
+    </div>
+  );
+}
+
+// ── BILLING PAGE ─────────────────────────────────────────────────────────────
+function BillingPage() {
+  const isMobile = useIsMobile();
+  const plans = [
+    { name: 'Hampton Primary School',    plan: 'Pro',      price: '£49/mo',  status: 'active',   next: '1 Jun 2026'  },
+    { name: 'Riverside Academy',          plan: 'Standard', price: '£29/mo',  status: 'active',   next: '1 Jun 2026'  },
+    { name: "St Mary's C of E",           plan: 'Standard', price: '£29/mo',  status: 'active',   next: '15 Jun 2026' },
+    { name: 'Oakwood Secondary',          plan: 'Pro',      price: '£49/mo',  status: 'active',   next: '1 Jun 2026'  },
+    { name: 'Thames Valley Running Club', plan: 'Trial',    price: '£0/mo',   status: 'trial',    next: '1 Jun 2026'  },
+    { name: 'Hillside Business Group',    plan: 'Standard', price: '£29/mo',  status: 'inactive', next: 'N/A'         },
+  ];
+
+  return (
+    <div className="fade-in">
+      <div style={{ marginBottom: isMobile ? 16 : 28 }}>
+        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Billing</h1>
+        <p style={{ color: C.muted, marginTop: 4 }}>Manage licences and invoices</p>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)',
+        gap: isMobile ? 10 : 16,
+        marginBottom: isMobile ? 16 : 28,
+      }}>
+        <StatCard label="Monthly Revenue" value="£205" sub="4 active plans" color={C.success} />
+        <StatCard label="Active Licences" value="4" sub="2 Pro, 2 Standard" />
+        <StatCard label="Trials" value="1" sub="Expires 1 Jun" color={C.warning} />
+      </div>
+
+      <Card style={{ marginBottom: 24 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Licence Overview</div>
+
+        {isMobile ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {plans.map((p, i) => {
+              const s = statusBadge(p.status);
+              return (
+                <div key={i} style={{
+                  padding: '14px', borderRadius: 12, border: `1px solid ${C.border}`,
+                  background: C.bg,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, flex: 1, marginRight: 8 }}>{p.name}</div>
+                    <Badge label={s.label} bg={s.bg} color={s.color} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 16 }}>
+                      <div>
+                        <div style={{ fontSize: 11, color: C.muted }}>Plan</div>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>{p.plan}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, color: C.muted }}>Price</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.orange }}>{p.price}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, color: C.muted }}>Renews</div>
+                        <div style={{ fontSize: 13, color: C.muted }}>{p.next}</div>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => alert(`Invoice for ${p.name}\n\nPlan: ${p.plan}  |  ${p.price}\nNext renewal: ${p.next}\n\n[In production this would download a PDF invoice]`)}>Invoice →</Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                {['Organisation', 'Plan', 'Price', 'Next Renewal', 'Status', ''].map(h => (
+                  <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 12 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {plans.map((p, i) => {
+                const s = statusBadge(p.status);
+                return (
+                  <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}>
+                    <td style={{ padding: '12px', fontWeight: 600 }}>{p.name}</td>
+                    <td style={{ padding: '12px' }}>{p.plan}</td>
+                    <td style={{ padding: '12px', fontWeight: 600, color: C.orange }}>{p.price}</td>
+                    <td style={{ padding: '12px', color: C.muted }}>{p.next}</td>
+                    <td style={{ padding: '12px' }}><Badge label={s.label} bg={s.bg} color={s.color} /></td>
+                    <td style={{ padding: '12px' }}><Button size="sm" variant="ghost" onClick={() => alert(`Invoice for ${p.name}\n\nPlan: ${p.plan}  |  ${p.price}\nNext renewal: ${p.next}\n\n[In production this would download a PDF invoice]`)}>Invoice →</Button></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </Card>
+
+      <Card>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Manual Invoice</div>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12, alignItems: isMobile ? 'stretch' : 'flex-end' }}>
+          <div style={{ flex: isMobile ? 'unset' : 1 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Organisation</label>
+            <select style={{
+              padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`,
+              fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white,
+              width: '100%',
+            }}>
+              {ORGS.map(o => <option key={o.id}>{o.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Amount</label>
+            <input
+              type="text" placeholder="£49.00"
+              style={{
+                padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`,
+                fontSize: 14, fontFamily: 'Inter, sans-serif', width: isMobile ? '100%' : 120,
+                background: C.white, boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <Button style={{ width: isMobile ? '100%' : 'auto' }}>Send Invoice</Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ── SCHOOL ADMIN DASHBOARD ───────────────────────────────────────────────────
+function SchoolAdminDashboard({ setPage, runners }) {
+  const isMobile = useIsMobile();
+  const upcomingEvents = EVENTS.filter(e => e.status === 'upcoming').slice(0, 3);
+  const recentEvents = EVENTS.filter(e => e.status === 'completed').slice(0, 3);
+  const liveRunners = runners || RUNNERS;
+  const leader = liveRunners.reduce((best, r) => (!best || r.points > best.points) ? r : best, null);
+  const leaderName = leader ? leader.name.split(' ')[0] + ' ' + leader.name.split(' ')[1]?.[0] + '.' : '—';
+
+  return (
+    <div className="fade-in">
+      <div style={{ marginBottom: isMobile ? 16 : 28 }}>
+        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
+        <p style={{ color: C.muted, marginTop: 4 }}>Hampton Primary School — Welcome back, Sarah!</p>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+        gap: isMobile ? 10 : 16,
+        marginBottom: isMobile ? 16 : 28,
+      }}>
+        <StatCard label="Total Runners" value={String(liveRunners.length)} sub="+8 this term" color={C.orange} />
+        <StatCard label="Active Groups" value="4" sub="All active" />
+        <StatCard label="Events This Term" value="18" sub="6 remaining" />
+        <StatCard label="Series Leader" value={leaderName} sub={`${leader?.points?.toLocaleString() ?? '—'} pts`} color={C.purple} />
+      </div>
+
+      {/* Groups grid */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Groups</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
+          {GROUPS.map(g => (
+            <Card key={g.id} style={{ cursor: 'pointer' }} onClick={() => setPage('groups')}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>{g.name}</div>
+                  <div style={{ fontSize: 13, color: C.muted }}>{g.members} runners</div>
+                </div>
+                <div style={{
+                  background: C.orangeLight, color: C.orange, borderRadius: 10,
+                  padding: '4px 10px', fontSize: 12, fontWeight: 600,
+                }}>
+                  {g.members}
+                </div>
+              </div>
+              <div style={{ marginTop: 12, display: 'flex', gap: 16 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted }}>Last event</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{g.lastEvent}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted }}>Next event</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{g.nextEvent}</div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Upcoming + Recent events */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 24 }}>
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>Upcoming Events</div>
+            <Button variant="outline" size="sm" onClick={() => setPage('events')}>View all</Button>
+          </div>
+          {upcomingEvents.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No upcoming events</div>}
+          {upcomingEvents.map(ev => (
+            <div key={ev.id} style={{ padding: '12px 0', borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{ev.name}</div>
+              <div style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>{ev.date} · {ev.group}</div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
+                <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
+                <Button size="sm" onClick={() => setPage('runevent')}>Run →</Button>
+              </div>
+            </div>
+          ))}
+        </Card>
+
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>Recent Results</div>
+            <Button variant="outline" size="sm" onClick={() => setPage('events')}>View all</Button>
+          </div>
+          {recentEvents.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No completed events</div>}
+          {recentEvents.map(ev => (
+            <div key={ev.id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 0', borderBottom: `1px solid ${C.border}`,
+            }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>{ev.name}</div>
+                <div style={{ fontSize: 12, color: C.muted }}>{ev.date} · {ev.runners} runners</div>
+              </div>
+              <Badge label="Done" bg={statusBadge('completed').bg} color={statusBadge('completed').color} />
+            </div>
+          ))}
+        </Card>
+      </div>
+
+      {/* Payments & ROI */}
+      <Card style={{ marginTop: isMobile ? 16 : 28 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>Payments & ROI</div>
+          <Badge label="This term" bg={C.blueLight} color={C.blue} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4,1fr)', gap: 12 }}>
+          {[
+            { label: 'Licence cost', value: '£250', sub: 'Annual', color: C.muted },
+            { label: 'Session revenue', value: '£360', sub: '18 sessions × £1 × 20', color: C.success },
+            { label: 'ROI', value: '1.4×', sub: 'This term alone', color: C.orange },
+            { label: 'Annual projected', value: '£1,080', sub: 'vs £250 licence', color: C.purple },
+          ].map(item => (
+            <div key={item.label} style={{ background: C.bg, borderRadius: 12, padding: 14 }}>
+              <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>{item.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: item.color }}>{item.value}</div>
+              <div style={{ fontSize: 11, color: C.muted }}>{item.sub}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ── LEAD DASHBOARD ───────────────────────────────────────────────────────────
+function LeadDashboard({ setPage }) {
+  const isMobile = useIsMobile();
+  const upcoming = EVENTS.filter(e => e.status === 'upcoming');
+  const recent = EVENTS.filter(e => e.status === 'completed');
+
+  // Stats derived from group runners
+  const myRunners = RUNNERS.filter(r => r.group === 'Year 6 Running Club');
+  const streakLeader = myRunners.reduce((best, r) => (!best || r.streak > best.streak) ? r : best, null);
+  const mostImproved = myRunners.reduce((best, r) => (!best || r.level < best.level) ? r : best, null); // lowest level = fastest/best
+
+  return (
+    <div className="fade-in">
+      <div style={{ marginBottom: isMobile ? 16 : 28 }}>
+        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
+        <p style={{ color: C.muted, marginTop: 4 }}>Year 6 Running Club — Welcome back, James!</p>
+      </div>
+
+      {/* Stats row */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+        gap: isMobile ? 10 : 16,
+        marginBottom: isMobile ? 16 : 28,
+      }}>
+        <StatCard label="Runners" value={String(myRunners.length)} sub="In your group" color={C.orange} />
+        <StatCard label="Upcoming" value={String(upcoming.length)} sub="Events scheduled" />
+        <StatCard label="Streak Leader" value={streakLeader ? streakLeader.name.split(' ')[0] : '—'} sub={`${streakLeader?.streak ?? 0} events in a row`} color={C.success} />
+        <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} />
+      </div>
+
+      <Card style={{ background: C.orange, color: C.white, marginBottom: isMobile ? 16 : 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: isMobile ? 15 : 18, fontWeight: 700, marginBottom: 6 }}>Ready to run an event?</div>
+            <div style={{ opacity: 0.85, fontSize: isMobile ? 12 : 14 }}>Year 6 Handicap Run #14 is scheduled for tomorrow</div>
+          </div>
+          <Button
+            onClick={() => setPage('runevent')}
+            style={{ background: C.white, color: C.orange, flexShrink: 0 }}
+            size={isMobile ? 'sm' : 'lg'}
+          >
+            ▶ Run Event
+          </Button>
+        </div>
+      </Card>
+
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 24 }}>
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Upcoming Events</div>
+          {upcoming.map(ev => (
+            <div key={ev.id} style={{
+              padding: '12px 0', borderBottom: `1px solid ${C.border}`,
+            }}>
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{ev.name}</div>
+              <div style={{ fontSize: 12, color: C.muted }}>{ev.date} · {ev.group}</div>
+              <div style={{ marginTop: 6 }}>
+                <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
+              </div>
+            </div>
+          ))}
+        </Card>
+
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Recent Results</div>
+          {recent.map(ev => (
+            <div key={ev.id} style={{
+              padding: '12px 0', borderBottom: `1px solid ${C.border}`,
+            }}>
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{ev.name}</div>
+              <div style={{ fontSize: 12, color: C.muted }}>{ev.date} · {ev.runners} finishers</div>
+              <div style={{ marginTop: 6 }}>
+                <Badge label="Completed" bg={statusBadge('completed').bg} color={statusBadge('completed').color} />
+              </div>
+            </div>
+          ))}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── GROUPS PAGE ──────────────────────────────────────────────────────────────
+function GroupsPage({ setPage, setMemberGroupFilter }) {
+  const isMobile = useIsMobile();
+  const [groups, setGroups] = useState(GROUPS);
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [editGroup, setEditGroup] = useState(null); // group object being edited
+  const [newForm, setNewForm] = useState({ name: '', type: 'Running Club', lead: '' });
+
+  const GROUP_TYPES = ['Running Club', 'Breakfast Club', 'PE Class', 'After-School Club', 'Cross Country'];
+
+  const Modal = ({ title, onClose, children }) => (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 500,
+      background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 16,
+    }} onClick={onClose}>
+      <div style={{
+        background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420,
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ fontWeight: 800, fontSize: 18 }}>{title}</div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: C.muted }}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+
+  const Field = ({ label, value, onChange, placeholder }) => (
+    <div style={{ marginBottom: 16 }}>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{label}</label>
+      <input
+        value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{
+          width: '100%', padding: '11px 14px', borderRadius: 10,
+          border: `1.5px solid ${C.border}`, fontSize: 14,
+          fontFamily: 'Inter, sans-serif', outline: 'none', background: C.white,
+        }}
+      />
+    </div>
+  );
+
+  return (
+    <div className="fade-in">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 28 }}>
+        <div>
+          <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Groups</h1>
+          <p style={{ color: C.muted, marginTop: 4, fontSize: isMobile ? 13 : 14 }}>Manage your running groups</p>
+        </div>
+        <Button size={isMobile ? 'sm' : 'md'} onClick={() => { setEditGroup(null); setNewForm({ name: '', lead: '' }); setShowNewModal(true); }}>
+          + New Group
+        </Button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(300px,1fr))', gap: isMobile ? 12 : 20 }}>
+        {groups.map(g => (
+          <Card key={g.id}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 12, background: C.orangeLight,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+              }}>{g.name.charAt(0)}</div>
+              <Badge label={`${g.members} runners`} bg={C.orangeLight} color={C.orange} />
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{g.name}</div>
+            {g.type && <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>{g.type}</div>}
+            <div style={{ display: 'flex', gap: 20, marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 11, color: C.muted }}>Last event</div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{g.lastEvent}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: C.muted }}>Next event</div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{g.nextEvent}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button size="sm" variant="outline" onClick={() => { setMemberGroupFilter(g.name); setPage('members'); }}>
+                View members
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => { setShowNewModal(false); setEditGroup({ ...g }); }}>
+                Edit
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* New Group Modal */}
+      {showNewModal && (
+        <Modal title="New Group" onClose={() => setShowNewModal(false)}>
+          <Field label="Group name" value={newForm.name} onChange={v => setNewForm(f => ({ ...f, name: v }))} placeholder="e.g. Year 4 Running Club" />
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Type</label>
+            <select
+              value={newForm.type}
+              onChange={e => setNewForm(f => ({ ...f, type: e.target.value }))}
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}
+            >
+              {GROUP_TYPES.map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <Field label="Lead (optional)" value={newForm.lead} onChange={v => setNewForm(f => ({ ...f, lead: v }))} placeholder="e.g. James Carter" />
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+            <Button variant="secondary" onClick={() => setShowNewModal(false)}>Cancel</Button>
+            <Button
+              disabled={!newForm.name.trim()}
+              onClick={() => {
+                if (!newForm.name.trim()) return;
+                setGroups(gs => [...gs, {
+                  id: Date.now(), name: newForm.name.trim(), type: newForm.type,
+                  members: 0, lastEvent: '—', nextEvent: '—',
+                }]);
+                setShowNewModal(false);
+              }}
+            >
+              Create Group
+            </Button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit Group Modal */}
+      {editGroup && (
+        <Modal title="Edit Group" onClose={() => setEditGroup(null)}>
+          <Field label="Group name" value={editGroup.name} onChange={v => setEditGroup(g => ({ ...g, name: v }))} placeholder="Group name" />
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Type</label>
+            <select
+              value={editGroup.type || 'Running Club'}
+              onChange={e => setEditGroup(g => ({ ...g, type: e.target.value }))}
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}
+            >
+              {GROUP_TYPES.map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', marginTop: 8 }}>
+            <Button variant="danger" onClick={() => {
+              if (!window.confirm(`Delete "${editGroup.name}"? This cannot be undone.`)) return;
+              setGroups(gs => gs.filter(g => g.id !== editGroup.id));
+              setEditGroup(null);
+            }}>
+              Delete
+            </Button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Button variant="secondary" onClick={() => setEditGroup(null)}>Cancel</Button>
+              <Button
+                disabled={!editGroup.name.trim()}
+                onClick={() => {
+                  setGroups(gs => gs.map(g => g.id === editGroup.id ? { ...g, name: editGroup.name, type: editGroup.type } : g));
+                  setEditGroup(null);
+                }}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ── MEMBERS PAGE ─────────────────────────────────────────────────────────────
+function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, runners, setRunners }) {
+  const [search, setSearch] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showCSVModal, setShowCSVModal] = useState(false);
+  const [csvPreview, setCsvPreview] = useState(null);
+  const [addForm, setAddForm] = useState({ firstName: '', lastName: '', year: 'Year 5', group: 'Year 5 Running Club' });
+  const csvRef = useRef(null);
+  const isMobile = useIsMobile();
+
+  const filtered = runners.filter(r => {
+    const matchesSearch =
+      r.name.toLowerCase().includes(search.toLowerCase()) ||
+      r.id.toLowerCase().includes(search.toLowerCase()) ||
+      r.group.toLowerCase().includes(search.toLowerCase());
+    const matchesGroup = groupFilter ? r.group === groupFilter : true;
+    return matchesSearch && matchesGroup;
+  });
+
+  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white, boxSizing: 'border-box' };
+
+  function handleAddRunner() {
+    if (!addForm.firstName.trim()) return;
+    const name = `${addForm.firstName.trim()} ${addForm.lastName.trim()}`.trim();
+    const nextNum = runners.length + 1;
+    const id = `CC-${String(nextNum).padStart(4, '0')}`;
+    const newRunner = { id, name, level: 99, pb: '—', group: addForm.group, streak: 0, points: 0, times: [420,420,420,420,420], badges: [] };
+    setRunners([...runners, newRunner]);
+    setAddForm({ firstName: '', lastName: '', year: 'Year 5', group: 'Year 5 Running Club' });
+    setShowAddModal(false);
+  }
+
+  function downloadCSVTemplate() {
+    const template = 'name,group,year\nEmma Johnson,Year 5 Running Club,Year 5\nOliver Smith,Year 6 Running Club,Year 6';
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'carrot-chase-runners-template.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleCSVFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const lines = ev.target.result.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) return;
+      const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+      const nameIdx = headers.indexOf('name');
+      const groupIdx = headers.indexOf('group');
+      const yearIdx = headers.indexOf('year');
+      const parsed = lines.slice(1).map((line, rowIdx) => {
+        const cols = line.split(',').map(c => c.trim());
+        const name = nameIdx >= 0 ? cols[nameIdx] : cols[0] || '';
+        const group = groupIdx >= 0 ? cols[groupIdx] : (cols[1] || 'Year 5 Running Club');
+        const year = yearIdx >= 0 ? cols[yearIdx] : '';
+        const errors = [];
+        if (!name) errors.push('Missing name');
+        if (!group) errors.push('Missing group');
+        return { name: name || '—', group, year, row: rowIdx + 2, errors };
+      });
+      setCsvPreview(parsed);
+      setShowCSVModal(true);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  function confirmCSVImport() {
+    const validRows = csvPreview.filter(r => r.errors.length === 0);
+    const newRunners = validRows.map((r, i) => ({
+      id: `CC-${String(runners.length + i + 1).padStart(4, '0')}`,
+      name: r.name, level: 99, pb: '—', group: r.group, streak: 0, points: 0, times: [420,420,420,420,420], badges: [],
+    }));
+    setRunners([...runners, ...newRunners]);
+    setShowCSVModal(false); setCsvPreview(null);
+  }
+
+  return (
+    <div className="fade-in">
+      {/* Hidden CSV file input */}
+      <input ref={csvRef} type="file" accept=".csv" onChange={handleCSVFile} style={{ display: 'none' }} />
+
+      {/* Add Runner Modal */}
+      {showAddModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 400, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
+            <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 20 }}>Add Runner</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>First name</label>
+                <input value={addForm.firstName} onChange={e => setAddForm(f => ({ ...f, firstName: e.target.value }))} placeholder="e.g. Emma" style={inputStyle} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Last name</label>
+                <input value={addForm.lastName} onChange={e => setAddForm(f => ({ ...f, lastName: e.target.value }))} placeholder="e.g. Johnson" style={inputStyle} />
+              </div>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Year group</label>
+              <select value={addForm.year} onChange={e => setAddForm(f => ({ ...f, year: e.target.value }))} style={inputStyle}>
+                {['Year 3','Year 4','Year 5','Year 6','Other'].map(y => <option key={y}>{y}</option>)}
+              </select>
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Group</label>
+              <select value={addForm.group} onChange={e => setAddForm(f => ({ ...f, group: e.target.value }))} style={inputStyle}>
+                {['Year 5 Running Club','Year 6 Running Club','Breakfast Club','PE Class 4B'].map(g => <option key={g}>{g}</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Button style={{ flex: 1 }} disabled={!addForm.firstName.trim()} onClick={handleAddRunner}>Add Runner</Button>
+              <Button variant="secondary" style={{ flex: 1 }} onClick={() => setShowAddModal(false)}>Cancel</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CSV Preview Modal */}
+      {showCSVModal && csvPreview && (() => {
+        const validRows = csvPreview.filter(r => r.errors.length === 0);
+        const errorRows = csvPreview.filter(r => r.errors.length > 0);
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+            <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 440, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>CSV Preview</div>
+              <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                <span style={{ background: C.successLight, color: C.success, borderRadius: 999, padding: '3px 10px', fontSize: 12, fontWeight: 700 }}>
+                  ✓ {validRows.length} valid
+                </span>
+                {errorRows.length > 0 && (
+                  <span style={{ background: C.dangerLight, color: C.danger, borderRadius: 999, padding: '3px 10px', fontSize: 12, fontWeight: 700 }}>
+                    ✕ {errorRows.length} error{errorRows.length !== 1 ? 's' : ''} — will be skipped
+                  </span>
+                )}
+              </div>
+              {csvPreview.slice(0, 12).map((r, i) => {
+                const hasError = r.errors.length > 0;
+                return (
+                  <div key={i} style={{
+                    padding: '8px 10px', borderRadius: 8, marginBottom: 4, fontSize: 13,
+                    background: hasError ? C.dangerLight : C.bg,
+                    border: `1px solid ${hasError ? '#fca5a5' : C.border}`,
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600, color: hasError ? C.danger : C.text }}>
+                        {hasError ? '✕' : '✓'} {r.name !== '—' ? r.name : '(no name)'}
+                      </span>
+                      <span style={{ color: C.muted, fontSize: 12 }}>{r.group}</span>
+                    </div>
+                    {hasError && <div style={{ fontSize: 11, color: C.danger, marginTop: 2 }}>Row {r.row}: {r.errors.join(', ')}</div>}
+                  </div>
+                );
+              })}
+              {csvPreview.length > 12 && <div style={{ fontSize: 12, color: C.muted, padding: '6px 0' }}>…and {csvPreview.length - 12} more rows</div>}
+              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                <Button style={{ flex: 1 }} disabled={validRows.length === 0} onClick={confirmCSVImport}>
+                  Import {validRows.length} Runner{validRows.length !== 1 ? 's' : ''}
+                </Button>
+                <Button variant="secondary" style={{ flex: 1 }} onClick={() => { setShowCSVModal(false); setCsvPreview(null); }}>Cancel</Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div>
+          <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>
+            {groupFilter ? groupFilter : 'Members'}
+          </h1>
+          <p style={{ color: C.muted, marginTop: 4 }}>
+            {filtered.length} runner{filtered.length !== 1 ? 's' : ''}{groupFilter ? ` · ` : ` registered`}
+            {groupFilter && (
+              <button onClick={() => setGroupFilter(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.orange, fontFamily: 'Inter', fontSize: 13, padding: 0 }}>
+                Clear filter
+              </button>
+            )}
+          </p>
+        </div>
+        {!isMobile && (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <Button variant="ghost" size="sm" onClick={downloadCSVTemplate}>⬇ Template</Button>
+            <Button variant="secondary" onClick={() => csvRef.current?.click()}>⬆ Import CSV</Button>
+            <Button onClick={() => setShowAddModal(true)}>+ Add Runner</Button>
+          </div>
+        )}
+        {isMobile && <Button size="sm" onClick={() => setShowAddModal(true)}>+ Add</Button>}
+      </div>
+
+      <Card style={{ padding: isMobile ? 12 : 24 }}>
+        <div style={{ marginBottom: 16, position: 'relative' }}>
+          <input
+            type="text"
+            placeholder="Search by name, ID, or group..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{
+              width: '100%', padding: '10px 36px 10px 14px', borderRadius: 12,
+              border: `1.5px solid ${C.border}`, fontSize: 14,
+              fontFamily: 'Inter, sans-serif', background: C.bg, outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              style={{
+                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                background: C.muted, color: '#fff', border: 'none', borderRadius: '50%',
+                width: 20, height: 20, cursor: 'pointer', fontSize: 12, lineHeight: '20px',
+                textAlign: 'center', padding: 0, fontFamily: 'Inter, sans-serif',
+              }}
+            >✕</button>
+          )}
+        </div>
+
+        {isMobile ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {filtered.map(r => {
+              const lc = levelColor(r.level);
+              return (
+                <div key={r.id} style={{ border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 14px', background: C.bg, cursor: 'pointer' }}
+                  onClick={() => { setSelectedRunner(r); setPage('runnerprofile'); }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>{r.name}</div>
+                    <span style={{
+                      background: lc.bg, color: lc.color, border: `1px solid ${lc.border}`,
+                      borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700,
+                    }}>L{r.level}</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: 12 }}>
+                    <div><span style={{ color: C.muted }}>ID </span><span style={{ fontFamily: 'monospace' }}>{r.id}</span></div>
+                    <div><span style={{ color: C.muted }}>PB </span><span style={{ fontWeight: 600 }}>{r.pb}</span></div>
+                    <div><span style={{ color: C.muted }}>Streak </span><span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}🔥</span></div>
+                    <div><span style={{ color: C.muted }}>Points </span><span style={{ fontWeight: 700 }}>{r.points.toLocaleString()}</span></div>
+                    <div style={{ gridColumn: '1 / -1' }}><span style={{ color: C.muted }}>Group </span><span style={{ fontWeight: 600 }}>{r.group}</span></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                  {['Runner ID', 'Name', 'Level', 'PB', 'Group', 'Streak', 'Points', ''].map(h => (
+                    <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 12, whiteSpace: 'nowrap' }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(r => {
+                  const lc = levelColor(r.level);
+                  return (
+                    <tr
+                      key={r.id}
+                      style={{ borderBottom: `1px solid ${C.border}`, cursor: 'pointer' }}
+                      onClick={() => { setSelectedRunner(r); setPage('runnerprofile'); }}
+                    >
+                      <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: 12, color: C.muted }}>{r.id}</td>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>{r.name}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{
+                          background: lc.bg, color: lc.color, border: `1px solid ${lc.border}`,
+                          borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700,
+                        }}>
+                          L{r.level}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', fontWeight: 600 }}>{r.pb}</td>
+                      <td style={{ padding: '12px', color: C.muted, fontSize: 13 }}>{r.group}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}🔥</span>
+                      </td>
+                      <td style={{ padding: '12px', fontWeight: 700 }}>{r.points.toLocaleString()}</td>
+                      <td style={{ padding: '12px' }}>
+                        <Button size="sm" variant="ghost">View →</Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ── EVENTS PAGE ──────────────────────────────────────────────────────────────
+function EventsPage({ setPage }) {
+  const isMobile = useIsMobile();
+  const upcoming = EVENTS.filter(e => e.status === 'upcoming');
+  const completed = EVENTS.filter(e => e.status === 'completed');
+
+  const EventCard = ({ ev }) => {
+    const s = statusBadge(ev.status);
+    return (
+      <div style={{
+        padding: '14px 0', borderBottom: `1px solid ${C.border}`,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 3 }}>{ev.name}</div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>{ev.date} · {ev.group}</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
+              <Badge label={s.label} bg={s.bg} color={s.color} />
+              <span style={{ fontSize: 12, color: C.muted, alignSelf: 'center' }}>{ev.runners} runners</span>
+            </div>
+          </div>
+          {ev.status === 'upcoming' && (
+            <Button size="sm" onClick={() => setPage('runevent')} style={{ flexShrink: 0 }}>Run →</Button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  if (isMobile) {
+    return (
+      <div className="fade-in">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 800 }}>Events</h1>
+            <p style={{ color: C.muted, marginTop: 2, fontSize: 13 }}>Scheduled and past events</p>
+          </div>
+          <Button size="sm" onClick={() => setPage('createevent')}>+ Create</Button>
+        </div>
+
+        <Card style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>Upcoming</div>
+            <Badge label={upcoming.length} bg={C.blueLight} color={C.blue} />
+          </div>
+          {upcoming.length === 0 && <div style={{ color: C.muted, fontSize: 13, padding: '12px 0' }}>No upcoming events</div>}
+          {upcoming.map(ev => <EventCard key={ev.id} ev={ev} />)}
+        </Card>
+
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>Recent Results</div>
+            <Badge label={completed.length} bg="#f3f4f6" color={C.muted} />
+          </div>
+          {completed.length === 0 && <div style={{ color: C.muted, fontSize: 13, padding: '12px 0' }}>No completed events yet</div>}
+          {completed.map(ev => <EventCard key={ev.id} ev={ev} />)}
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+        <div>
+          <h1 style={{ fontSize: 26, fontWeight: 800 }}>Events</h1>
+          <p style={{ color: C.muted, marginTop: 4 }}>All scheduled and past events</p>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Button variant="secondary" onClick={() => setPage('createevent')}>+ Create Event</Button>
+          <Button onClick={() => setPage('runevent')}>▶ Run Event</Button>
+        </div>
+      </div>
+
+      <Card>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+              {['Event', 'Group', 'Date', 'Format', 'Runners', 'Status', ''].map(h => (
+                <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 12 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {EVENTS.map(ev => {
+              const s = statusBadge(ev.status);
+              return (
+                <tr key={ev.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                  <td style={{ padding: '12px', fontWeight: 600 }}>{ev.name}</td>
+                  <td style={{ padding: '12px', color: C.muted, fontSize: 13 }}>{ev.group}</td>
+                  <td style={{ padding: '12px', color: C.muted }}>{ev.date}</td>
+                  <td style={{ padding: '12px' }}>
+                    <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
+                  </td>
+                  <td style={{ padding: '12px' }}>{ev.runners}</td>
+                  <td style={{ padding: '12px' }}><Badge label={s.label} bg={s.bg} color={s.color} /></td>
+                  <td style={{ padding: '12px' }}>
+                    {ev.status === 'upcoming' && (
+                      <Button size="sm" onClick={() => setPage('runevent')}>Run →</Button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+}
+
+// ── CREATE EVENT WIZARD ──────────────────────────────────────────────────────
+function CreateEventPage({ setPage, runners }) {
+  const liveRunners = runners || RUNNERS;
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({
+    group: 'Year 6 Running Club',
+    format: 'Handicap',
+    course: '1.5km Loop',
+    date: '2026-05-21',
+    time: '15:30',
+  });
+
+  const steps = ['Details', 'Review', 'Confirm'];
+
+  return (
+    <div className="fade-in">
+      <div style={{ marginBottom: 28 }}>
+        <button
+          onClick={() => setPage('events')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter', marginBottom: 8 }}
+        >
+          ← Back to Events
+        </button>
+        <h1 style={{ fontSize: 26, fontWeight: 800 }}>Create Event</h1>
+      </div>
+
+      {/* Step indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, maxWidth: 500 }}>
+        {steps.map((s, i) => {
+          const n = i + 1;
+          const active = step === n;
+          const done = step > n;
+          return (
+            <React.Fragment key={n}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 14,
+                  background: done ? C.success : active ? C.orange : '#e8e0d8',
+                  color: (done || active) ? C.white : C.muted,
+                }}>
+                  {done ? '✓' : n}
+                </div>
+                <span style={{ fontWeight: active ? 700 : 500, color: active ? C.text : C.muted, fontSize: 14 }}>{s}</span>
+              </div>
+              {i < steps.length - 1 && (
+                <div style={{ flex: 1, height: 2, background: step > n ? C.success : C.border }} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+
+      <Card style={{ maxWidth: 600 }}>
+        {step === 1 && (
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 20 }}>Step 1: Event Details</div>
+            {[
+              { label: 'Group', key: 'group', type: 'select', options: GROUPS.map(g => g.name) },
+              { label: 'Format', key: 'format', type: 'select', options: ['Handicap', 'Scratch', 'Relay'] },
+              { label: 'Course', key: 'course', type: 'select', options: ['1.5km Loop', '2km Track', '5km Road', 'Cross Country'] },
+              { label: 'Date', key: 'date', type: 'date' },
+              { label: 'Time', key: 'time', type: 'time' },
+            ].map(f => (
+              <div key={f.key} style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
+                {f.type === 'select' ? (
+                  <select
+                    value={form[f.key]}
+                    onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: 12,
+                      border: `1.5px solid ${C.border}`, fontSize: 14,
+                      fontFamily: 'Inter, sans-serif', background: C.white,
+                    }}
+                  >
+                    {f.options.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                ) : (
+                  <input
+                    type={f.type}
+                    value={form[f.key]}
+                    onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: 12,
+                      border: `1.5px solid ${C.border}`, fontSize: 14,
+                      fontFamily: 'Inter, sans-serif', background: C.white,
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+            <Button size="lg" onClick={() => setStep(2)}>Next: Review Runners →</Button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>Step 2: Review Runners</div>
+            <div style={{ color: C.muted, fontSize: 14, marginBottom: 20 }}>
+              {form.group} · {form.format} · {form.course} · {form.date} {form.time}
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              {liveRunners.filter(r => r.group === form.group).map(r => {
+                const lc = levelColor(r.level);
+                return (
+                  <div key={r.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 0', borderBottom: `1px solid ${C.border}`,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: '50%', background: lc.bg,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: 13, color: lc.color,
+                      }}>
+                        L{r.level}
+                      </div>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</span>
+                    </div>
+                    <span style={{ fontSize: 12, color: C.muted }}>PB: {r.pb}</span>
+                  </div>
+                );
+              })}
+            </div>
+            {(() => {
+              const rc = liveRunners.filter(r => r.group === form.group).length;
+              const onCourse = Math.max(1, Math.ceil(rc / 8));
+              const total = onCourse + 2;
+              return (
+                <div style={{ background: C.orangeLight, borderRadius: 12, padding: 16, marginBottom: 20, fontSize: 13 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>📋 Marshal Requirements</div>
+                  <div style={{ marginBottom: 4 }}>
+                    <strong>Recommended: {total} marshals</strong> for {rc} runners on {form.course}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, color: C.muted }}>
+                    <span>• 1× Start marshal</span>
+                    <span>• 1× Finish marshal</span>
+                    <span>• {onCourse}× On-course marshal{onCourse !== 1 ? 's' : ''} (approx. 1 per {Math.ceil(rc / onCourse)} runners)</span>
+                  </div>
+                  {form.format === 'Handicap' && (
+                    <div style={{ marginTop: 8, fontSize: 12, color: C.orange, fontWeight: 600 }}>
+                      Handicap format — staggered starts by level group. Marshals must know start order.
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Button variant="secondary" onClick={() => setStep(1)}>← Back</Button>
+              <Button onClick={() => setStep(3)}>Next: Confirm →</Button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 20 }}>Step 3: Confirm Event</div>
+            <div style={{ background: C.bg, borderRadius: 12, padding: 20, marginBottom: 20 }}>
+              {[
+                { label: 'Group', value: form.group },
+                { label: 'Format', value: form.format },
+                { label: 'Course', value: form.course },
+                { label: 'Date & Time', value: `${form.date} at ${form.time}` },
+                { label: 'Runners', value: `${liveRunners.filter(r => r.group === form.group).length} registered` },
+              ].map(item => (
+                <div key={item.label} style={{
+                  display: 'flex', justifyContent: 'space-between',
+                  padding: '8px 0', borderBottom: `1px solid ${C.border}`, fontSize: 14,
+                }}>
+                  <span style={{ color: C.muted, fontWeight: 500 }}>{item.label}</span>
+                  <span style={{ fontWeight: 600 }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Button variant="secondary" onClick={() => setStep(2)}>← Back</Button>
+              <Button size="lg" onClick={() => { alert(`Event created!\n\n${form.group} · ${form.format} · ${form.course}\n${form.date} at ${form.time}\n\n[In production this would save to the database]`); setPage('events'); }}>✓ Create Event</Button>
+            </div>
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ── RUN EVENT FLOW ───────────────────────────────────────────────────────────
+function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
+  const [runList, setRunList] = useState(runners.slice(0, 8));
+  const RUN_RUNNERS = runList;
+  const [step, setStep] = useState(1);
+  const [attendance, setAttendance] = useState(
+    Object.fromEntries(runners.slice(0, 8).map(r => [r.id, null]))
+  );
+  const [showLateModal, setShowLateModal] = useState(false);
+  const [lateForm, setLateForm] = useState({ name: '' });
+  const [groupStarted, setGroupStarted] = useState(0);
+  const [countdown, setCountdown] = useState(null);
+  const audioCtxRef = useRef(null);
+
+  function getAudioCtx() {
+    if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtxRef.current;
+  }
+
+  function playTone(freq, duration, gain = 0.18, type = 'sine', startOffset = 0) {
+    try {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const vol = ctx.createGain();
+      osc.connect(vol);
+      vol.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.value = freq;
+      vol.gain.setValueAtTime(gain, ctx.currentTime + startOffset);
+      vol.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startOffset + duration);
+      osc.start(ctx.currentTime + startOffset);
+      osc.stop(ctx.currentTime + startOffset + duration);
+    } catch(e) {}
+  }
+
+  function playGroupStart() {
+    // Three ascending beeps then a higher GO tone
+    playTone(440, 0.12, 0.2, 'sine', 0.0);
+    playTone(550, 0.12, 0.2, 'sine', 0.18);
+    playTone(660, 0.12, 0.2, 'sine', 0.36);
+    playTone(880, 0.35, 0.28, 'sine', 0.55);
+  }
+
+  function playCountdownTick() {
+    playTone(330, 0.08, 0.08, 'sine');
+  }
+
+  const [tapTimes, setTapTimes] = useState([]);
+  const [tapping, setTapping] = useState(false);
+  const [positions, setPositions] = useState(Array(8).fill(null));
+  const [selectedPos, setSelectedPos] = useState(0);
+  const [assignedRunners, setAssignedRunners] = useState(new Set());
+  const [dnfRunnerNames, setDnfRunnerNames] = useState(new Set());
+  const intervalRef = useRef(null);
+  const [raceTime, setRaceTime] = useState(0);
+  const raceRef = useRef(null);
+  const raceStartRef = useRef(null);
+  const tapCount = tapTimes.length;
+
+  const presentRunners = RUN_RUNNERS.filter(r => attendance[r.id] === true);
+  const presentCount = presentRunners.length;
+
+  // Stagger groups — high level = slow = starts first; sorted within each bucket by carrotTarget (slowest first)
+  const sortByTarget = arr => [...arr].sort((a, b) => (carrotTarget(b) || 999) - (carrotTarget(a) || 999));
+  const groupSlow = sortByTarget(presentRunners.filter(r => r.level >= 65));   // L65–99: beginners, start first
+  const groupMid  = sortByTarget(presentRunners.filter(r => r.level >= 45 && r.level < 65));
+  const groupFast = sortByTarget(presentRunners.filter(r => r.level < 45));    // L1–44: elite, start last
+  const startGroups = [groupSlow, groupMid, groupFast].filter(g => g.length > 0);
+
+  // Dynamic stagger gap: diff between group targets, clamped 10-60s
+  function staggerGap(gi) {
+    if (gi + 1 >= startGroups.length) return 0;
+    const slowGroup = startGroups[gi];
+    const fastGroup = startGroups[gi + 1];
+    const slowTarget = carrotTarget(slowGroup[slowGroup.length - 1]);
+    const fastTarget = carrotTarget(fastGroup[0]);
+    if (!slowTarget || !fastTarget) return 10;
+    return Math.min(60, Math.max(10, Math.round(Math.abs(slowTarget - fastTarget) / 2)));
+  }
+
+  useEffect(() => {
+    if (step === 3) {
+      raceStartRef.current = Date.now();
+      raceRef.current = setInterval(() => setRaceTime(t => t + 1), 1000);
+    }
+    return () => { if (raceRef.current) clearInterval(raceRef.current); };
+  }, [step]);
+
+  useEffect(() => {
+    if (countdown !== null && countdown > 0) {
+      playCountdownTick();
+      intervalRef.current = setTimeout(() => setCountdown(c => c - 1), 1000);
+    }
+    if (countdown === 0) { setCountdown(null); }
+    return () => clearTimeout(intervalRef.current);
+  }, [countdown]);
+
+  function fmtTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  }
+
+  function handleTap() {
+    if (tapTimes.length >= presentCount) return;
+    setTapping(true);
+    setTimeout(() => setTapping(false), 300);
+    const elapsed = raceStartRef.current ? Math.round((Date.now() - raceStartRef.current) / 1000) : 0;
+    setTapTimes(prev => [...prev, elapsed]);
+  }
+
+  function handleAssign(runnerName) {
+    if (selectedPos === null) return;
+    const newPos = [...positions];
+    // If this runner was already assigned elsewhere, free that slot
+    const prevIdx = newPos.indexOf(runnerName);
+    if (prevIdx !== -1) { newPos[prevIdx] = null; }
+    // If the target position already has a different runner, free them
+    const displaced = newPos[selectedPos];
+    newPos[selectedPos] = runnerName;
+    setPositions(newPos);
+    const newAssigned = new Set(assignedRunners);
+    if (displaced && displaced !== runnerName) newAssigned.delete(displaced);
+    newAssigned.add(runnerName);
+    setAssignedRunners(newAssigned);
+    // Move to next empty
+    const nextEmpty = newPos.findIndex((p, i) => i > selectedPos && p === null);
+    setSelectedPos(nextEmpty === -1 ? null : nextEmpty);
+    // If runner was previously DNF'd, clear that
+    setDnfRunnerNames(prev => { const s = new Set(prev); s.delete(runnerName); return s; });
+  }
+
+  function handleMarkDNF(runnerName) {
+    setDnfRunnerNames(prev => new Set([...prev, runnerName]));
+  }
+
+  function handleUndoDNF(runnerName) {
+    setDnfRunnerNames(prev => { const s = new Set(prev); s.delete(runnerName); return s; });
+  }
+
+  const allMatched = positions.slice(0, presentCount).every(p => p !== null);
+  const ordinalPos = (n) => {
+    const s = ['th','st','nd','rd'];
+    const v = n % 100;
+    return n + (s[(v-20)%10] || s[v] || s[0]);
+  };
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: 24, minHeight: '100vh', background: C.bg }}>
+      <div style={{ width: '100%', maxWidth: 480 }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+          <button
+            onClick={() => step === 1 ? setPage('events') : setStep(s => s - 1)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: C.muted }}
+          >
+            ←
+          </button>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 18 }}>Year 6 Handicap Run #14</div>
+            <div style={{ fontSize: 12, color: C.muted }}>
+              Step {step} of 4 · {['Attendance', 'Start Order', 'Finish Recording', 'Name Match'][step-1]}
+            </div>
+          </div>
+        </div>
+
+        {/* Step progress bar */}
+        <div style={{ display: 'flex', gap: 4, marginBottom: 24 }}>
+          {[1,2,3,4].map(s => (
+            <div key={s} style={{
+              flex: 1, height: 4, borderRadius: 99,
+              background: s <= step ? C.orange : C.border,
+              transition: 'background 0.3s',
+            }} />
+          ))}
+        </div>
+
+        {/* ─ Step 1: Attendance ─ */}
+        {step === 1 && (
+          <div className="fade-in">
+            <Card style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div style={{ fontWeight: 700, fontSize: 16 }}>Mark Attendance</div>
+                <div style={{
+                  background: presentCount > 0 ? C.successLight : C.dangerLight,
+                  color: presentCount > 0 ? C.success : C.danger,
+                  borderRadius: 999, padding: '4px 12px', fontWeight: 700, fontSize: 14,
+                }}>
+                  {presentCount}/{RUN_RUNNERS.length} present
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div style={{ fontSize: 12, color: C.muted }}>
+                  Tap <strong>✓</strong> to mark present · <strong>DNS</strong> = did not start
+                </div>
+                <button
+                  onClick={() => setAttendance(Object.fromEntries(RUN_RUNNERS.map(r => [r.id, true])))}
+                  style={{
+                    background: C.successLight, color: C.success, border: `1px solid ${C.success}`,
+                    borderRadius: 8, padding: '5px 10px', fontSize: 11, fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'Inter, sans-serif', flexShrink: 0, marginLeft: 8,
+                  }}
+                >
+                  ✓ All present
+                </button>
+              </div>
+              {RUN_RUNNERS.map(r => {
+                const present = attendance[r.id] === true;
+                const absent = attendance[r.id] === false;
+                const lc = levelColor(r.level);
+                return (
+                  <div
+                    key={r.id}
+                    onClick={() => setAttendance(prev => ({ ...prev, [r.id]: prev[r.id] === true ? null : true }))}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 0', borderBottom: `1px solid ${C.border}`,
+                      cursor: 'pointer', borderRadius: 8,
+                      background: present ? '#f0fdf4' : absent ? '#fff5f5' : 'transparent',
+                      marginLeft: -8, marginRight: -8, paddingLeft: 8, paddingRight: 8,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        width: 36, height: 36, borderRadius: '50%', background: lc.bg,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: 12, color: lc.color,
+                      }}>
+                        L{r.level}
+                      </div>
+                      <span style={{ fontWeight: 600, fontSize: 15 }}>{r.name}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        onClick={e => { e.stopPropagation(); setAttendance(prev => ({ ...prev, [r.id]: true })); }}
+                        style={{
+                          width: 44, height: 36, borderRadius: 8, border: `2px solid`,
+                          borderColor: present ? C.success : C.border,
+                          background: present ? C.successLight : 'transparent',
+                          cursor: 'pointer', fontSize: 13, fontWeight: 700,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: present ? C.success : C.muted, fontFamily: 'Inter',
+                        }}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={e => { e.stopPropagation(); setAttendance(prev => ({ ...prev, [r.id]: false })); }}
+                        style={{
+                          width: 44, height: 36, borderRadius: 8, border: `2px solid`,
+                          borderColor: absent ? C.danger : C.border,
+                          background: absent ? C.dangerLight : 'transparent',
+                          cursor: 'pointer', fontSize: 11, fontWeight: 700,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: absent ? C.danger : C.muted, fontFamily: 'Inter',
+                        }}
+                      >
+                        DNS
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </Card>
+            {/* Late arrival modal */}
+            {showLateModal && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+                <div style={{ background: C.white, borderRadius: 20, padding: 24, width: '100%', maxWidth: 360, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }} onClick={e => e.stopPropagation()}>
+                  <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Late Arrival</div>
+                  <div style={{ fontSize: 13, color: C.muted, marginBottom: 16 }}>Add a runner who turned up after registration closed.</div>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>Full name</label>
+                  <input
+                    value={lateForm.name}
+                    onChange={e => setLateForm({ name: e.target.value })}
+                    placeholder="e.g. Mia Robinson"
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', marginBottom: 16, boxSizing: 'border-box' }}
+                    autoFocus
+                  />
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <Button style={{ flex: 1 }} disabled={!lateForm.name.trim()}
+                      onClick={() => {
+                        const newR = { id: `LATE-${Date.now()}`, name: lateForm.name.trim(), level: 99, pb: '—', group: '—', streak: 0, points: 0, times: [420,420,420,420,420], badges: [] };
+                        setRunList(prev => [...prev, newR]);
+                        setAttendance(prev => ({ ...prev, [newR.id]: true }));
+                        setLateForm({ name: '' });
+                        setShowLateModal(false);
+                      }}>
+                      Add &amp; Mark Present
+                    </Button>
+                    <Button variant="secondary" style={{ flex: 1 }} onClick={() => { setShowLateModal(false); setLateForm({ name: '' }); }}>Cancel</Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+              <Button
+                variant="secondary"
+                style={{ flex: 'none' }}
+                onClick={() => setShowLateModal(true)}
+              >
+                + Late arrival
+              </Button>
+              <Button
+                size="xl"
+                style={{ flex: 1, justifyContent: 'center' }}
+                onClick={() => setStep(2)}
+                disabled={presentCount < 2}
+              >
+                Begin Race ({presentCount} runners) →
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* ─ Step 2: Start Order ─ */}
+        {step === 2 && (
+          <div className="fade-in">
+            <div style={{ marginBottom: 16, color: C.muted, fontSize: 14 }}>
+              Handicap stagger: slower runners start first for a fair finish.
+            </div>
+            {startGroups.map((grp, gi) => {
+              const started = groupStarted > gi;
+              const current = groupStarted === gi;
+              const waiting = groupStarted < gi;
+              return (
+                <Card key={gi} style={{ marginBottom: 16, opacity: waiting ? 0.5 : 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700, fontSize: 15 }}>
+                      Group {gi + 1} {gi === 0 ? '(Slowest — first to start)' : gi === startGroups.length - 1 ? '(Fastest — last to start)' : '(Middle)'}
+                    </div>
+                    {started && <Badge label="Started ✓" bg={C.successLight} color={C.success} />}
+                  </div>
+                  {grp.map(r => {
+                    const lc = levelColor(r.level);
+                    return (
+                      <div key={r.id} style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '6px 0', borderBottom: `1px solid ${C.border}`,
+                      }}>
+                        <span style={{
+                          background: lc.bg, color: lc.color, borderRadius: 999,
+                          padding: '2px 8px', fontSize: 12, fontWeight: 700,
+                        }}>L{r.level}</span>
+                        <span style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</span>
+                        <span style={{ fontSize: 11, color: C.muted, marginLeft: 'auto' }}>🎯 {fmtSecs(carrotTarget(r))}</span>
+                      </div>
+                    );
+                  })}
+
+                  {current && countdown === null && (
+                    <Button
+                      size="lg"
+                      style={{ width: '100%', justifyContent: 'center', marginTop: 16 }}
+                      onClick={() => {
+                        playGroupStart();
+                        setGroupStarted(gi + 1);
+                        const gap = staggerGap(gi);
+                        if (gi + 1 < startGroups.length) { setCountdown(gap); }
+                        else { setStep(3); }
+                      }}
+                    >
+                      START GROUP {gi + 1}
+                    </Button>
+                  )}
+                  {current && countdown !== null && (
+                    <div style={{
+                      marginTop: 16, textAlign: 'center', padding: 16,
+                      background: C.orangeLight, borderRadius: 12,
+                    }}>
+                      <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>GROUP {gi + 2} STARTS IN · {staggerGap(gi)}s gap based on pace</div>
+                      <div style={{ fontSize: 40, fontWeight: 800, color: C.orange, fontVariantNumeric: 'tabular-nums' }}>
+                        {fmtTime(countdown)}
+                      </div>
+                      <button onClick={() => setCountdown(0)} style={{ marginTop: 8, fontSize: 11, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>skip countdown</button>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+            {groupStarted === startGroups.length && countdown === null && (
+              <Button size="xl" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setStep(3)}>
+                All groups started → Begin Recording
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* ─ Step 3: Finish Recording ─ */}
+        {step === 3 && (
+          <div className="fade-in">
+            <Card style={{ marginBottom: 16, textAlign: 'center' }}>
+              <div style={{ fontSize: 13, color: C.muted, marginBottom: 4 }}>Race time</div>
+              <div style={{ fontSize: 48, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: C.text }}>
+                {fmtTime(raceTime)}
+              </div>
+            </Card>
+
+            <button
+              onClick={handleTap}
+              disabled={tapCount >= presentCount}
+              style={{
+                width: '100%', padding: '36px 24px', borderRadius: 20,
+                background: tapCount >= presentCount ? '#ccc' : C.orange,
+                color: C.white, fontSize: 22, fontWeight: 800, border: 'none',
+                cursor: tapCount >= presentCount ? 'default' : 'pointer',
+                fontFamily: 'Inter, sans-serif', marginBottom: 16,
+                animation: tapping ? 'flash 0.3s ease' : 'none',
+                boxShadow: '0 4px 20px rgba(212,82,10,0.35)',
+                transition: 'background 0.15s',
+              }}
+            >
+              {tapCount >= presentCount ? '✓ All runners accounted for!' : 'TAP WHEN RUNNER FINISHES'}
+            </button>
+
+            {tapCount > 0 && (
+              <Card style={{ marginBottom: 16, textAlign: 'center' }}>
+                <div style={{ fontSize: 40, fontWeight: 800, color: C.orange }}>{tapCount}</div>
+                <div style={{ color: C.muted, fontSize: 14 }}>
+                  {tapCount === 1 ? 'finisher recorded' : 'finishers recorded'}
+                </div>
+                <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+                  {tapTimes.map((t, i) => (
+                    <span key={i} style={{
+                      background: C.orangeLight, color: C.orange, borderRadius: 999,
+                      padding: '2px 10px', fontSize: 13, fontWeight: 700,
+                    }}>
+                      {ordinalPos(i + 1)} · {fmtSecs(t)}
+                    </span>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {tapCount >= presentCount && (
+              <Button
+                size="xl"
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={() => setStep(4)}
+              >
+                Match Names →
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* ─ Step 4: Name Match ─ */}
+        {step === 4 && (() => {
+          const allRunnersAccountedFor = presentRunners.every(r =>
+            assignedRunners.has(r.name) || dnfRunnerNames.has(r.name)
+          );
+          const allPositionsFilled = positions.slice(0, tapCount).every(p => p !== null);
+          const allResolved = allRunnersAccountedFor && allPositionsFilled;
+          const unaccountedRunners = presentRunners.filter(r =>
+            !assignedRunners.has(r.name) && !dnfRunnerNames.has(r.name)
+          ).length;
+          const emptyPositions = positions.slice(0, tapCount).filter(p => p === null).length;
+          return (
+          <div className="fade-in">
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Match finish positions to runners</div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 16 }}>Tap a position, then tap a runner to assign. Use DNF for runners who didn't finish.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+              {/* Positions */}
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 8, textTransform: 'uppercase' }}>Positions</div>
+                {tapTimes.map((t, i) => {
+                  const isDNF = positions[i] === '__DNF__';
+                  const isSel = selectedPos === i;
+                  return (
+                    <div key={i} style={{ marginBottom: 6 }}>
+                      <div
+                        onClick={() => !isDNF && setSelectedPos(i)}
+                        style={{
+                          padding: '8px 10px', borderRadius: 10,
+                          border: `2px solid ${isSel ? C.orange : isDNF ? C.danger : C.border}`,
+                          background: isDNF ? C.dangerLight : isSel ? C.orangeLight : C.white,
+                          cursor: isDNF ? 'default' : 'pointer', fontSize: 13,
+                          display: 'flex', alignItems: 'center', gap: 6,
+                        }}
+                      >
+                        <span style={{ fontWeight: 700, color: isDNF ? C.danger : C.orange, minWidth: 26, fontSize: 12 }}>{ordinalPos(i+1)}</span>
+                        <span style={{ flex: 1, fontWeight: 600, color: positions[i] && !isDNF ? C.text : C.muted, fontSize: 13 }}>
+                          {isDNF ? 'DNF' : positions[i] || '—'}
+                        </span>
+                        <span style={{ fontSize: 11, color: C.muted }}>{fmtSecs(t)}</span>
+                        {isDNF && (
+                          <button onClick={(e) => { e.stopPropagation(); const np=[...positions]; np[i]=null; setPositions(np); setSelectedPos(i); }}
+                            style={{ background:'none', border:'none', color:C.muted, cursor:'pointer', fontSize:16, lineHeight:1, padding:'0 2px', fontFamily:'Inter' }}>
+                            ✕
+                          </button>
+                        )}
+                        {!isDNF && !positions[i] && allRunnersAccountedFor && (
+                          <button onClick={(e) => { e.stopPropagation(); const np=[...positions]; np[i]='__DNF__'; setPositions(np); }}
+                            style={{ background:C.dangerLight, border:`1px solid ${C.danger}`, color:C.danger, cursor:'pointer',
+                              fontSize:10, borderRadius:6, padding:'2px 6px', fontWeight:700, whiteSpace:'nowrap', fontFamily:'Inter' }}>
+                            DNF
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Runners */}
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 8, textTransform: 'uppercase' }}>Runners</div>
+                {[...presentRunners].sort((a,b) => a.name.localeCompare(b.name)).map(r => {
+                  const isAssigned = assignedRunners.has(r.name);
+                  const isDNF = dnfRunnerNames.has(r.name);
+                  return (
+                    <div key={r.id} style={{ marginBottom: 6 }}>
+                      {isDNF ? (
+                        <div style={{
+                          padding: '10px 12px', borderRadius: 10,
+                          border: `2px solid ${C.danger}`, background: C.dangerLight,
+                          display: 'flex', alignItems: 'center', gap: 6,
+                        }}>
+                          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.danger, textDecoration: 'line-through' }}>{r.name}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: C.danger, letterSpacing: 0.5 }}>DNF</span>
+                          <button onClick={() => handleUndoDNF(r.name)}
+                            style={{ background:'none', border:`1px solid ${C.muted}`, color:C.muted, cursor:'pointer',
+                              fontSize:10, borderRadius:6, padding:'2px 6px', fontFamily:'Inter' }}>
+                            Undo
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: 5, alignItems: 'stretch' }}>
+                          <div onClick={() => !isAssigned && handleAssign(r.name)} style={{
+                            flex: 1, padding: '10px 10px', borderRadius: 10,
+                            border: `2px solid ${isAssigned ? '#e5e7eb' : C.border}`,
+                            background: isAssigned ? '#f9fafb' : C.white,
+                            cursor: isAssigned ? 'default' : 'pointer', fontSize: 13,
+                            opacity: isAssigned ? 0.4 : 1,
+                            textDecoration: isAssigned ? 'line-through' : 'none',
+                            fontWeight: 500, color: C.text,
+                            display: 'flex', alignItems: 'center',
+                          }}>
+                            {r.name}
+                          </div>
+                          {!isAssigned && (
+                            <button onClick={() => handleMarkDNF(r.name)} style={{
+                              background: C.dangerLight, color: C.danger,
+                              border: `2px solid ${C.danger}`,
+                              borderRadius: 10, padding: '0 10px', fontSize: 12, fontWeight: 700,
+                              cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'Inter',
+                            }}>
+                              DNF
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {!allResolved && (() => {
+              const parts = [];
+              if (emptyPositions > 0) parts.push(`${emptyPositions} position${emptyPositions !== 1 ? 's' : ''} unassigned`);
+              if (unaccountedRunners > 0) parts.push(`${unaccountedRunners} runner${unaccountedRunners !== 1 ? 's' : ''} need${unaccountedRunners === 1 ? 's' : ''} assigning or DNF`);
+              return (
+                <div style={{
+                  background: C.warningLight, border: `1px solid #fde68a`, borderRadius: 10,
+                  padding: '10px 14px', marginBottom: 12, fontSize: 13, color: C.warning, fontWeight: 600,
+                }}>
+                  ⚠ {parts.join(' · ')}
+                </div>
+              );
+            })()}
+            <Button size="xl" style={{ width: '100%', justifyContent: 'center' }} disabled={!allResolved}
+              onClick={() => {
+                // Build stagger offsets per runner: raceStartRef fires when LAST group starts.
+                // Earlier groups (slower) started before the timer, so add their head-start back.
+                // Last group (index N-1) = 0 offset; first group (index 0) = sum of all gaps.
+                const groupOffsets = startGroups.map((_, gi) => {
+                  let offset = 0;
+                  for (let j = gi; j < startGroups.length - 1; j++) offset += staggerGap(j);
+                  return offset;
+                });
+                const runnerGroupIdx = (runner) => startGroups.findIndex(g => g.some(r => r.id === runner.id));
+
+                const finishers = tapTimes.map((rawTime, i) => {
+                  const name = positions[i];
+                  if (name === '__DNF__' || !name) return { pos: i + 1, runnerId: null, rawTime, adjTime: rawTime, dnf: true };
+                  const runner = presentRunners.find(r => r.name === name);
+                  if (!runner) return { pos: i + 1, runnerId: null, rawTime, adjTime: rawTime, dnf: false };
+                  const gIdx = runnerGroupIdx(runner);
+                  const adjTime = rawTime + (groupOffsets[gIdx] || 0);
+                  return { pos: i + 1, runnerId: runner.id, runnerName: name, rawTime, adjTime, dnf: false };
+                });
+
+                // Unmatched present runners = DNF
+                const matchedIds = new Set(finishers.filter(f => f.runnerId).map(f => f.runnerId));
+                const dnfRunners = presentRunners.filter(r => !matchedIds.has(r.id));
+                const allFinishers = [...finishers, ...dnfRunners.map(r => ({ runnerId: r.id, runnerName: r.name, dnf: true }))];
+
+                // DNS runners = those marked absent
+                const dnsRunners = RUN_RUNNERS.filter(r => attendance[r.id] === false);
+
+                setRaceResult({ finishers: allFinishers, presentRunners, dnsRunners, startGroups, staggerFn: staggerGap });
+                setPage('results');
+              }}>
+              Confirm Results →
+            </Button>
+          </div>
+          );
+        })()}
+      </div>
+    </div>
+  );
+}
+
+// ── RESULTS PAGE ─────────────────────────────────────────────────────────────
+function Confetti() {
+  const pieces = Array.from({ length: 60 }).map((_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 3,
+    duration: 2.5 + Math.random() * 2,
+    color: ['#D4520A','#FFB347','#FF6B6B','#4CAF50','#2196F3','#9C27B0','#FFD700'][Math.floor(Math.random()*7)],
+    size: 6 + Math.random() * 8,
+    rotate: Math.random() * 360,
+  }));
+
+  return (
+    <>
+      {pieces.map(p => (
+        <div
+          key={p.id}
+          className="confetti-piece"
+          style={{
+            left: `${p.left}%`,
+            top: -20,
+            width: p.size,
+            height: p.size,
+            background: p.color,
+            borderRadius: Math.random() > 0.5 ? '50%' : 2,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            transform: `rotate(${p.rotate}deg)`,
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+function ResultsPage({ setPage, runners, setRunners, raceResult }) {
+  const [showConf, setShowConf] = useState(true);
+  const [committed, setCommitted] = useState(false);
+  const isMobile = useIsMobile();
+  useEffect(() => { const t = setTimeout(() => setShowConf(false), 5000); return () => clearTimeout(t); }, []);
+
+  // ── Compute results from real race data (or fall back to mock) ───────────────
+  const computed = React.useMemo(() => {
+    if (!raceResult) return null;
+    const { finishers, presentRunners, dnsRunners = [] } = raceResult;
+
+    // Sort finishers by adjTime (non-DNF first, then DNF)
+    const sorted = [...finishers].sort((a, b) => {
+      if (a.dnf && !b.dnf) return 1;
+      if (!a.dnf && b.dnf) return -1;
+      return (a.adjTime || 0) - (b.adjTime || 0);
+    });
+
+    const results = sorted.map((f, rankIdx) => {
+      const runner = runners.find(r => r.id === f.runnerId);
+      if (!runner) return null;
+      const target = carrotTarget(runner);
+      const pts = f.dnf ? 20 : posPoints(rankIdx);
+
+      // Level change
+      let levelDelta = 0;
+      if (!f.dnf && target && f.adjTime) {
+        // Level 1 = elite, 99 = beginner → beating target DECREASES level (improves)
+        if (f.adjTime < target - 5) levelDelta = -2;        // beat target well → drop 2 levels
+        else if (f.adjTime <= target + 15) levelDelta = -1; // near target → drop 1 level
+        else if (f.adjTime > target + 30) levelDelta = 1;   // missed target → rise 1 level (regression)
+      }
+
+      // New PB?
+      const pbSecs = runner.pb && runner.pb !== '—' ? parseInt(runner.pb.split(':')[0])*60 + parseInt(runner.pb.split(':')[1]) : Infinity;
+      const newPB = !f.dnf && f.adjTime && f.adjTime < pbSecs;
+
+      // Badges earned this race
+      const BADGE_RULES = [
+        { id: 'first_finish', label: 'First Finish', check: () => runner.streak === 0 },
+        { id: 'pb_setter',    label: 'PB Setter',    check: () => newPB },
+        { id: 'streak_5',     label: '🔥 5-Event Streak', check: () => (runner.streak + 1) >= 5 },
+        { id: 'streak_10',    label: '🔥 10-Event Streak', check: () => (runner.streak + 1) >= 10 },
+        { id: 'top_3',        label: 'Top 3',        check: () => !f.dnf && rankIdx < 3 },
+        { id: 'consistent',   label: 'Consistent',   check: () => !f.dnf && target && Math.abs(f.adjTime - target) <= 10 },
+      ];
+      const newBadges = BADGE_RULES.filter(b => b.check() && !(runner.badges || []).includes(b.label)).map(b => b.label);
+
+      return { runner, f, rankIdx, pts, levelDelta, newPB, newBadges, newLevel: Math.max(1, Math.min(99, runner.level + levelDelta)) };
+    }).filter(Boolean);
+
+    // Most improved = highest positive levelDelta
+    const mostImproved = [...results].sort((a, b) => a.levelDelta - b.levelDelta)[0]; // most negative = most improved
+
+    return { results, mostImproved };
+  }, [raceResult, runners]);
+
+  // ── Commit results to runners state (once) ───────────────────────────────────
+  function commitResults() {
+    if (!computed || committed) return;
+    const updated = runners.map(r => {
+      const res = computed.results.find(x => x.runner.id === r.id);
+      if (!res) return r;
+      const newTimes = res.f.adjTime ? [...(r.times || []).slice(-4), res.f.adjTime] : r.times;
+      const pbSecs = r.pb && r.pb !== '—' ? parseInt(r.pb.split(':')[0])*60 + parseInt(r.pb.split(':')[1]) : Infinity;
+      const newPbSecs = res.newPB && res.f.adjTime && res.f.adjTime >= 60 ? res.f.adjTime : pbSecs;
+      const newPb = newPbSecs < Infinity ? fmtSecs(newPbSecs) : r.pb;
+      return {
+        ...r,
+        level: res.newLevel,
+        points: r.points + res.pts,
+        streak: res.f.dnf ? r.streak : r.streak + 1,
+        times: newTimes,
+        pb: newPb,
+        badges: [...new Set([...(r.badges || []), ...res.newBadges])],
+      };
+    });
+    setRunners(updated);
+    setCommitted(true);
+  }
+
+  // ── Fallback mock if no raceResult ────────────────────────────────────────────
+  const mockPodium = [
+    { name: 'Liam Brown',     adjTime: 318, levelDelta: 2, newLevel: 73, pts: 200, newBadges: [], dnf: false },
+    { name: 'James Anderson', adjTime: 299, levelDelta: 1, newLevel: 79, pts: 170, newBadges: [], dnf: false },
+    { name: 'Noah Wilson',    adjTime: 354, levelDelta: 1, newLevel: 56, pts: 145, newBadges: [], dnf: false },
+  ];
+
+  const displayResults = computed ? computed.results : mockPodium.map((m, i) => ({
+    runner: runners.find(r => r.name === m.name) || runners[i],
+    f: { adjTime: m.adjTime, dnf: false }, rankIdx: i, ...m,
+  }));
+
+  const top3 = displayResults.slice(0, 3);
+  const rest = displayResults.slice(3);
+  const mostImproved = computed?.mostImproved || (displayResults[0] ? displayResults[0] : null);
+  const newBadgesAll = displayResults.flatMap(r => (r.newBadges || []).map(b => ({ badge: b, name: r.runner?.name })));
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: isMobile ? '16px 12px' : 24, minHeight: '100vh', background: C.bg }}>
+      {showConf && <Confetti />}
+      <div style={{ width: '100%', maxWidth: 520 }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontSize: 56, marginBottom: 8 }}>🎉</div>
+          <h1 style={{ fontSize: 28, fontWeight: 800 }}>Race Complete!</h1>
+          <div style={{ color: C.muted, marginTop: 4 }}>Handicap Run · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        </div>
+
+        {/* Podium */}
+        {top3.length >= 2 && (
+          <Card style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 12, marginBottom: 20 }}>
+              {[top3[1], top3[0], top3[2]].map((item, pi) => {
+                if (!item) return <div key={pi} style={{ flex: 1 }} />;
+                const heights = [60, 80, 45];
+                const bgs = ['#C0C0C0', '#FFD700', '#CD7F32'];
+                const medals = ['🥈', '🥇', '🥉'];
+                const labels = ['2nd', '1st', '3rd'];
+                return (
+                  <div key={pi} style={{ textAlign: 'center', flex: 1 }}>
+                    <div style={{ fontSize: pi === 1 ? 40 : 32 }}>{medals[pi]}</div>
+                    <div style={{
+                      background: bgs[pi], height: heights[pi], borderRadius: '8px 8px 0 0',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: C.white, fontWeight: 700, fontSize: 13,
+                    }}>{labels[pi]}</div>
+                    <div style={{ fontWeight: 700, fontSize: 13, marginTop: 6 }}>{item.runner?.name?.split(' ')[0]}</div>
+                    {item.f?.adjTime && <div style={{ fontSize: 11, color: C.muted }}>{fmtSecs(item.f.adjTime)}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
+        {/* Level updates */}
+        <Card style={{ marginBottom: 20 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Level Updates</div>
+          {displayResults.map((item, i) => {
+            const r = item.runner;
+            if (!r) return null;
+            const lc = levelColor(r.level);
+            const medals = { 0: '🥇', 1: '🥈', 2: '🥉' };
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16, minWidth: 28 }}>{medals[i] || `${i+1}`}</span>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</div>
+                    {item.f?.adjTime && !item.f.dnf && <div style={{ fontSize: 11, color: C.muted }}>{fmtSecs(item.f.adjTime)} adjusted</div>}
+                    {item.f?.dnf && <div style={{ fontSize: 11, color: C.danger }}>DNF</div>}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ background: lc.bg, color: lc.color, borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>L{r.level}</span>
+                  <span>→</span>
+                  <span style={{
+                    background: item.levelDelta < 0 ? C.successLight : item.levelDelta > 0 ? C.dangerLight : '#f3f4f6',
+                    color: item.levelDelta < 0 ? C.success : item.levelDelta > 0 ? C.danger : C.muted,
+                    borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 700,
+                  }}>L{item.newLevel} {item.levelDelta < 0 ? `↑${Math.abs(item.levelDelta)}` : item.levelDelta > 0 ? `↓${item.levelDelta}` : '—'}</span>
+                </div>
+              </div>
+            );
+          })}
+        </Card>
+
+        {/* Most improved */}
+        {mostImproved && mostImproved.levelDelta < 0 && (
+          <Card style={{ background: C.orangeLight, marginBottom: 20 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: C.orange, marginBottom: 4 }}>⭐ Most Improved</div>
+            <div style={{ fontWeight: 800, fontSize: 18 }}>{mostImproved.runner?.name}</div>
+            <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>
+              L{mostImproved.runner?.level} → L{mostImproved.newLevel} · ↑{Math.abs(mostImproved.levelDelta)} level{Math.abs(mostImproved.levelDelta) > 1 ? 's' : ''} · {mostImproved.pts} pts earned
+            </div>
+          </Card>
+        )}
+
+        {/* Badges earned */}
+        {newBadgesAll.length > 0 && (
+          <Card style={{ marginBottom: 20 }}>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Badges Earned</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {newBadgesAll.map((b, i) => (
+                <div key={i} style={{ background: C.orangeLight, borderRadius: 12, padding: '8px 14px', fontSize: 13, fontWeight: 600, color: C.orange }}>
+                  {b.badge} <span style={{ fontWeight: 400, color: C.muted, fontSize: 12 }}>— {b.name?.split(' ')[0]}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* DNS runners */}
+        {raceResult?.dnsRunners?.length > 0 && (
+          <Card style={{ marginBottom: 20, background: '#fafafa' }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: C.muted, marginBottom: 8 }}>Did Not Start (DNS)</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {raceResult.dnsRunners.map(r => (
+                <span key={r.id} style={{
+                  background: '#f3f4f6', color: C.muted, borderRadius: 999,
+                  padding: '4px 12px', fontSize: 13, fontWeight: 600,
+                }}>
+                  {r.name}
+                </span>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Button size="lg" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { commitResults(); setPage('dashboard'); }}>
+            Save & Done
+          </Button>
+          <Button size="lg" variant="outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { commitResults(); setPage('leaderboard'); }}>
+            View Leaderboard
+          </Button>
+        </div>
+        {committed && <div style={{ textAlign: 'center', fontSize: 12, color: C.success, marginTop: 12 }}>✓ Results saved — levels, points and badges updated</div>}
+      </div>
+    </div>
+  );
+}
+
+// ── RUNNER PROFILE ───────────────────────────────────────────────────────────
+function RunnerProfilePage({ runner, setPage, runners }) {
+  if (!runner) runner = (runners || RUNNERS)[0];
+  const lc = levelColor(runner.level);
+
+  // Build level history: last 9 steps extrapolated back from current level, then current
+  const baseLevel = runner.level;
+  const levelHistory = Array.from({ length: 9 }, (_, i) => Math.max(1, baseLevel - (9 - i))).concat([baseLevel]);
+  const eventHistory = [
+    { date: '14 May 2026', event: 'Year 5 Handicap Run #12', pos: '3rd',  time: '6:18', pts: 120 },
+    { date: '7 May 2026',  event: 'Year 5 Handicap Run #11', pos: '5th',  time: '6:22', pts: 95  },
+    { date: '30 Apr 2026', event: 'Year 5 Handicap Run #10', pos: '2nd',  time: '6:14', pts: 140 },
+    { date: '23 Apr 2026', event: 'Year 5 Handicap Run #9',  pos: '1st',  time: '6:12', pts: 165 },
+    { date: '16 Apr 2026', event: 'Year 5 Handicap Run #8',  pos: '4th',  time: '6:25', pts: 105 },
+  ];
+
+  const awards = (runner.badges && runner.badges.length > 0) ? runner.badges : ['First Finish', 'Consistent'];
+
+  return (
+    <div className="fade-in">
+      <button
+        onClick={() => setPage('members')}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter', marginBottom: 16 }}
+      >
+        ← Back to Members
+      </button>
+
+      {/* Header */}
+      <Card style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%',
+            background: C.orange, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 32, fontWeight: 800, color: C.white,
+          }}>
+            {runner.name[0]}
+          </div>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{runner.name}</h1>
+            <div style={{ fontFamily: 'monospace', fontSize: 13, color: C.muted, marginBottom: 8 }}>{runner.id}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                background: lc.bg, color: lc.color, border: `2px solid ${lc.border}`,
+                borderRadius: 999, padding: '4px 16px', fontSize: 18, fontWeight: 800,
+              }}>
+                Level {runner.level}
+              </div>
+              <Badge label={runner.group} bg={C.orangeLight} color={C.orange} />
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Stats */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+        <StatCard label="Personal Best" value={runner.pb} sub="Fastest time" />
+        <StatCard label="Events Run" value={String(Math.max(runner.times?.length || 0, Math.floor(runner.points / 80)))} sub="All time" />
+        <StatCard label="Current Streak" value={runner.streak} sub="events" color={C.orange} />
+        <StatCard label="Total Points" value={runner.points.toLocaleString()} sub="This season" color={C.purple} />
+      </div>
+
+      {/* Level chart */}
+      <Card style={{ marginBottom: 20 }}>
+        <LineChart
+          data={levelHistory}
+          labels={['E#33','E#34','E#35','E#36','E#37','E#38','E#39','E#40','E#41','E#42']}
+          title="Level Progression (Last 10 Events)"
+          height={180}
+        />
+      </Card>
+
+      {/* Recent events */}
+      <Card style={{ marginBottom: 20 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Recent Events</div>
+        <div style={{ overflowX: 'auto', marginLeft: -4, marginRight: -4 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, minWidth: 340 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+              {['Date', 'Event', 'Position', 'Time', 'Points'].map(h => (
+                <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 12 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {eventHistory.map((ev, i) => (
+              <tr key={i} style={{ borderBottom: `1px solid ${C.border}` }}>
+                <td style={{ padding: '10px', color: C.muted, fontSize: 12 }}>{ev.date}</td>
+                <td style={{ padding: '10px', fontWeight: 600, fontSize: 13 }}>{ev.event}</td>
+                <td style={{ padding: '10px' }}>
+                  <Badge
+                    label={ev.pos}
+                    bg={ev.pos === '1st' ? '#fef9c3' : ev.pos === '2nd' ? '#f1f5f9' : C.bg}
+                    color={ev.pos === '1st' ? '#92400e' : C.muted}
+                  />
+                </td>
+                <td style={{ padding: '10px', fontWeight: 600 }}>{ev.time}</td>
+                <td style={{ padding: '10px', fontWeight: 700, color: C.orange }}>+{ev.pts}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        </div>
+      </Card>
+
+      {/* Awards */}
+      <Card>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Awards & Stickers</div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {awards.map((a, i) => (
+            <div key={i} style={{
+              background: C.orangeLight, borderRadius: 12, padding: '10px 16px',
+              fontSize: 14, fontWeight: 600, color: C.orange,
+            }}>
+              {a}
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ── LEADERBOARD PAGE ─────────────────────────────────────────────────────────
+function LeaderboardPage({ runners }) {
+  const [group, setGroup] = useState('All Groups');
+  const isMobile = useIsMobile();
+  const sorted = [...runners].sort((a, b) => b.points - a.points);
+  const filtered = group === 'All Groups' ? sorted : sorted.filter(r => r.group === group);
+  const groups = ['All Groups', ...new Set(runners.map(r => r.group))];
+
+  // Stable random medal counts per runner
+  const medalData = React.useMemo(() =>
+    Object.fromEntries(runners.map(r => [r.id, {
+      golds:   Math.floor(Math.random() * 5),
+      silvers: Math.floor(Math.random() * 5),
+      bronzes: Math.floor(Math.random() * 5),
+      events:  Math.floor(Math.random() * 15) + 5,
+    }])), []);
+
+  return (
+    <div className="fade-in">
+      <div style={{ marginBottom: isMobile ? 16 : 28 }}>
+        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Leaderboard</h1>
+        <p style={{ color: C.muted, marginTop: 4 }}>Series standings — Spring Term 2026</p>
+      </div>
+
+      {/* Top 3 podium */}
+      <div style={{ display: 'flex', gap: isMobile ? 8 : 16, marginBottom: isMobile ? 16 : 24 }}>
+        {filtered.slice(0, 3).map((r, i) => {
+          const medals = ['🥇','🥈','🥉'];
+          const lc = levelColor(r.level);
+          return (
+            <Card key={r.id} style={{ flex: 1, textAlign: 'center', padding: isMobile ? '12px 8px' : 20 }}>
+              <div style={{ fontSize: isMobile ? 28 : 36, marginBottom: 6 }}>{medals[i]}</div>
+              <div style={{ fontWeight: 800, fontSize: isMobile ? 13 : 16, marginBottom: 4 }}>{r.name}</div>
+              <div style={{
+                background: lc.bg, color: lc.color, borderRadius: 999,
+                padding: '2px 8px', fontSize: 11, fontWeight: 700, display: 'inline-block', marginBottom: 6,
+              }}>L{r.level}</div>
+              <div style={{ fontSize: isMobile ? 16 : 20, fontWeight: 800, color: C.orange }}>{r.points.toLocaleString()}</div>
+              <div style={{ fontSize: 11, color: C.muted }}>pts</div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>Full Standings</div>
+          <select
+            value={group}
+            onChange={e => setGroup(e.target.value)}
+            style={{
+              padding: '8px 12px', borderRadius: 999, border: `1.5px solid ${C.border}`,
+              fontSize: 13, fontFamily: 'Inter, sans-serif', background: C.white, cursor: 'pointer',
+            }}
+          >
+            {groups.map(g => <option key={g}>{g}</option>)}
+          </select>
+        </div>
+
+        {isMobile ? (
+          /* Mobile: compact row cards */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {filtered.map((r, i) => {
+              const lc = levelColor(r.level);
+              const m = medalData[r.id];
+              return (
+                <div key={r.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 4px',
+                  borderBottom: `1px solid ${C.border}`,
+                  background: i === 0 ? '#fffbeb' : 'transparent',
+                }}>
+                  {/* Rank */}
+                  <div style={{ width: 24, textAlign: 'center', fontWeight: 700, color: i < 3 ? C.orange : C.muted, fontSize: 14, flexShrink: 0 }}>
+                    {i + 1}
+                  </div>
+                  {/* Avatar initial */}
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '50%', background: C.orangeLight,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 800, fontSize: 14, color: C.orange, flexShrink: 0,
+                  }}>{r.name.charAt(0)}</div>
+                  {/* Name + group */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>{r.group}</div>
+                  </div>
+                  {/* Level badge */}
+                  <span style={{
+                    background: lc.bg, color: lc.color, borderRadius: 999,
+                    padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0,
+                  }}>L{r.level}</span>
+                  {/* Points + streak */}
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontWeight: 800, color: C.orange, fontSize: 14 }}>{r.points.toLocaleString()}</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>{r.streak}🔥</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Desktop: full table */
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${C.border}` }}>
+                {['#', 'Runner', 'Level', 'Group', 'Points', 'Events', '🥇', '🥈', '🥉', 'Streak'].map(h => (
+                  <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: C.muted, fontSize: 12 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r, i) => {
+                const lc = levelColor(r.level);
+                const m = medalData[r.id];
+                return (
+                  <tr key={r.id} style={{
+                    borderBottom: `1px solid ${C.border}`,
+                    background: i === 0 ? '#fffbeb' : 'transparent',
+                  }}>
+                    <td style={{ padding: '12px 10px', fontWeight: 700, color: i < 3 ? C.orange : C.muted }}>{i + 1}</td>
+                    <td style={{ padding: '12px 10px', fontWeight: 600 }}>{r.name}</td>
+                    <td style={{ padding: '12px 10px' }}>
+                      <span style={{
+                        background: lc.bg, color: lc.color, borderRadius: 999,
+                        padding: '2px 8px', fontSize: 12, fontWeight: 700,
+                      }}>L{r.level}</span>
+                    </td>
+                    <td style={{ padding: '12px 10px', color: C.muted, fontSize: 12 }}>{r.group}</td>
+                    <td style={{ padding: '12px 10px', fontWeight: 800, color: C.orange }}>{r.points.toLocaleString()}</td>
+                    <td style={{ padding: '12px 10px', color: C.muted }}>{m.events}</td>
+                    <td style={{ padding: '12px 10px' }}>{m.golds}</td>
+                    <td style={{ padding: '12px 10px' }}>{m.silvers}</td>
+                    <td style={{ padding: '12px 10px' }}>{m.bronzes}</td>
+                    <td style={{ padding: '12px 10px', color: C.orange, fontWeight: 700 }}>{r.streak}🔥</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// ── ROOT APP ─────────────────────────────────────────────────────────────────
+function App() {
+  const [user, setUser] = useState(null);
+  const [page, setPage] = useState('dashboard');
+  const [selectedRunner, setSelectedRunner] = useState(null);
+  const [memberGroupFilter, setMemberGroupFilter] = useState(null);
+  const [runners, setRunners] = useState(() => loadLS('cc_runners', RUNNERS));
+  const [raceResult, setRaceResult] = useState(null);
+
+  useEffect(() => { saveLS('cc_runners', runners); }, [runners]);
+
+  function handleLogin(u) { setUser(u); setPage('dashboard'); }
+  function handleLogout() { setUser(null); setPage('dashboard'); }
+  function resetData() { setRunners(RUNNERS); localStorage.removeItem('cc_runners'); }
+
+  if (!user) return <LoginPage onLogin={handleLogin} />;
+
+  const role = user.role;
+
+  if (page === 'runevent') {
+    return (
+      <div style={{ background: C.bg, minHeight: '100vh' }}>
+        <RunEventPage setPage={setPage} runners={runners} setRunners={setRunners} setRaceResult={setRaceResult} />
+      </div>
+    );
+  }
+  if (page === 'results') {
+    return (
+      <div style={{ background: C.bg, minHeight: '100vh' }}>
+        <ResultsPage setPage={setPage} runners={runners} setRunners={setRunners} raceResult={raceResult} />
+      </div>
+    );
+  }
+
+  function renderPage() {
+    switch (page) {
+      case 'dashboard':
+        if (role === 'superadmin')  return <SuperAdminDashboard setPage={setPage} runners={runners} />;
+        if (role === 'schooladmin') return <SchoolAdminDashboard setPage={setPage} runners={runners} />;
+        if (role === 'lead')        return <LeadDashboard setPage={setPage} />;
+        break;
+      case 'organisations':
+        return <OrganisationsPage setPage={setPage} />;
+      case 'billing':
+        return <BillingPage />;
+      case 'groups':
+        return <GroupsPage setPage={setPage} setMemberGroupFilter={setMemberGroupFilter} />;
+      case 'members':
+        return <MembersPage setPage={setPage} setSelectedRunner={setSelectedRunner} groupFilter={memberGroupFilter} setGroupFilter={setMemberGroupFilter} runners={runners} setRunners={setRunners} />;
+      case 'events':
+        return <EventsPage setPage={setPage} />;
+      case 'createevent':
+        return <CreateEventPage setPage={setPage} runners={runners} />;
+      case 'leaderboard':
+        return <LeaderboardPage runners={runners} />;
+      case 'runnerprofile':
+        return <RunnerProfilePage runner={selectedRunner} setPage={setPage} runners={runners} />;
+      default:
+        return <div style={{ padding: 40 }}>Page not found</div>;
+    }
+  }
+
+  return (
+    <AppLayout role={role} page={page} setPage={setPage} user={user} onLogout={handleLogout} onResetData={resetData}>
+      {renderPage()}
+    </AppLayout>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
