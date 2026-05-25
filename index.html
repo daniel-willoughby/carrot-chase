@@ -1680,12 +1680,16 @@ function LeadDashboard({ setPage }) {
           {upcoming.map(ev => (
             <div key={ev.id} style={{
               padding: '12px 0', borderBottom: `1px solid ${C.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
             }}>
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{ev.name}</div>
-              <div style={{ fontSize: 12, color: C.muted }}>{ev.date} · {ev.group}</div>
-              <div style={{ marginTop: 6 }}>
-                <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{ev.name}</div>
+                <div style={{ fontSize: 12, color: C.muted }}>{ev.date} · {ev.group}</div>
+                <div style={{ marginTop: 6 }}>
+                  <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
+                </div>
               </div>
+              <Button size="sm" style={{ flexShrink: 0 }} onClick={() => setPage('runevent')}>Run →</Button>
             </div>
           ))}
         </Card>
