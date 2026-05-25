@@ -155,18 +155,18 @@ const C = {
 // ── Mock Data ────────────────────────────────────────────────────────────────
 const RUNNERS = [
   // Level 1 = elite/Olympic  ·  Level 99 = beginner  ·  levels decrease as runners improve
-  { id: 'CC-0001', name: 'Emma Johnson',    level: 55, pb: '6:12', group: 'Year 5 Running Club', streak: 8,  points: 1240, times: [372, 368, 381, 374, 370], badges: ['First Finish','🔥 5-Event Streak'] },
-  { id: 'CC-0002', name: 'Oliver Smith',    level: 38, pb: '5:44', group: 'Year 6 Running Club', streak: 12, points: 1890, times: [344, 340, 353, 347, 342], badges: ['First Finish','🔥 10-Event Streak','Top 3'] },
-  { id: 'CC-0003', name: 'Sophie Williams', level: 62, pb: '6:45', group: 'Year 5 Running Club', streak: 3,  points: 980,  times: [405, 398, 416, 408, 401], badges: ['First Finish'] },
-  { id: 'CC-0004', name: 'Liam Brown',      level: 29, pb: '5:21', group: 'Year 6 Running Club', streak: 15, points: 2340, times: [321, 318, 330, 324, 320], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter'] },
-  { id: 'CC-0005', name: 'Isla Davis',      level: 71, pb: '7:18', group: 'Breakfast Club',       streak: 2,  points: 620,  times: [438, 430, 451, 441, 435], badges: ['First Finish'] },
-  { id: 'CC-0006', name: 'Noah Wilson',     level: 45, pb: '5:58', group: 'Year 6 Running Club', streak: 7,  points: 1560, times: [358, 354, 367, 361, 356], badges: ['First Finish','🔥 5-Event Streak','Consistent'] },
-  { id: 'CC-0007', name: 'Ava Taylor',      level: 58, pb: '6:28', group: 'PE Class 4B',          streak: 5,  points: 1100, times: [388, 383, 398, 391, 386], badges: ['First Finish','🔥 5-Event Streak'] },
-  { id: 'CC-0008', name: 'James Anderson',  level: 22, pb: '5:02', group: 'Year 6 Running Club', streak: 20, points: 2780, times: [302, 299, 311, 305, 301], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter','Consistent'] },
-  { id: 'CC-0009', name: 'Grace Thomas',    level: 67, pb: '7:01', group: 'Breakfast Club',       streak: 4,  points: 810,  times: [421, 415, 433, 424, 418], badges: ['First Finish'] },
-  { id: 'CC-0010', name: 'Harry Jackson',   level: 41, pb: '5:49', group: 'Year 5 Running Club', streak: 9,  points: 1710, times: [349, 345, 358, 352, 347], badges: ['First Finish','🔥 5-Event Streak','Top 3'] },
-  { id: 'CC-0011', name: 'Lily White',      level: 53, pb: '6:08', group: 'PE Class 4B',          streak: 6,  points: 1320, times: [368, 364, 378, 371, 366], badges: ['First Finish','🔥 5-Event Streak'] },
-  { id: 'CC-0012', name: 'Ethan Harris',    level: 34, pb: '5:33', group: 'Year 6 Running Club', streak: 11, points: 2050, times: [333, 329, 342, 336, 331], badges: ['First Finish','🔥 10-Event Streak','Consistent'] },
+  { id: 'CC-0001', name: 'Emma Johnson',    level: 55, pb: '6:12', groups: ['Year 5 Running Club', 'Breakfast Club'],       streak: 8,  points: 1240, times: [372, 368, 381, 374, 370], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0002', name: 'Oliver Smith',    level: 38, pb: '5:44', groups: ['Year 6 Running Club'],                           streak: 12, points: 1890, times: [344, 340, 353, 347, 342], badges: ['First Finish','🔥 10-Event Streak','Top 3'] },
+  { id: 'CC-0003', name: 'Sophie Williams', level: 62, pb: '6:45', groups: ['Year 5 Running Club'],                           streak: 3,  points: 980,  times: [405, 398, 416, 408, 401], badges: ['First Finish'] },
+  { id: 'CC-0004', name: 'Liam Brown',      level: 29, pb: '5:21', groups: ['Year 6 Running Club', 'PE Class 4B'],            streak: 15, points: 2340, times: [321, 318, 330, 324, 320], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter'] },
+  { id: 'CC-0005', name: 'Isla Davis',      level: 71, pb: '7:18', groups: ['Breakfast Club'],                                streak: 2,  points: 620,  times: [438, 430, 451, 441, 435], badges: ['First Finish'] },
+  { id: 'CC-0006', name: 'Noah Wilson',     level: 45, pb: '5:58', groups: ['Year 6 Running Club'],                           streak: 7,  points: 1560, times: [358, 354, 367, 361, 356], badges: ['First Finish','🔥 5-Event Streak','Consistent'] },
+  { id: 'CC-0007', name: 'Ava Taylor',      level: 58, pb: '6:28', groups: ['PE Class 4B', 'Year 5 Running Club'],            streak: 5,  points: 1100, times: [388, 383, 398, 391, 386], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0008', name: 'James Anderson',  level: 22, pb: '5:02', groups: ['Year 6 Running Club'],                           streak: 20, points: 2780, times: [302, 299, 311, 305, 301], badges: ['First Finish','🔥 10-Event Streak','Top 3','PB Setter','Consistent'] },
+  { id: 'CC-0009', name: 'Grace Thomas',    level: 67, pb: '7:01', groups: ['Breakfast Club', 'Year 5 Running Club'],         streak: 4,  points: 810,  times: [421, 415, 433, 424, 418], badges: ['First Finish'] },
+  { id: 'CC-0010', name: 'Harry Jackson',   level: 41, pb: '5:49', groups: ['Year 5 Running Club'],                           streak: 9,  points: 1710, times: [349, 345, 358, 352, 347], badges: ['First Finish','🔥 5-Event Streak','Top 3'] },
+  { id: 'CC-0011', name: 'Lily White',      level: 53, pb: '6:08', groups: ['PE Class 4B'],                                   streak: 6,  points: 1320, times: [368, 364, 378, 371, 366], badges: ['First Finish','🔥 5-Event Streak'] },
+  { id: 'CC-0012', name: 'Ethan Harris',    level: 34, pb: '5:33', groups: ['Year 6 Running Club'],                           streak: 11, points: 2050, times: [333, 329, 342, 336, 331], badges: ['First Finish','🔥 10-Event Streak','Consistent'] },
 ];
 
 const ORGS = [
@@ -226,6 +226,9 @@ function fmtSecs(s) {
 // Position → points lookup
 const POS_POINTS = [200, 170, 145, 125, 110, 95, 85, 75, 65, 55];
 function posPoints(i) { return POS_POINTS[i] ?? 45; }
+
+// Backward-compat helper: always returns groups as an array
+function rGroups(r) { return r.groups || (r.group ? [r.group] : []); }
 
 // ── Utility helpers ──────────────────────────────────────────────────────────
 // Level 1 = elite/Olympic (fastest), Level 99 = beginner (slowest)
@@ -1055,6 +1058,43 @@ function OrganisationsPage({ setPage }) {
             ))}
           </div>
         </Card>
+        {/* Groups */}
+        <Card style={{ marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 14 }}>Groups</div>
+          {GROUPS.map(g => (
+            <div key={g.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${C.border}`, fontSize: 14 }}>
+              <div>
+                <span style={{ fontWeight: 600 }}>{g.name}</span>
+                <span style={{ color: C.muted, fontSize: 12, marginLeft: 8 }}>{g.type}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                {g.lead && <span style={{ fontSize: 12, color: C.muted }}>Lead: {g.lead}</span>}
+                <Badge label={`${g.members} runners`} bg={C.orangeLight} color={C.orange} />
+              </div>
+            </div>
+          ))}
+        </Card>
+
+        {/* Recent events */}
+        <Card style={{ marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 14 }}>Recent Events</div>
+          {EVENTS.filter(e => e.status === 'completed').slice(0, 4).map(ev => (
+            <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${C.border}`, fontSize: 14 }}>
+              <div>
+                <div style={{ fontWeight: 600 }}>{ev.name}</div>
+                <div style={{ fontSize: 12, color: C.muted }}>{ev.date} · {ev.group}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
+                <span style={{ fontSize: 12, color: C.muted }}>{ev.runners} finishers</span>
+              </div>
+            </div>
+          ))}
+          {EVENTS.filter(e => e.status === 'completed').length === 0 && (
+            <div style={{ color: C.muted, fontSize: 13 }}>No completed events yet.</div>
+          )}
+        </Card>
+
         <div style={{ display: 'flex', gap: 10 }}>
           <Button variant="secondary" onClick={() => setViewOrg(null)}>Close</Button>
         </div>
@@ -1513,7 +1553,7 @@ function LeadDashboard({ setPage }) {
   const recent = EVENTS.filter(e => e.status === 'completed');
 
   // Stats derived from group runners
-  const myRunners = RUNNERS.filter(r => r.group === 'Year 6 Running Club');
+  const myRunners = RUNNERS.filter(r => rGroups(r).includes('Year 6 Running Club'));
   const streakLeader = myRunners.reduce((best, r) => (!best || r.streak > best.streak) ? r : best, null);
   const mostImproved = myRunners.reduce((best, r) => (!best || r.level < best.level) ? r : best, null); // lowest level = fastest/best
 
@@ -1589,9 +1629,9 @@ function LeadDashboard({ setPage }) {
 }
 
 const SEED_LEAD_INVITES = [
-  { id: 'li-1', email: 'james.carter@demo.carrotchase.com', name: 'James Carter', group: 'Year 6 Running Club', sentAt: '20 May 2026', status: 'accepted' },
-  { id: 'li-2', email: 'p.brooks@hamptonprimary.co.uk',     name: 'Paula Brooks', group: 'Breakfast Club',       sentAt: '23 May 2026', status: 'sent'     },
-  { id: 'li-3', email: 'n.okonkwo@hamptonprimary.co.uk',    name: '',             group: 'PE Class 4B',          sentAt: '8 May 2026',  status: 'expired'  },
+  { id: 'li-1', email: 'james.carter@demo.carrotchase.com', name: 'James Carter', groups: ['Year 6 Running Club'],                    sentAt: '20 May 2026', status: 'accepted' },
+  { id: 'li-2', email: 'p.brooks@hamptonprimary.co.uk',     name: 'Paula Brooks', groups: ['Breakfast Club', 'Year 5 Running Club'],   sentAt: '23 May 2026', status: 'sent'     },
+  { id: 'li-3', email: 'n.okonkwo@hamptonprimary.co.uk',    name: '',             groups: ['PE Class 4B'],                             sentAt: '8 May 2026',  status: 'expired'  },
 ];
 
 // ── GROUPS PAGE ──────────────────────────────────────────────────────────────
@@ -1603,7 +1643,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
   const [newForm, setNewForm] = useState({ name: '', type: 'Running Club', lead: '' });
   const [leadInvites, setLeadInvites] = useState(SEED_LEAD_INVITES);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ email: '', name: '', group: '' });
+  const [inviteForm, setInviteForm] = useState({ email: '', name: '', groups: [] });
   const [inviteSent, setInviteSent] = useState(false);
 
   const GROUP_TYPES = ['Running Club', 'Breakfast Club', 'PE Class', 'After-School Club', 'Cross Country'];
@@ -1611,9 +1651,9 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
   function handleSendLeadInvite() {
     if (!inviteForm.email.trim()) return;
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    setLeadInvites(prev => [{ id: `li-${Date.now()}`, email: inviteForm.email.trim(), name: inviteForm.name.trim(), group: inviteForm.group, sentAt: today, status: 'sent' }, ...prev]);
+    setLeadInvites(prev => [{ id: `li-${Date.now()}`, email: inviteForm.email.trim(), name: inviteForm.name.trim(), groups: inviteForm.groups, sentAt: today, status: 'sent' }, ...prev]);
     setInviteSent(true);
-    setTimeout(() => { setInviteSent(false); setInviteForm({ email: '', name: '', group: '' }); setShowInviteModal(false); }, 1600);
+    setTimeout(() => { setInviteSent(false); setInviteForm({ email: '', name: '', groups: [] }); setShowInviteModal(false); }, 1600);
   }
 
   function inviteStatusBadge(status) {
@@ -1682,15 +1722,29 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
                   <input type="text" value={inviteForm.name} onChange={e => setInviteForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. James Carter" autoCapitalize="words" style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white, boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Assign to group (optional)</label>
-                  <select value={inviteForm.group} onChange={e => setInviteForm(f => ({ ...f, group: e.target.value }))} style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}>
-                    <option value="">— No group —</option>
-                    {groups.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
-                  </select>
+                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8, color: C.muted }}>Assign to group(s) — optional</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {groups.filter(g => !g.archived).map(g => {
+                      const checked = inviteForm.groups.includes(g.name);
+                      return (
+                        <label key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 14 }}>
+                          <input type="checkbox" checked={checked}
+                            onChange={() => setInviteForm(f => ({
+                              ...f,
+                              groups: checked ? f.groups.filter(x => x !== g.name) : [...f.groups, g.name],
+                            }))}
+                            style={{ width: 16, height: 16, accentColor: C.orange, cursor: 'pointer' }}
+                          />
+                          <span style={{ fontWeight: checked ? 600 : 400 }}>{g.name}</span>
+                          <span style={{ fontSize: 12, color: C.muted }}>({g.type})</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <Button style={{ flex: 1 }} disabled={!inviteForm.email.trim()} onClick={handleSendLeadInvite}>Send Invite</Button>
-                  <Button variant="secondary" style={{ flex: 1 }} onClick={() => { setShowInviteModal(false); setInviteForm({ email: '', name: '', group: '' }); }}>Cancel</Button>
+                  <Button variant="secondary" style={{ flex: 1 }} onClick={() => { setShowInviteModal(false); setInviteForm({ email: '', name: '', groups: [] }); }}>Cancel</Button>
                 </div>
               </>
             )}
@@ -1710,7 +1764,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(300px,1fr))', gap: isMobile ? 12 : 20 }}>
-        {groups.map(g => (
+        {groups.filter(g => !g.archived).map(g => (
           <Card key={g.id}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div style={{
@@ -1765,7 +1819,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}>
               <option value="">— Unassigned —</option>
               {leadInvites.filter(i => i.status === 'accepted').map(i => (
-                <option key={i.id} value={i.name || i.email}>{i.name || i.email}</option>
+                <option key={i.id} value={i.name || i.email}>{i.name || i.email}{i.groups?.length > 0 ? ` (${i.groups.join(', ')})` : ''}</option>
               ))}
             </select>
           </div>
@@ -1815,11 +1869,11 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', marginTop: 8 }}>
             <Button variant="danger" onClick={() => {
-              if (!window.confirm(`Delete "${editGroup.name}"? This cannot be undone.`)) return;
-              setGroups(gs => gs.filter(g => g.id !== editGroup.id));
+              if (!window.confirm(`Archive "${editGroup.name}"? The group will be hidden but its event history is preserved.`)) return;
+              setGroups(gs => gs.map(g => g.id === editGroup.id ? { ...g, archived: true } : g));
               setEditGroup(null);
             }}>
-              Delete
+              Archive
             </Button>
             <div style={{ display: 'flex', gap: 10 }}>
               <Button variant="secondary" onClick={() => setEditGroup(null)}>Cancel</Button>
@@ -1835,6 +1889,30 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Archived groups */}
+      {groups.some(g => g.archived) && (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginBottom: 10 }}>Archived Groups</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {groups.filter(g => g.archived).map(g => (
+              <div key={g.id} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 16px', borderRadius: 10, background: C.bg, border: `1px solid ${C.border}`, opacity: 0.7,
+              }}>
+                <div>
+                  <span style={{ fontWeight: 600, fontSize: 14, color: C.muted }}>{g.name}</span>
+                  <span style={{ fontSize: 12, color: C.muted, marginLeft: 10 }}>{g.type}</span>
+                </div>
+                <button onClick={() => setGroups(gs => gs.map(x => x.id === g.id ? { ...x, archived: false } : x))}
+                  style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter', color: C.text }}>
+                  Restore
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Leads section */}
@@ -1859,7 +1937,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{inv.name || <span style={{ color: C.muted, fontStyle: 'italic' }}>Name not provided</span>}</div>
                   <div style={{ fontSize: 12, color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {inv.email}{inv.group ? ` · ${inv.group}` : ''}
+                    {inv.email}{(inv.groups?.length > 0 || inv.group) ? ` · ${inv.groups?.join(', ') || inv.group}` : ''}
                   </div>
                 </div>
                 <Badge label={s.label} bg={s.bg} color={s.color} />
@@ -1895,14 +1973,14 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
 
   function openEdit(r, e) {
     e.stopPropagation();
-    setEditForm({ name: r.name, group: r.group });
+    setEditForm({ name: r.name, group: rGroups(r)[0] || '' });
     setEditRunner(r);
   }
 
   function handleEditSave() {
     if (!editForm.name.trim()) return;
     setRunners(runners.map(r => r.id === editRunner.id
-      ? { ...r, name: editForm.name.trim(), group: editForm.group }
+      ? { ...r, name: editForm.name.trim(), groups: editForm.group ? [editForm.group] : [] }
       : r
     ));
     setEditRunner(null);
@@ -1912,8 +1990,8 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
     const matchesSearch =
       r.name.toLowerCase().includes(search.toLowerCase()) ||
       r.id.toLowerCase().includes(search.toLowerCase()) ||
-      r.group.toLowerCase().includes(search.toLowerCase());
-    const matchesGroup = groupFilter ? r.group === groupFilter : true;
+      rGroups(r).some(g => g.toLowerCase().includes(search.toLowerCase()));
+    const matchesGroup = groupFilter ? rGroups(r).includes(groupFilter) : true;
     return matchesSearch && matchesGroup;
   });
 
@@ -1924,7 +2002,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
     const name = `${addForm.firstName.trim()} ${addForm.lastName.trim()}`.trim();
     const nextNum = runners.length + 1;
     const id = `CC-${String(nextNum).padStart(4, '0')}`;
-    const newRunner = { id, name, level: 99, pb: '—', group: addForm.group, streak: 0, points: 0, times: [420,420,420,420,420], badges: [] };
+    const newRunner = { id, name, level: 99, pb: '—', groups: addForm.group ? [addForm.group] : [], streak: 0, points: 0, times: [420,420,420,420,420], badges: [] };
     setRunners([...runners, newRunner]);
     setAddForm({ firstName: '', lastName: '', year: 'Year 5', group: 'Year 5 Running Club' });
     setShowAddModal(false);
@@ -1970,7 +2048,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
     const validRows = csvPreview.filter(r => r.errors.length === 0);
     const newRunners = validRows.map((r, i) => ({
       id: `CC-${String(runners.length + i + 1).padStart(4, '0')}`,
-      name: r.name, level: 99, pb: '—', group: r.group, streak: 0, points: 0, times: [420,420,420,420,420], badges: [],
+      name: r.name, level: 99, pb: '—', groups: r.group ? [r.group] : [], streak: 0, points: 0, times: [420,420,420,420,420], badges: [],
     }));
     setRunners([...runners, ...newRunners]);
     setShowCSVModal(false); setCsvPreview(null);
@@ -2140,7 +2218,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                     <div><span style={{ color: C.muted }}>PB </span><span style={{ fontWeight: 600 }}>{r.pb}</span></div>
                     <div><span style={{ color: C.muted }}>Streak </span><span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}🔥</span></div>
                     <div><span style={{ color: C.muted }}>Points </span><span style={{ fontWeight: 700 }}>{r.points.toLocaleString()}</span></div>
-                    <div style={{ gridColumn: '1 / -1' }}><span style={{ color: C.muted }}>Group </span><span style={{ fontWeight: 600 }}>{r.group}</span></div>
+                    <div style={{ gridColumn: '1 / -1' }}><span style={{ color: C.muted }}>Group </span><span style={{ fontWeight: 600 }}>{rGroups(r).join(', ') || '—'}</span></div>
                   </div>
                 </div>
               );
@@ -2178,7 +2256,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                         </span>
                       </td>
                       <td style={{ padding: '12px', fontWeight: 600 }}>{r.pb}</td>
-                      <td style={{ padding: '12px', color: C.muted, fontSize: 13 }}>{r.group}</td>
+                      <td style={{ padding: '12px', color: C.muted, fontSize: 13 }}>{rGroups(r).join(', ') || '—'}</td>
                       <td style={{ padding: '12px' }}>
                         <span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}🔥</span>
                       </td>
@@ -2359,6 +2437,17 @@ function CreateEventPage({ setPage, runners }) {
     date: '2026-05-21',
     time: '15:30',
   });
+  const [customCourses, setCustomCourses] = useState([]);
+  const [showCustomCourse, setShowCustomCourse] = useState(false);
+  const [customCourseInput, setCustomCourseInput] = useState('');
+
+  const FORMAT_HINTS = {
+    Pursuit:  '🐇 Handicap — runners start in staggered groups by level; slower runners go first. Aim: everyone finishes together.',
+    Scratch:  '🏁 Scratch — all runners start simultaneously. First across the line wins outright.',
+    Relay:    '🔄 Relay — team event with baton or tag handover. Assign runners to teams after creation.',
+  };
+
+  const allCourses = ['1.5km Loop', '2km Track', '5km Road', 'Cross Country', ...customCourses];
 
   const steps = ['Details', 'Review', 'Confirm'];
 
@@ -2405,41 +2494,70 @@ function CreateEventPage({ setPage, runners }) {
         {step === 1 && (
           <div>
             <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 20 }}>Step 1: Event Details</div>
+
+            {/* Group */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Group</label>
+              <select value={form.group} onChange={e => setForm({ ...form, group: e.target.value })}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white }}>
+                {GROUPS.filter(g => !g.archived).map(g => <option key={g.id}>{g.name}</option>)}
+              </select>
+            </div>
+
+            {/* Format */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Format</label>
+              <select value={form.format} onChange={e => setForm({ ...form, format: e.target.value })}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white }}>
+                {['Pursuit', 'Scratch', 'Relay'].map(o => <option key={o}>{o}</option>)}
+              </select>
+              {FORMAT_HINTS[form.format] && (
+                <div style={{ marginTop: 6, fontSize: 12, color: C.muted, background: C.bg, borderRadius: 8, padding: '6px 10px' }}>
+                  {FORMAT_HINTS[form.format]}
+                </div>
+              )}
+            </div>
+
+            {/* Course */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Course</label>
+              <select value={form.course} onChange={e => {
+                if (e.target.value === '__custom__') { setShowCustomCourse(true); }
+                else { setForm({ ...form, course: e.target.value }); setShowCustomCourse(false); }
+              }}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white }}>
+                {allCourses.map(o => <option key={o}>{o}</option>)}
+                <option value="__custom__">+ Add custom course…</option>
+              </select>
+              {showCustomCourse && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                  <input value={customCourseInput} onChange={e => setCustomCourseInput(e.target.value)}
+                    placeholder="e.g. 3km Park Route" autoCapitalize="words"
+                    style={{ flex: 1, padding: '8px 12px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }} />
+                  <Button size="sm" disabled={!customCourseInput.trim()} onClick={() => {
+                    const name = customCourseInput.trim();
+                    setCustomCourses(prev => [...prev, name]);
+                    setForm(f => ({ ...f, course: name }));
+                    setCustomCourseInput('');
+                    setShowCustomCourse(false);
+                  }}>Add</Button>
+                  <Button size="sm" variant="secondary" onClick={() => { setShowCustomCourse(false); setCustomCourseInput(''); }}>✕</Button>
+                </div>
+              )}
+            </div>
+
+            {/* Date & Time */}
             {[
-              { label: 'Group', key: 'group', type: 'select', options: GROUPS.map(g => g.name) },
-              { label: 'Format', key: 'format', type: 'select', options: ['Pursuit', 'Scratch', 'Relay'] },
-              { label: 'Course', key: 'course', type: 'select', options: ['1.5km Loop', '2km Track', '5km Road', 'Cross Country'] },
               { label: 'Date', key: 'date', type: 'date' },
               { label: 'Time', key: 'time', type: 'time' },
             ].map(f => (
               <div key={f.key} style={{ marginBottom: 16 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
-                {f.type === 'select' ? (
-                  <select
-                    value={form[f.key]}
-                    onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                    style={{
-                      width: '100%', padding: '10px 14px', borderRadius: 12,
-                      border: `1.5px solid ${C.border}`, fontSize: 14,
-                      fontFamily: 'Inter, sans-serif', background: C.white,
-                    }}
-                  >
-                    {f.options.map(o => <option key={o}>{o}</option>)}
-                  </select>
-                ) : (
-                  <input
-                    type={f.type}
-                    value={form[f.key]}
-                    onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                    style={{
-                      width: '100%', padding: '10px 14px', borderRadius: 12,
-                      border: `1.5px solid ${C.border}`, fontSize: 14,
-                      fontFamily: 'Inter, sans-serif', background: C.white,
-                    }}
-                  />
-                )}
+                <input type={f.type} value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white }} />
               </div>
             ))}
+
             <Button size="lg" onClick={() => setStep(2)}>Next: Review Runners →</Button>
           </div>
         )}
@@ -2451,7 +2569,7 @@ function CreateEventPage({ setPage, runners }) {
               {form.group} · {form.format} · {form.course} · {form.date} {form.time}
             </div>
             <div style={{ marginBottom: 20 }}>
-              {liveRunners.filter(r => r.group === form.group).map(r => {
+              {liveRunners.filter(r => rGroups(r).includes(form.group)).map(r => {
                 const lc = levelColor(r.level);
                 return (
                   <div key={r.id} style={{
@@ -2474,7 +2592,7 @@ function CreateEventPage({ setPage, runners }) {
               })}
             </div>
             {(() => {
-              const rc = liveRunners.filter(r => r.group === form.group).length;
+              const rc = liveRunners.filter(r => rGroups(r).includes(form.group)).length;
               const onCourse = Math.max(1, Math.ceil(rc / 8));
               const total = onCourse + 2;
               return (
@@ -2512,7 +2630,7 @@ function CreateEventPage({ setPage, runners }) {
                 { label: 'Format', value: form.format },
                 { label: 'Course', value: form.course },
                 { label: 'Date & Time', value: `${form.date} at ${form.time}` },
-                { label: 'Runners', value: `${liveRunners.filter(r => r.group === form.group).length} registered` },
+                { label: 'Runners', value: `${liveRunners.filter(r => rGroups(r).includes(form.group)).length} registered` },
               ].map(item => (
                 <div key={item.label} style={{
                   display: 'flex', justifyContent: 'space-between',
@@ -2827,7 +2945,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                   <div style={{ display: 'flex', gap: 10 }}>
                     <Button style={{ flex: 1 }} disabled={!lateForm.name.trim()}
                       onClick={() => {
-                        const newR = { id: `LATE-${Date.now()}`, name: lateForm.name.trim(), level: 99, pb: '—', group: '—', streak: 0, points: 0, times: [420,420,420,420,420], badges: [] };
+                        const newR = { id: `LATE-${Date.now()}`, name: lateForm.name.trim(), level: 99, pb: '—', groups: [], streak: 0, points: 0, times: [420,420,420,420,420], badges: [] };
                         setRunList(prev => [...prev, newR]);
                         setAttendance(prev => ({ ...prev, [newR.id]: true }));
                         setLateForm({ name: '' });
@@ -3269,6 +3387,8 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
   // ── Commit results to runners state (once) ───────────────────────────────────
   function commitResults() {
     if (!computed || committed) return;
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const ordinal = n => n === 1 ? '1st' : n === 2 ? '2nd' : n === 3 ? '3rd' : `${n}th`;
     const updated = runners.map(r => {
       const res = computed.results.find(x => x.runner.id === r.id);
       if (!res) return r;
@@ -3276,6 +3396,13 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
       const pbSecs = r.pb && r.pb !== '—' ? parseInt(r.pb.split(':')[0])*60 + parseInt(r.pb.split(':')[1]) : Infinity;
       const newPbSecs = res.newPB && res.f.adjTime ? res.f.adjTime : pbSecs;
       const newPb = newPbSecs < Infinity ? fmtSecs(newPbSecs) : r.pb;
+      const histEntry = (!res.f.dnf && !res.isDSQ && res.f.adjTime) ? {
+        date: today,
+        event: 'Race',
+        pos: ordinal(res.rankIdx + 1),
+        time: fmtSecs(res.f.adjTime),
+        pts: res.pts,
+      } : null;
       return {
         ...r,
         level: res.newLevel,
@@ -3284,6 +3411,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
         times: newTimes,
         pb: newPb,
         badges: [...new Set([...(r.badges || []), ...res.newBadges])],
+        history: histEntry ? [histEntry, ...(r.history || [])].slice(0, 10) : (r.history || []),
       };
     });
     setRunners(updated);
@@ -3512,6 +3640,31 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
           </Card>
         )}
 
+        {/* Series Standings */}
+        {committed && (
+          <Card style={{ marginBottom: 20, background: '#fffbeb', border: `1px solid #fde68a` }}>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>📊 Series Standings</div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>Cumulative points after today's event</div>
+            {[...runners].sort((a, b) => b.points - a.points).slice(0, 5).map((r, i) => {
+              const medals = ['🥇', '🥈', '🥉'];
+              const isInRace = computed?.results.some(x => x.runner.id === r.id);
+              return (
+                <div key={r.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '6px 0', borderBottom: `1px solid #fde68a`, fontSize: 14,
+                }}>
+                  <span style={{ width: 24, textAlign: 'center', fontWeight: 700, color: i < 3 ? C.orange : C.muted }}>
+                    {medals[i] || `${i + 1}`}
+                  </span>
+                  <span style={{ flex: 1, fontWeight: 600 }}>{r.name}</span>
+                  {isInRace && <span style={{ fontSize: 11, color: C.success, fontWeight: 600 }}>↑ today</span>}
+                  <span style={{ fontWeight: 800, color: C.orange }}>{r.points.toLocaleString()} pts</span>
+                </div>
+              );
+            })}
+          </Card>
+        )}
+
         {/* Actions */}
         <div style={{ display: 'flex', gap: 12 }}>
           <Button size="lg" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { commitResults(); setPage('dashboard'); }}>
@@ -3535,13 +3688,14 @@ function RunnerProfilePage({ runner, setPage, runners }) {
   // Build level history: last 9 steps extrapolated back from current level, then current
   const baseLevel = runner.level;
   const levelHistory = Array.from({ length: 9 }, (_, i) => Math.max(1, baseLevel - (9 - i))).concat([baseLevel]);
-  const eventHistory = [
+  const MOCK_HISTORY = [
     { date: '14 May 2026', event: 'Year 5 Pursuit Run #12', pos: '3rd',  time: '6:18', pts: 120 },
     { date: '7 May 2026',  event: 'Year 5 Pursuit Run #11', pos: '5th',  time: '6:22', pts: 95  },
     { date: '30 Apr 2026', event: 'Year 5 Pursuit Run #10', pos: '2nd',  time: '6:14', pts: 140 },
     { date: '23 Apr 2026', event: 'Year 5 Pursuit Run #9',  pos: '1st',  time: '6:12', pts: 165 },
     { date: '16 Apr 2026', event: 'Year 5 Pursuit Run #8',  pos: '4th',  time: '6:25', pts: 105 },
   ];
+  const eventHistory = (runner.history && runner.history.length > 0) ? runner.history : MOCK_HISTORY;
 
   const awards = (runner.badges && runner.badges.length > 0) ? runner.badges : ['First Finish', 'Consistent'];
 
@@ -3574,7 +3728,7 @@ function RunnerProfilePage({ runner, setPage, runners }) {
               }}>
                 Level {runner.level}
               </div>
-              <Badge label={runner.group} bg={C.orangeLight} color={C.orange} />
+              {rGroups(runner).map(g => <Badge key={g} label={g} bg={C.orangeLight} color={C.orange} />)}
             </div>
           </div>
         </div>
@@ -3654,8 +3808,8 @@ function LeaderboardPage({ runners }) {
   const [group, setGroup] = useState('All Groups');
   const isMobile = useIsMobile();
   const sorted = [...runners].sort((a, b) => b.points - a.points);
-  const filtered = group === 'All Groups' ? sorted : sorted.filter(r => r.group === group);
-  const groups = ['All Groups', ...new Set(runners.map(r => r.group))];
+  const filtered = group === 'All Groups' ? sorted : sorted.filter(r => rGroups(r).includes(group));
+  const groups = ['All Groups', ...new Set(runners.flatMap(r => rGroups(r)))];
 
   // Stable random medal counts per runner
   const medalData = React.useMemo(() =>
@@ -3734,7 +3888,7 @@ function LeaderboardPage({ runners }) {
                   {/* Name + group */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
-                    <div style={{ fontSize: 11, color: C.muted }}>{r.group}</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>{rGroups(r).join(', ') || '—'}</div>
                   </div>
                   {/* Level badge */}
                   <span style={{
@@ -3777,7 +3931,7 @@ function LeaderboardPage({ runners }) {
                         padding: '2px 8px', fontSize: 12, fontWeight: 700,
                       }}>L{r.level}</span>
                     </td>
-                    <td style={{ padding: '12px 10px', color: C.muted, fontSize: 12 }}>{r.group}</td>
+                    <td style={{ padding: '12px 10px', color: C.muted, fontSize: 12 }}>{rGroups(r).join(', ') || '—'}</td>
                     <td style={{ padding: '12px 10px', fontWeight: 800, color: C.orange }}>{r.points.toLocaleString()}</td>
                     <td style={{ padding: '12px 10px', color: C.muted }}>{m.events}</td>
                     <td style={{ padding: '12px 10px' }}>{m.golds}</td>
