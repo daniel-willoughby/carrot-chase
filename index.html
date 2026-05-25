@@ -2406,7 +2406,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div style={{ fontSize: 12, color: C.muted }}>
-                  Tap <strong>✓</strong> to mark present · <strong>DNS</strong> = did not start
+                  Tap a runner to mark present · DNS = did not start
                 </div>
                 <button
                   onClick={() => setAttendance(Object.fromEntries(RUN_RUNNERS.map(r => [r.id, true])))}
@@ -2419,60 +2419,71 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                   ✓ All present
                 </button>
               </div>
-              {RUN_RUNNERS.map(r => {
+              {runList.map(r => {
                 const present = attendance[r.id] === true;
-                const absent = attendance[r.id] === false;
+                const dns = attendance[r.id] === false;
                 const lc = levelColor(r.level);
                 return (
                   <div
                     key={r.id}
-                    onClick={() => setAttendance(prev => ({ ...prev, [r.id]: prev[r.id] === true ? null : true }))}
+                    onClick={() => !dns && setAttendance(prev => ({ ...prev, [r.id]: prev[r.id] === true ? null : true }))}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '12px 0', borderBottom: `1px solid ${C.border}`,
-                      cursor: 'pointer', borderRadius: 8,
-                      background: present ? '#f0fdf4' : absent ? '#fff5f5' : 'transparent',
-                      marginLeft: -8, marginRight: -8, paddingLeft: 8, paddingRight: 8,
+                      padding: '11px 8px', borderBottom: `1px solid ${C.border}`,
+                      cursor: dns ? 'default' : 'pointer', borderRadius: 8,
+                      background: present ? '#f0fdf4' : dns ? '#fff5f5' : 'transparent',
+                      marginLeft: -8, marginRight: -8,
+                      transition: 'background 0.15s',
                     }}
                   >
+                    {/* Left: level badge + name */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <div style={{
                         width: 36, height: 36, borderRadius: '50%', background: lc.bg,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 700, fontSize: 12, color: lc.color,
-                      }}>
-                        L{r.level}
-                      </div>
-                      <span style={{ fontWeight: 600, fontSize: 15 }}>{r.name}</span>
+                        fontWeight: 700, fontSize: 12, color: lc.color, flexShrink: 0,
+                      }}>L{r.level}</div>
+                      <span style={{
+                        fontWeight: 600, fontSize: 15,
+                        color: dns ? C.muted : C.text,
+                        textDecoration: dns ? 'line-through' : 'none',
+                      }}>{r.name}</span>
                     </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button
-                        onClick={e => { e.stopPropagation(); setAttendance(prev => ({ ...prev, [r.id]: true })); }}
-                        style={{
-                          width: 44, height: 36, borderRadius: 8, border: `2px solid`,
-                          borderColor: present ? C.success : C.border,
-                          background: present ? C.successLight : 'transparent',
-                          cursor: 'pointer', fontSize: 13, fontWeight: 700,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: present ? C.success : C.muted, fontFamily: 'Inter',
-                        }}
-                      >
-                        ✓
-                      </button>
+
+                    {/* Right: status */}
+                    {present && (
+                      <span style={{
+                        background: C.successLight, color: C.success, borderRadius: 999,
+                        padding: '4px 12px', fontSize: 13, fontWeight: 700, flexShrink: 0,
+                      }}>✓</span>
+                    )}
+                    {dns && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        <span style={{
+                          background: C.dangerLight, color: C.danger, borderRadius: 999,
+                          padding: '4px 10px', fontSize: 12, fontWeight: 700,
+                        }}>DNS</span>
+                        <button
+                          onClick={e => { e.stopPropagation(); setAttendance(prev => ({ ...prev, [r.id]: null })); }}
+                          style={{
+                            background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
+                            padding: '3px 8px', fontSize: 11, color: C.muted, cursor: 'pointer',
+                            fontFamily: 'Inter',
+                          }}
+                        >Undo</button>
+                      </div>
+                    )}
+                    {!present && !dns && (
                       <button
                         onClick={e => { e.stopPropagation(); setAttendance(prev => ({ ...prev, [r.id]: false })); }}
                         style={{
-                          width: 44, height: 36, borderRadius: 8, border: `2px solid`,
-                          borderColor: absent ? C.danger : C.border,
-                          background: absent ? C.dangerLight : 'transparent',
-                          cursor: 'pointer', fontSize: 11, fontWeight: 700,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: absent ? C.danger : C.muted, fontFamily: 'Inter',
+                          background: 'none', border: 'none', padding: '4px 2px',
+                          fontSize: 12, color: C.muted, cursor: 'pointer',
+                          fontFamily: 'Inter', fontWeight: 600, flexShrink: 0,
+                          opacity: 0.6,
                         }}
-                      >
-                        DNS
-                      </button>
-                    </div>
+                      >DNS</button>
+                    )}
                   </div>
                 );
               })}
@@ -2893,7 +2904,8 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
     }
 
     const results = sorted.map((f, rankIdx) => {
-      const runner = runners.find(r => r.id === f.runnerId);
+      // Fall back to presentRunners for late arrivals not in global runners state
+      const runner = runners.find(r => r.id === f.runnerId) || presentRunners.find(r => r.id === f.runnerId);
       if (!runner) return null;
       const isDSQ = dsqSet.has(f.runnerId);
       const target = carrotTarget(runner);
