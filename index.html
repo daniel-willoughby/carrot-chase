@@ -1024,6 +1024,7 @@ function OrganisationsPage({ setPage }) {
                   value={newForm[f.key]}
                   onChange={e => setNewForm({ ...newForm, [f.key]: e.target.value })}
                   placeholder={f.placeholder}
+                  autoCapitalize="words"
                   style={inputStyle}
                 />
               </div>
@@ -1424,11 +1425,13 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
     </div>
   );
 
-  const Field = ({ label, value, onChange, placeholder }) => (
+  const Field = ({ label, value, onChange, placeholder, capitalize = 'off', type = 'text' }) => (
     <div style={{ marginBottom: 16 }}>
       <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{label}</label>
       <input
+        type={type}
         value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        autoCapitalize={capitalize}
         style={{
           width: '100%', padding: '11px 14px', borderRadius: 10,
           border: `1.5px solid ${C.border}`, fontSize: 14,
@@ -1487,7 +1490,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
       {/* New Group Modal */}
       {showNewModal && (
         <Modal title="New Group" onClose={() => setShowNewModal(false)}>
-          <Field label="Group name" value={newForm.name} onChange={v => setNewForm(f => ({ ...f, name: v }))} placeholder="e.g. Year 4 Running Club" />
+          <Field label="Group name" value={newForm.name} onChange={v => setNewForm(f => ({ ...f, name: v }))} placeholder="e.g. Year 4 Running Club" capitalize="words" />
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Type</label>
             <select
@@ -1498,7 +1501,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               {GROUP_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
-          <Field label="Lead (optional)" value={newForm.lead} onChange={v => setNewForm(f => ({ ...f, lead: v }))} placeholder="e.g. James Carter" />
+          <Field label="Lead (optional)" value={newForm.lead} onChange={v => setNewForm(f => ({ ...f, lead: v }))} placeholder="e.g. James Carter" capitalize="words" />
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
             <Button variant="secondary" onClick={() => setShowNewModal(false)}>Cancel</Button>
             <Button
@@ -1521,7 +1524,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
       {/* Edit Group Modal */}
       {editGroup && (
         <Modal title="Edit Group" onClose={() => setEditGroup(null)}>
-          <Field label="Group name" value={editGroup.name} onChange={v => setEditGroup(g => ({ ...g, name: v }))} placeholder="Group name" />
+          <Field label="Group name" value={editGroup.name} onChange={v => setEditGroup(g => ({ ...g, name: v }))} placeholder="Group name" capitalize="words" />
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Type</label>
             <select
@@ -1650,11 +1653,11 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>First name</label>
-                <input value={addForm.firstName} onChange={e => setAddForm(f => ({ ...f, firstName: e.target.value }))} placeholder="e.g. Emma" style={inputStyle} />
+                <input value={addForm.firstName} onChange={e => setAddForm(f => ({ ...f, firstName: e.target.value }))} placeholder="e.g. Emma" autoCapitalize="words" style={inputStyle} />
               </div>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Last name</label>
-                <input value={addForm.lastName} onChange={e => setAddForm(f => ({ ...f, lastName: e.target.value }))} placeholder="e.g. Johnson" style={inputStyle} />
+                <input value={addForm.lastName} onChange={e => setAddForm(f => ({ ...f, lastName: e.target.value }))} placeholder="e.g. Johnson" autoCapitalize="words" style={inputStyle} />
               </div>
             </div>
             <div style={{ marginBottom: 14 }}>
@@ -1754,6 +1757,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
           <input
             type="text"
             placeholder="Search by name, ID, or group..."
+            autoCapitalize="none"
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
@@ -2427,6 +2431,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                     value={lateForm.name}
                     onChange={e => setLateForm({ name: e.target.value })}
                     placeholder="e.g. Mia Robinson"
+                    autoCapitalize="words"
                     style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', marginBottom: 16, boxSizing: 'border-box' }}
                     autoFocus
                   />
