@@ -593,7 +593,6 @@ function LoginPage({ onLogin }) {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
-  const [openCred, setOpenCred] = useState(null);
   const [pendingUser, setPendingUser] = useState(null);
   const [twoFACode, setTwoFACode] = useState('');
   const [twoFAError, setTwoFAError] = useState('');
@@ -761,43 +760,28 @@ function LoginPage({ onLogin }) {
 
           {/* Demo credentials */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 20 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginBottom: 12 }}>
-              Demo Credentials
+            <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginBottom: 10 }}>
+              Sign in as
             </div>
-            {CREDS.map((cred, i) => (
-              <div key={i} style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {CREDS.map((cred, i) => (
                 <button
-                  onClick={() => setOpenCred(openCred === i ? null : i)}
+                  key={i}
+                  onClick={() => { setEmail(cred.email); setPassword(cred.password); }}
                   style={{
-                    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 14px', borderRadius: 10, border: `1px solid ${C.border}`,
-                    background: openCred === i ? C.orangeLight : C.white,
+                    flex: 1, padding: '10px 6px', borderRadius: 10,
+                    border: `1.5px solid ${C.border}`, background: C.white,
                     cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                    fontSize: 13, fontWeight: 600, color: C.text,
+                    fontSize: 12, fontWeight: 600, color: C.text,
+                    transition: 'border-color 0.15s, background 0.15s',
                   }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.orange; e.currentTarget.style.background = C.orangeLight; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.white; }}
                 >
-                  <span>▶ {cred.label}</span>
-                  <span style={{ fontSize: 11, color: C.muted }}>{openCred === i ? '▲' : '▼'}</span>
+                  {cred.label}
                 </button>
-                {openCred === i && (
-                  <div style={{
-                    border: `1px solid ${C.border}`, borderTop: 'none', borderRadius: '0 0 10px 10px',
-                    padding: '12px 14px', background: C.white,
-                  }}>
-                    <div style={{ fontSize: 12, color: C.muted, marginBottom: 8 }}>
-                      <span style={{ fontWeight: 600 }}>Email:</span> {cred.email}<br/>
-                      <span style={{ fontWeight: 600 }}>Password:</span> {cred.password}
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => { setEmail(cred.email); setPassword(cred.password); setOpenCred(null); }}
-                    >
-                      Auto-fill
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -3073,9 +3057,9 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
           </div>
 
           {editMode ? (
-            /* ── Edit mode: drag-free reorder with ↑↓ and DSQ toggle ─────── */
+            /* ── Edit mode: drag-free reorder with ↑↓ and DNF toggle ─────── */
             <div>
-              <div style={{ fontSize: 12, color: C.muted, marginBottom: 10 }}>Use ↑↓ to reorder. Mark DSQ to disqualify — zero points, no level change.</div>
+              <div style={{ fontSize: 12, color: C.muted, marginBottom: 10 }}>Use ↑↓ to reorder. Mark DNF to remove a runner — zero points, no level change.</div>
               {displayResults.map((item, i) => {
                 const r = item.runner;
                 if (!r) return null;
@@ -3095,7 +3079,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
                     </div>
                     {/* Position + name */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
-                      <span style={{ fontSize: 13, color: C.muted, minWidth: 20 }}>{isDSQed ? 'DSQ' : i + 1}</span>
+                      <span style={{ fontSize: 13, color: C.muted, minWidth: 20 }}>{isDSQed ? 'DNF' : i + 1}</span>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: 14, textDecoration: isDSQed ? 'line-through' : 'none' }}>{r.name}</div>
                         {item.f?.adjTime && !item.f.dnf && <div style={{ fontSize: 11, color: C.muted }}>{fmtSecs(item.f.adjTime)}</div>}
@@ -3108,7 +3092,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
                       border: `1px solid ${isDSQed ? C.danger : C.border}`,
                       color: isDSQed ? C.danger : C.muted,
                       borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                    }}>{isDSQed ? 'Undo DSQ' : 'DSQ'}</button>
+                    }}>{isDSQed ? 'Undo DNF' : 'DNF'}</button>
                   </div>
                 );
               })}
@@ -3133,7 +3117,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
                     </span>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</div>
-                      {item.isDSQ && <div style={{ fontSize: 11, color: C.danger, fontWeight: 700 }}>DISQUALIFIED</div>}
+                      {item.isDSQ && <div style={{ fontSize: 11, color: C.danger, fontWeight: 700 }}>DNF</div>}
                       {!item.isDSQ && item.f?.adjTime && !item.f.dnf && <div style={{ fontSize: 11, color: C.muted }}>{fmtSecs(item.f.adjTime)} adjusted</div>}
                       {!item.isDSQ && item.f?.dnf && <div style={{ fontSize: 11, color: C.danger }}>DNF</div>}
                     </div>
