@@ -196,6 +196,13 @@ const EVENTS = [
 const GROWTH_DATA = [420, 610, 890, 1240, 1780, 2340, 2890, 3450, 4100, 4620, 5280, 5842];
 const MONTHS = ['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'];
 
+const SEED_INVITES = [
+  { id: 'inv-1', email: 'j.patel@oakwoodprimary.co.uk',   name: 'Jaya Patel',    org: 'Oakwood Primary',         sentAt: '22 May 2026', status: 'accepted' },
+  { id: 'inv-2', email: 'c.brown@riversidesec.co.uk',     name: 'Chris Brown',   org: 'Riverside Secondary',     sentAt: '23 May 2026', status: 'sent'     },
+  { id: 'inv-3', email: 'admin@hillsideacademy.co.uk',    name: '',              org: 'Hillside Academy',        sentAt: '10 May 2026', status: 'expired'  },
+  { id: 'inv-4', email: 't.nguyen@thamesvalleyrc.co.uk',  name: 'Tam Nguyen',    org: 'Thames Valley Running Club', sentAt: '24 May 2026', status: 'sent'  },
+];
+
 // ── localStorage helpers ─────────────────────────────────────────────────────
 function loadLS(key, fallback) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
@@ -911,10 +918,15 @@ function OrgTable({ orgs, compact, isMobile, onView }) {
 
 function OrganisationsPage({ setPage }) {
   const isMobile = useIsMobile();
+  const [tab, setTab] = React.useState('orgs'); // 'orgs' | 'invites'
   const [orgs, setOrgs] = React.useState(ORGS);
+  const [invites, setInvites] = React.useState(SEED_INVITES);
   const [viewOrg, setViewOrg] = React.useState(null);
   const [showNewModal, setShowNewModal] = React.useState(false);
+  const [showInviteModal, setShowInviteModal] = React.useState(false);
   const [newForm, setNewForm] = React.useState({ name: '', type: 'School', location: '', admin: '' });
+  const [inviteForm, setInviteForm] = React.useState({ email: '', name: '', org: '' });
+  const [inviteSent, setInviteSent] = React.useState(false);
 
   const inputStyle = {
     width: '100%', padding: '10px 14px', borderRadius: 12,
@@ -938,6 +950,42 @@ function OrganisationsPage({ setPage }) {
     setOrgs([...orgs, next]);
     setNewForm({ name: '', type: 'School', location: '', admin: '' });
     setShowNewModal(false);
+  }
+
+  function handleSendInvite() {
+    if (!inviteForm.email.trim()) return;
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const next = {
+      id: `inv-${Date.now()}`,
+      email: inviteForm.email.trim(),
+      name: inviteForm.name.trim(),
+      org: inviteForm.org.trim() || '—',
+      sentAt: today,
+      status: 'sent',
+    };
+    setInvites(prev => [next, ...prev]);
+    setInviteSent(true);
+    setTimeout(() => {
+      setInviteSent(false);
+      setInviteForm({ email: '', name: '', org: '' });
+      setShowInviteModal(false);
+      setTab('invites');
+    }, 1600);
+  }
+
+  function handleResend(id) {
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    setInvites(prev => prev.map(inv => inv.id === id ? { ...inv, status: 'sent', sentAt: today } : inv));
+  }
+
+  function handleRevoke(id) {
+    setInvites(prev => prev.filter(inv => inv.id !== id));
+  }
+
+  function inviteStatusBadge(status) {
+    if (status === 'accepted') return { label: 'Accepted', bg: C.successLight, color: C.success };
+    if (status === 'expired')  return { label: 'Expired',  bg: C.dangerLight,  color: C.danger  };
+    return { label: 'Sent', bg: '#EFF6FF', color: '#2563EB' };
   }
 
   // ── Org detail panel ──────────────────────────────────────────────────────
@@ -1042,16 +1090,144 @@ function OrganisationsPage({ setPage }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 28 }}>
+      {/* Invite modal */}
+      {showInviteModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
+            {inviteSent ? (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>✉️</div>
+                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>Invitation sent!</div>
+                <div style={{ fontSize: 14, color: C.muted }}>A setup link has been sent to {inviteForm.email}. It expires in 72 hours.</div>
+              </div>
+            ) : (
+              <>
+                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Invite School Admin</div>
+                <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>They'll receive an email with a setup link — expires after 72 hours.</div>
+                {[
+                  { label: 'Email address *', key: 'email', placeholder: 'admin@school.co.uk', type: 'email', cap: 'none' },
+                  { label: 'Name (optional)', key: 'name',  placeholder: 'e.g. Jane Smith', type: 'text', cap: 'words' },
+                  { label: 'Organisation (optional)', key: 'org', placeholder: 'e.g. Riverside Academy', type: 'text', cap: 'words' },
+                ].map(f => (
+                  <div key={f.key} style={{ marginBottom: 14 }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>{f.label}</label>
+                    <input
+                      type={f.type}
+                      value={inviteForm[f.key]}
+                      onChange={e => setInviteForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                      placeholder={f.placeholder}
+                      autoCapitalize={f.cap}
+                      style={inputStyle}
+                    />
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                  <Button style={{ flex: 1 }} disabled={!inviteForm.email.trim()} onClick={handleSendInvite}>Send Invite</Button>
+                  <Button variant="secondary" style={{ flex: 1 }} onClick={() => { setShowInviteModal(false); setInviteForm({ email: '', name: '', org: '' }); }}>Cancel</Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Page header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 24 }}>
         <div>
           <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Organisations</h1>
-          <p style={{ color: C.muted, marginTop: 4 }}>{orgs.length} registered</p>
         </div>
-        <Button onClick={() => setShowNewModal(true)}>+ Add Organisation</Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button variant="outline" onClick={() => setShowInviteModal(true)}>✉️ Invite Admin</Button>
+          {tab === 'orgs' && <Button onClick={() => setShowNewModal(true)}>+ Add</Button>}
+        </div>
       </div>
-      <Card style={{ padding: isMobile ? 12 : 24 }}>
-        <OrgTable orgs={orgs} isMobile={isMobile} onView={setViewOrg} />
-      </Card>
+
+      {/* Tab bar */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: `1px solid ${C.border}`, paddingBottom: 0 }}>
+        {[
+          { id: 'orgs',    label: `Organisations (${orgs.length})` },
+          { id: 'invites', label: `Invitations (${invites.filter(i => i.status === 'sent').length} pending)` },
+        ].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{
+            padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
+            color: tab === t.id ? C.orange : C.muted,
+            borderBottom: `2px solid ${tab === t.id ? C.orange : 'transparent'}`,
+            marginBottom: -1,
+          }}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* Organisations tab */}
+      {tab === 'orgs' && (
+        <Card style={{ padding: isMobile ? 12 : 24 }}>
+          <OrgTable orgs={orgs} isMobile={isMobile} onView={setViewOrg} />
+        </Card>
+      )}
+
+      {/* Invitations tab */}
+      {tab === 'invites' && (
+        <Card>
+          {invites.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: C.muted }}>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>✉️</div>
+              <div style={{ fontWeight: 600 }}>No invitations yet</div>
+              <div style={{ fontSize: 13, marginTop: 4 }}>Use "Invite Admin" to onboard a new school.</div>
+            </div>
+          )}
+          {invites.map(inv => {
+            const s = inviteStatusBadge(inv.status);
+            return (
+              <div key={inv.id} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 0', borderBottom: `1px solid ${C.border}`,
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+              }}>
+                {/* Avatar initial */}
+                <div style={{
+                  width: 38, height: 38, borderRadius: '50%', background: C.orangeLight,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 15, fontWeight: 700, color: C.orange, flexShrink: 0,
+                }}>
+                  {(inv.name || inv.email)[0].toUpperCase()}
+                </div>
+                {/* Details */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 1 }}>
+                    {inv.name || <span style={{ color: C.muted, fontStyle: 'italic' }}>Name not provided</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: C.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {inv.email}{inv.org && inv.org !== '—' ? ` · ${inv.org}` : ''}
+                  </div>
+                </div>
+                {/* Sent date */}
+                <div style={{ fontSize: 12, color: C.muted, flexShrink: 0, display: isMobile ? 'none' : 'block' }}>
+                  Sent {inv.sentAt}
+                </div>
+                {/* Status badge */}
+                <Badge label={s.label} bg={s.bg} color={s.color} />
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  {inv.status !== 'accepted' && (
+                    <button onClick={() => handleResend(inv.id)} style={{
+                      background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
+                      padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.text,
+                      fontFamily: 'Inter, sans-serif', fontWeight: 500,
+                    }}>Resend</button>
+                  )}
+                  {inv.status !== 'accepted' && (
+                    <button onClick={() => handleRevoke(inv.id)} style={{
+                      background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
+                      padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.danger,
+                      fontFamily: 'Inter, sans-serif', fontWeight: 500,
+                    }}>Revoke</button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </Card>
+      )}
     </div>
   );
 }
