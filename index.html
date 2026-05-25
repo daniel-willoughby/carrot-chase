@@ -506,23 +506,32 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, children 
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 16px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 22 }}>🥕</span>
-            <span style={{ fontWeight: 800, fontSize: 15, color: C.orange }}>Carrot Chase</span>
+          {/* Logo — emoji only so it doesn't crowd the page title */}
+          <div style={{ width: 40, display: 'flex', alignItems: 'center' }}>
+            <span style={{ fontSize: 24 }}>🥕</span>
           </div>
-          <div style={{ fontWeight: 700, fontSize: 14, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+          {/* Page title — centred between fixed-width side columns */}
+          <div style={{ fontWeight: 700, fontSize: 15, textAlign: 'center', flex: 1 }}>
             {pageTitle}
           </div>
-          <div
-            style={{
-              width: 34, height: 34, borderRadius: '50%', background: C.orangeLight,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 15, fontWeight: 700, color: C.orange, cursor: 'pointer',
-            }}
-            onClick={() => { if (window.confirm('Sign out?')) onLogout(); }}
-            title="Sign out"
-          >
-            {user.name[0]}
+          {/* Sign-out button — initial + label */}
+          <div style={{ width: 64, display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => { if (window.confirm('Sign out?')) onLogout(); }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px',
+              }}
+            >
+              <div style={{
+                width: 30, height: 30, borderRadius: '50%', background: C.orangeLight,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, fontWeight: 700, color: C.orange,
+              }}>
+                {user.name[0]}
+              </div>
+              <span style={{ fontSize: 9, color: C.muted, fontWeight: 600, letterSpacing: 0.3, fontFamily: 'Inter' }}>Sign out</span>
+            </button>
           </div>
         </header>
 
