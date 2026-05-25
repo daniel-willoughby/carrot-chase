@@ -2583,7 +2583,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                       marginTop: 16, textAlign: 'center', padding: 16,
                       background: C.orangeLight, borderRadius: 12,
                     }}>
-                      <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>GROUP {gi + 2} STARTS IN · {staggerGap(gi)}s gap based on pace</div>
+                      <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>GROUP {gi + 1} STARTS IN · {staggerGap(gi - 1)}s gap based on pace</div>
                       <div style={{ fontSize: 40, fontWeight: 800, color: C.orange, fontVariantNumeric: 'tabular-nums' }}>
                         {fmtTime(countdown)}
                       </div>
