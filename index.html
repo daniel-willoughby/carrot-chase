@@ -2953,7 +2953,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
       if (!res) return r;
       const newTimes = res.f.adjTime ? [...(r.times || []).slice(-4), res.f.adjTime] : r.times;
       const pbSecs = r.pb && r.pb !== '—' ? parseInt(r.pb.split(':')[0])*60 + parseInt(r.pb.split(':')[1]) : Infinity;
-      const newPbSecs = res.newPB && res.f.adjTime && res.f.adjTime >= 60 ? res.f.adjTime : pbSecs;
+      const newPbSecs = res.newPB && res.f.adjTime ? res.f.adjTime : pbSecs;
       const newPb = newPbSecs < Infinity ? fmtSecs(newPbSecs) : r.pb;
       return {
         ...r,
