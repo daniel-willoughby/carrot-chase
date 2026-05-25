@@ -1578,8 +1578,25 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
   const [showCSVModal, setShowCSVModal] = useState(false);
   const [csvPreview, setCsvPreview] = useState(null);
   const [addForm, setAddForm] = useState({ firstName: '', lastName: '', year: 'Year 5', group: 'Year 5 Running Club' });
+  const [editRunner, setEditRunner] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', group: '' });
   const csvRef = useRef(null);
   const isMobile = useIsMobile();
+
+  function openEdit(r, e) {
+    e.stopPropagation();
+    setEditForm({ name: r.name, group: r.group });
+    setEditRunner(r);
+  }
+
+  function handleEditSave() {
+    if (!editForm.name.trim()) return;
+    setRunners(runners.map(r => r.id === editRunner.id
+      ? { ...r, name: editForm.name.trim(), group: editForm.group }
+      : r
+    ));
+    setEditRunner(null);
+  }
 
   const filtered = runners.filter(r => {
     const matchesSearch =
@@ -1794,17 +1811,24 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
             {filtered.map(r => {
               const lc = levelColor(r.level);
               return (
-                <div key={r.id} style={{ border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 14px', background: C.bg, cursor: 'pointer' }}
-                  onClick={() => { setSelectedRunner(r); setPage('runnerprofile'); }}
-                >
+                <div key={r.id} style={{ border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 14px', background: C.bg }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>{r.name}</div>
-                    <span style={{
-                      background: lc.bg, color: lc.color, border: `1px solid ${lc.border}`,
-                      borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700,
-                    }}>L{r.level}</span>
+                    <div style={{ fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+                      onClick={() => { setSelectedRunner(r); setPage('runnerprofile'); }}>{r.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button onClick={e => openEdit(r, e)}
+                        style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
+                          padding: '3px 10px', fontSize: 11, fontWeight: 600, color: C.muted, cursor: 'pointer', fontFamily: 'Inter' }}>
+                        Edit
+                      </button>
+                      <span style={{
+                        background: lc.bg, color: lc.color, border: `1px solid ${lc.border}`,
+                        borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700,
+                      }}>L{r.level}</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: 12, cursor: 'pointer' }}
+                    onClick={() => { setSelectedRunner(r); setPage('runnerprofile'); }}>
                     <div><span style={{ color: C.muted }}>ID </span><span style={{ fontFamily: 'monospace' }}>{r.id}</span></div>
                     <div><span style={{ color: C.muted }}>PB </span><span style={{ fontWeight: 600 }}>{r.pb}</span></div>
                     <div><span style={{ color: C.muted }}>Streak </span><span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}🔥</span></div>
@@ -1853,7 +1877,10 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                       </td>
                       <td style={{ padding: '12px', fontWeight: 700 }}>{r.points.toLocaleString()}</td>
                       <td style={{ padding: '12px' }}>
-                        <Button size="sm" variant="ghost">View →</Button>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <Button size="sm" variant="outline" onClick={e => openEdit(r, e)}>Edit</Button>
+                          <Button size="sm" variant="ghost">View →</Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1863,6 +1890,41 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
           </div>
         )}
       </Card>
+
+      {/* ── Edit Runner Modal ── */}
+      {editRunner && (
+        <div style={{ position:'fixed', inset:0, zIndex:500, background:'rgba(0,0,0,0.4)',
+          display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}
+          onClick={() => setEditRunner(null)}>
+          <div style={{ background:C.white, borderRadius:20, padding:28, width:'100%', maxWidth:400,
+            boxShadow:'0 20px 60px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20 }}>
+              <div style={{ fontWeight:800, fontSize:18 }}>Edit Runner</div>
+              <button onClick={() => setEditRunner(null)}
+                style={{ background:'none', border:'none', fontSize:20, cursor:'pointer', color:C.muted }}>✕</button>
+            </div>
+            <div style={{ marginBottom:16 }}>
+              <label style={{ display:'block', fontSize:13, fontWeight:600, marginBottom:6 }}>Name</label>
+              <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                autoCapitalize="words"
+                style={{ width:'100%', padding:'11px 14px', borderRadius:10, border:`1.5px solid ${C.border}`,
+                  fontSize:14, fontFamily:'Inter, sans-serif', outline:'none', background:C.white, boxSizing:'border-box' }} />
+            </div>
+            <div style={{ marginBottom:24 }}>
+              <label style={{ display:'block', fontSize:13, fontWeight:600, marginBottom:6 }}>Club / Group</label>
+              <select value={editForm.group} onChange={e => setEditForm(f => ({ ...f, group: e.target.value }))}
+                style={{ width:'100%', padding:'11px 14px', borderRadius:10, border:`1.5px solid ${C.border}`,
+                  fontSize:14, fontFamily:'Inter, sans-serif', background:C.white, boxSizing:'border-box' }}>
+                {GROUPS.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
+              </select>
+            </div>
+            <div style={{ display:'flex', gap:10 }}>
+              <Button variant="outline" style={{ flex:1 }} onClick={() => setEditRunner(null)}>Cancel</Button>
+              <Button style={{ flex:1 }} onClick={handleEditSave}>Save changes</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
