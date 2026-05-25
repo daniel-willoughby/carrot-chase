@@ -372,8 +372,9 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
     ],
     lead: [
       { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
-      { id: 'events', icon: '📅', label: 'Events' },
-      { id: 'runevent', icon: '▶', label: 'Run Event' },
+      { id: 'members',   icon: '🏃', label: 'Members'   },
+      { id: 'events',    icon: '📅', label: 'Events'    },
+      { id: 'runevent',  icon: '▶',  label: 'Run Event' },
     ],
   };
 
@@ -481,6 +482,7 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, children 
     ],
     lead: [
       { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
+      { id: 'members',   icon: '🏃', label: 'Members'   },
       { id: 'events',    icon: '📅', label: 'Events'    },
       { id: 'runevent',  icon: '▶',  label: 'Run Event' },
     ],
@@ -2879,6 +2881,9 @@ function Confetti() {
 function ResultsPage({ setPage, runners, setRunners, raceResult }) {
   const [showConf, setShowConf] = useState(true);
   const [committed, setCommitted] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [customOrder, setCustomOrder] = useState(null); // null = auto sort; array of runnerId strings = manual order
+  const [dsqSet, setDsqSet] = useState(new Set());
   const isMobile = useIsMobile();
   useEffect(() => { const t = setTimeout(() => setShowConf(false), 5000); return () => clearTimeout(t); }, []);
 
@@ -2887,22 +2892,33 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
     if (!raceResult) return null;
     const { finishers, presentRunners, dnsRunners = [] } = raceResult;
 
-    // Sort finishers by adjTime (non-DNF first, then DNF)
-    const sorted = [...finishers].sort((a, b) => {
-      if (a.dnf && !b.dnf) return 1;
-      if (!a.dnf && b.dnf) return -1;
-      return (a.adjTime || 0) - (b.adjTime || 0);
-    });
+    // Build ordered list: customOrder overrides adjTime sort
+    let sorted;
+    if (customOrder) {
+      // Reconstruct finishers in customOrder sequence; append any not listed at the end
+      const byId = Object.fromEntries(finishers.map(f => [f.runnerId, f]));
+      const ordered = customOrder.map(id => byId[id]).filter(Boolean);
+      const rest = finishers.filter(f => !customOrder.includes(f.runnerId));
+      sorted = [...ordered, ...rest];
+    } else {
+      sorted = [...finishers].sort((a, b) => {
+        if (a.dnf && !b.dnf) return 1;
+        if (!a.dnf && b.dnf) return -1;
+        return (a.adjTime || 0) - (b.adjTime || 0);
+      });
+    }
 
     const results = sorted.map((f, rankIdx) => {
       const runner = runners.find(r => r.id === f.runnerId);
       if (!runner) return null;
+      const isDSQ = dsqSet.has(f.runnerId);
       const target = carrotTarget(runner);
-      const pts = f.dnf ? 20 : posPoints(rankIdx);
+      // DSQ runners get 0 pts and no level change
+      const pts = isDSQ ? 0 : f.dnf ? 20 : posPoints(rankIdx);
 
-      // Level change
+      // Level change (DSQ = no change, same as DNF branch)
       let levelDelta = 0;
-      if (!f.dnf && target && f.adjTime) {
+      if (!f.dnf && !isDSQ && target && f.adjTime) {
         // Level 1 = elite, 99 = beginner → beating target DECREASES level (improves)
         if (f.adjTime < target - 5) levelDelta = -2;        // beat target well → drop 2 levels
         else if (f.adjTime <= target + 15) levelDelta = -1; // near target → drop 1 level
@@ -2922,16 +2938,16 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
         { id: 'top_3',        label: 'Top 3',        check: () => !f.dnf && rankIdx < 3 },
         { id: 'consistent',   label: 'Consistent',   check: () => !f.dnf && target && Math.abs(f.adjTime - target) <= 10 },
       ];
-      const newBadges = BADGE_RULES.filter(b => b.check() && !(runner.badges || []).includes(b.label)).map(b => b.label);
+      const newBadges = isDSQ ? [] : BADGE_RULES.filter(b => b.check() && !(runner.badges || []).includes(b.label)).map(b => b.label);
 
-      return { runner, f, rankIdx, pts, levelDelta, newPB, newBadges, newLevel: Math.max(1, Math.min(99, runner.level + levelDelta)) };
+      return { runner, f, rankIdx, pts, levelDelta, newPB, newBadges, isDSQ, newLevel: Math.max(1, Math.min(99, runner.level + levelDelta)) };
     }).filter(Boolean);
 
     // Most improved = highest positive levelDelta
     const mostImproved = [...results].sort((a, b) => a.levelDelta - b.levelDelta)[0]; // most negative = most improved
 
     return { results, mostImproved };
-  }, [raceResult, runners]);
+  }, [raceResult, runners, customOrder, dsqSet]);
 
   // ── Commit results to runners state (once) ───────────────────────────────────
   function commitResults() {
@@ -2947,7 +2963,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
         ...r,
         level: res.newLevel,
         points: r.points + res.pts,
-        streak: res.f.dnf ? r.streak : r.streak + 1,
+        streak: (res.f.dnf || res.isDSQ) ? r.streak : r.streak + 1,
         times: newTimes,
         pb: newPb,
         badges: [...new Set([...(r.badges || []), ...res.newBadges])],
@@ -2969,10 +2985,37 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
     f: { adjTime: m.adjTime, dnf: false }, rankIdx: i, ...m,
   }));
 
-  const top3 = displayResults.slice(0, 3);
-  const rest = displayResults.slice(3);
+  const top3 = displayResults.filter(r => !r.isDSQ).slice(0, 3);
+  const rest = displayResults.filter(r => !r.isDSQ).slice(3);
   const mostImproved = computed?.mostImproved || (displayResults[0] ? displayResults[0] : null);
   const newBadgesAll = displayResults.flatMap(r => (r.newBadges || []).map(b => ({ badge: b, name: r.runner?.name })));
+
+  // Edit-order helpers
+  function startEdit() {
+    if (!computed) return;
+    setCustomOrder(computed.results.map(r => r.f.runnerId));
+    setEditMode(true);
+  }
+  function cancelEdit() {
+    setCustomOrder(null);
+    setDsqSet(new Set());
+    setEditMode(false);
+  }
+  function moveRunner(idx, dir) {
+    if (!customOrder) return;
+    const next = [...customOrder];
+    const swap = idx + dir;
+    if (swap < 0 || swap >= next.length) return;
+    [next[idx], next[swap]] = [next[swap], next[idx]];
+    setCustomOrder(next);
+  }
+  function toggleDSQ(runnerId) {
+    setDsqSet(prev => {
+      const s = new Set(prev);
+      if (s.has(runnerId)) s.delete(runnerId); else s.add(runnerId);
+      return s;
+    });
+  }
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: isMobile ? '16px 12px' : 24, minHeight: '100vh', background: C.bg }}>
@@ -3011,36 +3054,103 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
           </Card>
         )}
 
-        {/* Level updates */}
+        {/* Level updates / Edit order */}
         <Card style={{ marginBottom: 20 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Level Updates</div>
-          {displayResults.map((item, i) => {
-            const r = item.runner;
-            if (!r) return null;
-            const lc = levelColor(r.level);
-            const medals = { 0: '🥇', 1: '🥈', 2: '🥉' };
-            return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 16, minWidth: 28 }}>{medals[i] || `${i+1}`}</span>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</div>
-                    {item.f?.adjTime && !item.f.dnf && <div style={{ fontSize: 11, color: C.muted }}>{fmtSecs(item.f.adjTime)} adjusted</div>}
-                    {item.f?.dnf && <div style={{ fontSize: 11, color: C.danger }}>DNF</div>}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>{editMode ? 'Edit Finish Order' : 'Level Updates'}</div>
+            {computed && !committed && (
+              editMode ? (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={cancelEdit} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 12px', fontSize: 12, cursor: 'pointer', color: C.muted }}>Cancel</button>
+                  <button onClick={() => setEditMode(false)} style={{ background: C.orange, border: 'none', borderRadius: 8, padding: '4px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', color: C.white }}>Done</button>
+                </div>
+              ) : (
+                <button onClick={startEdit} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 12px', fontSize: 12, cursor: 'pointer', color: C.muted, fontFamily: 'Inter, sans-serif' }}>
+                  ✏️ Edit Order
+                </button>
+              )
+            )}
+          </div>
+
+          {editMode ? (
+            /* ── Edit mode: drag-free reorder with ↑↓ and DSQ toggle ─────── */
+            <div>
+              <div style={{ fontSize: 12, color: C.muted, marginBottom: 10 }}>Use ↑↓ to reorder. Mark DSQ to disqualify — zero points, no level change.</div>
+              {displayResults.map((item, i) => {
+                const r = item.runner;
+                if (!r) return null;
+                const isDSQed = item.isDSQ;
+                return (
+                  <div key={r.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0',
+                    borderBottom: `1px solid ${C.border}`,
+                    opacity: isDSQed ? 0.5 : 1,
+                  }}>
+                    {/* Reorder arrows */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <button onClick={() => moveRunner(i, -1)} disabled={i === 0 || isDSQed}
+                        style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 4, width: 22, height: 20, fontSize: 10, cursor: 'pointer', display:'flex', alignItems:'center', justifyContent:'center', opacity: (i === 0 || isDSQed) ? 0.3 : 1 }}>▲</button>
+                      <button onClick={() => moveRunner(i, 1)} disabled={i === displayResults.length - 1 || isDSQed}
+                        style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 4, width: 22, height: 20, fontSize: 10, cursor: 'pointer', display:'flex', alignItems:'center', justifyContent:'center', opacity: (i === displayResults.length - 1 || isDSQed) ? 0.3 : 1 }}>▼</button>
+                    </div>
+                    {/* Position + name */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: 13, color: C.muted, minWidth: 20 }}>{isDSQed ? 'DSQ' : i + 1}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, textDecoration: isDSQed ? 'line-through' : 'none' }}>{r.name}</div>
+                        {item.f?.adjTime && !item.f.dnf && <div style={{ fontSize: 11, color: C.muted }}>{fmtSecs(item.f.adjTime)}</div>}
+                        {item.f?.dnf && <div style={{ fontSize: 11, color: C.danger }}>DNF</div>}
+                      </div>
+                    </div>
+                    {/* DSQ toggle */}
+                    <button onClick={() => toggleDSQ(item.f.runnerId)} style={{
+                      background: isDSQed ? C.dangerLight : 'none',
+                      border: `1px solid ${isDSQed ? C.danger : C.border}`,
+                      color: isDSQed ? C.danger : C.muted,
+                      borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                    }}>{isDSQed ? 'Undo DSQ' : 'DSQ'}</button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* ── Normal results view ─────────────────────────────────────── */
+            displayResults.map((item, i) => {
+              const r = item.runner;
+              if (!r) return null;
+              const lc = levelColor(r.level);
+              const nonDSQIndex = displayResults.filter(x => !x.isDSQ).indexOf(item);
+              const medals = { 0: '🥇', 1: '🥈', 2: '🥉' };
+              return (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '8px 0', borderBottom: `1px solid ${C.border}`,
+                  opacity: item.isDSQ ? 0.5 : 1,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 16, minWidth: 28 }}>
+                      {item.isDSQ ? '🚫' : (medals[nonDSQIndex] !== undefined ? medals[nonDSQIndex] : `${nonDSQIndex + 1}`)}
+                    </span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</div>
+                      {item.isDSQ && <div style={{ fontSize: 11, color: C.danger, fontWeight: 700 }}>DISQUALIFIED</div>}
+                      {!item.isDSQ && item.f?.adjTime && !item.f.dnf && <div style={{ fontSize: 11, color: C.muted }}>{fmtSecs(item.f.adjTime)} adjusted</div>}
+                      {!item.isDSQ && item.f?.dnf && <div style={{ fontSize: 11, color: C.danger }}>DNF</div>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ background: lc.bg, color: lc.color, borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>L{r.level}</span>
+                    <span>→</span>
+                    <span style={{
+                      background: item.levelDelta < 0 ? C.successLight : item.levelDelta > 0 ? C.dangerLight : '#f3f4f6',
+                      color: item.levelDelta < 0 ? C.success : item.levelDelta > 0 ? C.danger : C.muted,
+                      borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 700,
+                    }}>L{item.newLevel} {item.levelDelta < 0 ? `↑${Math.abs(item.levelDelta)}` : item.levelDelta > 0 ? `↓${item.levelDelta}` : '—'}</span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ background: lc.bg, color: lc.color, borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>L{r.level}</span>
-                  <span>→</span>
-                  <span style={{
-                    background: item.levelDelta < 0 ? C.successLight : item.levelDelta > 0 ? C.dangerLight : '#f3f4f6',
-                    color: item.levelDelta < 0 ? C.success : item.levelDelta > 0 ? C.danger : C.muted,
-                    borderRadius: 999, padding: '2px 8px', fontSize: 12, fontWeight: 700,
-                  }}>L{item.newLevel} {item.levelDelta < 0 ? `↑${Math.abs(item.levelDelta)}` : item.levelDelta > 0 ? `↓${item.levelDelta}` : '—'}</span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </Card>
 
         {/* Most improved */}
