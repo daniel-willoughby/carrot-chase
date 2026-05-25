@@ -771,7 +771,7 @@ function LoginPage({ onLogin }) {
           {/* Demo credentials */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 20 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: C.muted, marginBottom: 10 }}>
-              Sign in as
+              Autofill login details as
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               {CREDS.map((cred, i) => (
@@ -845,7 +845,80 @@ function SuperAdminDashboard({ setPage }) {
 }
 
 // ── ORGANISATIONS PAGE ───────────────────────────────────────────────────────
+// ── Org crest SVGs ───────────────────────────────────────────────────────────
+// Heraldic heater-shield shape; symbols are white on brand colour
+const SHIELD   = 'M10,4 L90,4 L90,62 Q90,92 50,108 Q10,92 10,62 Z';
+const SHIELD_I = 'M16,10 L84,10 L84,61 Q84,88 50,103 Q16,88 16,61 Z'; // inner border
+
+const ORG_CRESTS = {
+  // Hampton Primary School — blue — 5-pointed star
+  1: { bg:'#3B82F6', bd:'#1D4ED8', hi:'#93C5FD', symbol: (
+    <polygon points="50,19 57,40 79,40 62,53 69,74 50,61 31,74 38,53 21,40 43,40" fill="white" opacity="0.93"/>
+  )},
+  // Riverside Academy — cyan — three waves
+  2: { bg:'#06B6D4', bd:'#0E7490', hi:'#67E8F9', symbol: (
+    <>
+      <path d="M24,38 Q37,26 50,38 Q63,50 76,38" stroke="white" strokeWidth="5" fill="none" strokeLinecap="round"/>
+      <path d="M24,54 Q37,42 50,54 Q63,66 76,54" stroke="white" strokeWidth="5" fill="none" strokeLinecap="round"/>
+      <path d="M24,70 Q37,58 50,70 Q63,82 76,70" stroke="white" strokeWidth="5" fill="none" strokeLinecap="round"/>
+    </>
+  )},
+  // St Mary's C of E — purple — ornate cross
+  3: { bg:'#8B5CF6', bd:'#6D28D9', hi:'#C4B5FD', symbol: (
+    <>
+      <rect x="44" y="15" width="12" height="76" rx="3" fill="white" opacity="0.93"/>
+      <rect x="20" y="37" width="60" height="12" rx="3" fill="white" opacity="0.93"/>
+      <rect x="38" y="15" width="24" height="12" rx="3" fill="white" opacity="0.5"/>
+    </>
+  )},
+  // Oakwood Secondary — green — oak tree
+  4: { bg:'#10B981', bd:'#047857', hi:'#6EE7B7', symbol: (
+    <>
+      <ellipse cx="50" cy="38" rx="22" ry="20" fill="white" opacity="0.93"/>
+      <ellipse cx="32" cy="50" rx="16" ry="14" fill="white" opacity="0.93"/>
+      <ellipse cx="68" cy="50" rx="16" ry="14" fill="white" opacity="0.93"/>
+      <ellipse cx="50" cy="52" rx="18" ry="14" fill="white" opacity="0.93"/>
+      <rect x="45" y="60" width="10" height="24" rx="3" fill="white" opacity="0.93"/>
+    </>
+  )},
+  // Thames Valley Running Club — orange — runner in motion
+  5: { bg:'#F97316', bd:'#C2410C', hi:'#FED7AA', symbol: (
+    <>
+      <circle cx="60" cy="21" r="9" fill="white" opacity="0.93"/>
+      <path d="M56,30 L46,54" stroke="white" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
+      <path d="M46,54 L30,68" stroke="white" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
+      <path d="M56,30 L68,48" stroke="white" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
+      <path d="M68,48 L74,68" stroke="white" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
+      <path d="M38,43 L72,33" stroke="white" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+    </>
+  )},
+  // Hillside Business Group — grey — classical columns
+  6: { bg:'#6B7280', bd:'#374151', hi:'#D1D5DB', symbol: (
+    <>
+      <rect x="18" y="21" width="64" height="9" rx="2" fill="white" opacity="0.93"/>
+      <rect x="22" y="30" width="10" height="38" rx="1.5" fill="white" opacity="0.93"/>
+      <rect x="37" y="30" width="10" height="38" rx="1.5" fill="white" opacity="0.93"/>
+      <rect x="53" y="30" width="10" height="38" rx="1.5" fill="white" opacity="0.93"/>
+      <rect x="68" y="30" width="10" height="38" rx="1.5" fill="white" opacity="0.93"/>
+      <rect x="18" y="66" width="64" height="9" rx="2" fill="white" opacity="0.93"/>
+    </>
+  )},
+};
+
 function OrgLogo({ org, size = 40 }) {
+  const crest = ORG_CRESTS[org.id];
+  if (crest) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 100 112" xmlns="http://www.w3.org/2000/svg"
+        style={{ display: 'block', flexShrink: 0 }}>
+        <path d={SHIELD} fill={crest.bg} />
+        <path d={SHIELD} fill="none" stroke={crest.bd} strokeWidth="2.5"/>
+        <path d={SHIELD_I} fill="none" stroke={crest.hi} strokeWidth="1.5" opacity="0.45"/>
+        {crest.symbol}
+      </svg>
+    );
+  }
+  // Fallback for newly added orgs
   const color = org.logoColor || '#9CA3AF';
   return (
     <div style={{
