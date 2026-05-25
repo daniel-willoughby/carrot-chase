@@ -186,10 +186,10 @@ const GROUPS = [
 ];
 
 const EVENTS = [
-  { id: 1, name: 'Year 6 Handicap Run #14', group: 'Year 6 Running Club', date: '20 May 2026', format: 'Handicap', runners: 18, status: 'upcoming' },
-  { id: 2, name: 'Year 5 Handicap Run #12', group: 'Year 5 Running Club', date: '21 May 2026', format: 'Handicap', runners: 22, status: 'upcoming' },
+  { id: 1, name: 'Year 6 Pursuit Run #14', group: 'Year 6 Running Club', date: '20 May 2026', format: 'Pursuit', runners: 18, status: 'upcoming' },
+  { id: 2, name: 'Year 5 Pursuit Run #12', group: 'Year 5 Running Club', date: '21 May 2026', format: 'Pursuit', runners: 22, status: 'upcoming' },
   { id: 3, name: 'Breakfast Club Sprint #8', group: 'Breakfast Club',     date: '19 May 2026', format: 'Scratch',  runners: 14, status: 'upcoming' },
-  { id: 4, name: 'Year 6 Handicap Run #13', group: 'Year 6 Running Club', date: '13 May 2026', format: 'Handicap', runners: 20, status: 'completed' },
+  { id: 4, name: 'Year 6 Pursuit Run #13', group: 'Year 6 Running Club', date: '13 May 2026', format: 'Pursuit', runners: 20, status: 'completed' },
   { id: 5, name: 'PE 4B Team Relay #3',     group: 'PE Class 4B',         date: '10 May 2026', format: 'Relay',    runners: 28, status: 'completed' },
 ];
 
@@ -667,7 +667,7 @@ function LoginPage({ onLogin }) {
         <span style={{ fontSize: isMobile ? 40 : 72, marginBottom: isMobile ? 10 : 24 }}>🥕</span>
         <h1 style={{ fontSize: isMobile ? 26 : 40, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>Carrot Chase</h1>
         <p style={{ fontSize: isMobile ? 14 : 20, fontWeight: 400, marginBottom: isMobile ? 16 : 48, opacity: 0.9, textAlign: 'center' }}>
-          The golf handicap of running
+          Pursuit racing for every runner
         </p>
         <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', flexWrap: 'wrap', gap: isMobile ? 8 : 14, width: '100%', maxWidth: 360, justifyContent: 'center' }}>
           {[
@@ -1348,7 +1348,7 @@ function LeadDashboard({ setPage }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: isMobile ? 15 : 18, fontWeight: 700, marginBottom: 6 }}>Ready to run an event?</div>
-            <div style={{ opacity: 0.85, fontSize: isMobile ? 12 : 14 }}>Year 6 Handicap Run #14 is scheduled for tomorrow</div>
+            <div style={{ opacity: 0.85, fontSize: isMobile ? 12 : 14 }}>Year 6 Pursuit Run #14 is scheduled for tomorrow</div>
           </div>
           <Button
             onClick={() => setPage('runevent')}
@@ -1972,7 +1972,7 @@ function CreateEventPage({ setPage, runners }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     group: 'Year 6 Running Club',
-    format: 'Handicap',
+    format: 'Pursuit',
     course: '1.5km Loop',
     date: '2026-05-21',
     time: '15:30',
@@ -2025,7 +2025,7 @@ function CreateEventPage({ setPage, runners }) {
             <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 20 }}>Step 1: Event Details</div>
             {[
               { label: 'Group', key: 'group', type: 'select', options: GROUPS.map(g => g.name) },
-              { label: 'Format', key: 'format', type: 'select', options: ['Handicap', 'Scratch', 'Relay'] },
+              { label: 'Format', key: 'format', type: 'select', options: ['Pursuit', 'Scratch', 'Relay'] },
               { label: 'Course', key: 'course', type: 'select', options: ['1.5km Loop', '2km Track', '5km Road', 'Cross Country'] },
               { label: 'Date', key: 'date', type: 'date' },
               { label: 'Time', key: 'time', type: 'time' },
@@ -2106,9 +2106,9 @@ function CreateEventPage({ setPage, runners }) {
                     <span>• 1× Finish marshal</span>
                     <span>• {onCourse}× On-course marshal{onCourse !== 1 ? 's' : ''} (approx. 1 per {Math.ceil(rc / onCourse)} runners)</span>
                   </div>
-                  {form.format === 'Handicap' && (
+                  {form.format === 'Pursuit' && (
                     <div style={{ marginTop: 8, fontSize: 12, color: C.orange, fontWeight: 600 }}>
-                      Handicap format — staggered starts by level group. Marshals must know start order.
+                      Pursuit format — staggered starts by level group. Marshals must know start order.
                     </div>
                   )}
                 </div>
@@ -2311,7 +2311,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
             ←
           </button>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 18 }}>Year 6 Handicap Run #14</div>
+            <div style={{ fontWeight: 800, fontSize: 18 }}>Year 6 Pursuit Run #14</div>
             <div style={{ fontSize: 12, color: C.muted }}>
               Step {step} of 4 · {['Attendance', 'Start Order', 'Finish Recording', 'Name Match'][step-1]}
             </div>
@@ -2470,7 +2470,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
         {step === 2 && (
           <div className="fade-in">
             <div style={{ marginBottom: 16, color: C.muted, fontSize: 14 }}>
-              Handicap stagger: slower runners start first for a fair finish.
+              Pursuit stagger: slower runners start first for a fair finish.
             </div>
             {startGroups.map((grp, gi) => {
               const started = groupStarted > gi;
@@ -2905,7 +2905,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ fontSize: 56, marginBottom: 8 }}>🎉</div>
           <h1 style={{ fontSize: 28, fontWeight: 800 }}>Race Complete!</h1>
-          <div style={{ color: C.muted, marginTop: 4 }}>Handicap Run · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+          <div style={{ color: C.muted, marginTop: 4 }}>Pursuit Run · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
         </div>
 
         {/* Podium */}
@@ -3033,11 +3033,11 @@ function RunnerProfilePage({ runner, setPage, runners }) {
   const baseLevel = runner.level;
   const levelHistory = Array.from({ length: 9 }, (_, i) => Math.max(1, baseLevel - (9 - i))).concat([baseLevel]);
   const eventHistory = [
-    { date: '14 May 2026', event: 'Year 5 Handicap Run #12', pos: '3rd',  time: '6:18', pts: 120 },
-    { date: '7 May 2026',  event: 'Year 5 Handicap Run #11', pos: '5th',  time: '6:22', pts: 95  },
-    { date: '30 Apr 2026', event: 'Year 5 Handicap Run #10', pos: '2nd',  time: '6:14', pts: 140 },
-    { date: '23 Apr 2026', event: 'Year 5 Handicap Run #9',  pos: '1st',  time: '6:12', pts: 165 },
-    { date: '16 Apr 2026', event: 'Year 5 Handicap Run #8',  pos: '4th',  time: '6:25', pts: 105 },
+    { date: '14 May 2026', event: 'Year 5 Pursuit Run #12', pos: '3rd',  time: '6:18', pts: 120 },
+    { date: '7 May 2026',  event: 'Year 5 Pursuit Run #11', pos: '5th',  time: '6:22', pts: 95  },
+    { date: '30 Apr 2026', event: 'Year 5 Pursuit Run #10', pos: '2nd',  time: '6:14', pts: 140 },
+    { date: '23 Apr 2026', event: 'Year 5 Pursuit Run #9',  pos: '1st',  time: '6:12', pts: 165 },
+    { date: '16 Apr 2026', event: 'Year 5 Pursuit Run #8',  pos: '4th',  time: '6:25', pts: 105 },
   ];
 
   const awards = (runner.badges && runner.badges.length > 0) ? runner.badges : ['First Finish', 'Consistent'];
