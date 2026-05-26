@@ -392,6 +392,21 @@ function StatCard({ label, value, sub, color, icon }) {
   );
 }
 
+function EmptyState({ icon, heading, sub, action }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '40px 24px' }}>
+      <div style={{
+        width: 64, height: 64, borderRadius: '50%', background: C.bgSubtle,
+        border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center',
+        justifyContent: 'center', margin: '0 auto 16px', fontSize: 28,
+      }}>{icon}</div>
+      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6, letterSpacing: '-0.01em' }}>{heading}</div>
+      {sub && <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, maxWidth: 260, margin: '0 auto' }}>{sub}</div>}
+      {action && <div style={{ marginTop: 16 }}>{action}</div>}
+    </div>
+  );
+}
+
 // ── SVG Line Chart ───────────────────────────────────────────────────────────
 function LineChart({ data, labels, title, height=200, color=C.orange }) {
   const W = 560, H = height;
@@ -1249,7 +1264,7 @@ function OrganisationsPage({ setPage }) {
             </div>
           ))}
           {EVENTS.filter(e => e.status === 'completed').length === 0 && (
-            <div style={{ color: C.muted, fontSize: 13 }}>No completed events yet.</div>
+            <EmptyState icon="📅" heading="No events yet" sub="Completed events will appear here." />
           )}
         </Card>
 
@@ -1389,11 +1404,7 @@ function OrganisationsPage({ setPage }) {
       {tab === 'invites' && (
         <Card>
           {invites.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: C.muted }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>✉️</div>
-              <div style={{ fontWeight: 600 }}>No invitations yet</div>
-              <div style={{ fontSize: 13, marginTop: 4 }}>Use "Invite Admin" to onboard a new school.</div>
-            </div>
+            <EmptyState icon="✉️" heading="No invitations yet" sub='Use "Invite Admin" to onboard a new school.' />
           )}
           {invites.map(inv => {
             const s = inviteStatusBadge(inv.status);
@@ -1650,7 +1661,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
             <div style={{ fontWeight: 700, fontSize: 16 }}>Upcoming Events</div>
             <Button variant="outline" size="sm" onClick={() => { sfx.click(); setPage('events'); }}>View all</Button>
           </div>
-          {upcomingEvents.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No upcoming events</div>}
+          {upcomingEvents.length === 0 && <EmptyState icon="📅" heading="No upcoming events" sub="Create an event to get started." />}
           {upcomingEvents.map(ev => (
             <div key={ev.id} style={{ padding: '12px 0', borderBottom: `1px solid ${C.border}` }}>
               <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{ev.name}</div>
@@ -1668,7 +1679,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
             <div style={{ fontWeight: 700, fontSize: 16 }}>Recent Results</div>
             <Button variant="outline" size="sm" onClick={() => { sfx.click(); setPage('events'); }}>View all</Button>
           </div>
-          {recentEvents.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No completed events</div>}
+          {recentEvents.length === 0 && <EmptyState icon="🏁" heading="No results yet" sub="Completed events will show here." />}
           {recentEvents.map(ev => (
             <div key={ev.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -2100,9 +2111,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
         </div>
         <Card style={{ padding: 0 }}>
           {leadInvites.length === 0 && (
-            <div style={{ padding: '32px 0', textAlign: 'center', color: C.muted }}>
-              <div style={{ fontSize: 13 }}>No leads invited yet. Use "Invite Lead" to get started.</div>
-            </div>
+            <EmptyState icon="👤" heading="No leads invited yet" sub='Use "Invite Lead" to add a group lead.' />
           )}
           {leadInvites.map(inv => {
             const s = inviteStatusBadge(inv.status);
@@ -2541,7 +2550,7 @@ function EventsPage({ setPage }) {
             <div style={{ fontWeight: 700, fontSize: 15 }}>Upcoming</div>
             <Badge label={upcoming.length} bg={C.blueLight} color={C.blue} />
           </div>
-          {upcoming.length === 0 && <div style={{ color: C.muted, fontSize: 13, padding: '12px 0' }}>No upcoming events</div>}
+          {upcoming.length === 0 && <EmptyState icon="📅" heading="No upcoming events" sub="Create an event to get started." />}
           {upcoming.map(ev => <EventCard key={ev.id} ev={ev} />)}
         </Card>
 
@@ -2550,7 +2559,7 @@ function EventsPage({ setPage }) {
             <div style={{ fontWeight: 700, fontSize: 15 }}>Recent Results</div>
             <Badge label={completed.length} bg="#f3f4f6" color={C.muted} />
           </div>
-          {completed.length === 0 && <div style={{ color: C.muted, fontSize: 13, padding: '12px 0' }}>No completed events yet</div>}
+          {completed.length === 0 && <EmptyState icon="🏁" heading="No completed events yet" sub="Results will appear here after your first race." />}
           {completed.map(ev => <EventCard key={ev.id} ev={ev} />)}
         </Card>
       </div>
