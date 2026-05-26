@@ -2271,6 +2271,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCSVModal, setShowCSVModal] = useState(false);
+  const [showCSVGuide, setShowCSVGuide] = useState(false);
   const [csvPreview, setCsvPreview] = useState(null);
   const [addForm, setAddForm] = useState({ firstName: '', lastName: '', year: 'Year 5', group: 'Year 5 Running Club' });
   const [editRunner, setEditRunner] = useState(null);
@@ -2407,6 +2408,59 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
         </div>
       )}
 
+      {/* CSV Import Guide Modal */}
+      {showCSVGuide && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto' }}
+          onClick={() => setShowCSVGuide(false)}>
+          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 440, boxShadow: C.shadowLg }}
+            onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em' }}>Import runners via CSV</div>
+                <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>Add multiple runners at once from a spreadsheet</div>
+              </div>
+              <button onClick={() => setShowCSVGuide(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: C.muted }}>✕</button>
+            </div>
+
+            {/* Steps */}
+            {[
+              {
+                n: 1, icon: '⬇', title: 'Download the template',
+                body: 'Start with our pre-formatted CSV template. It has the correct column headings already set up: name, group, and year.',
+                action: <button onClick={() => { downloadCSVTemplate(); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif', color: C.text }}>⬇ Download CSV Template</button>,
+              },
+              {
+                n: 2, icon: '✏️', title: 'Fill in your runners',
+                body: (<>
+                  Open the file in Excel, Google Sheets, or Numbers and add one runner per row:
+                  <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', marginTop: 8, fontFamily: 'monospace', fontSize: 12, lineHeight: 1.8 }}>
+                    <div style={{ color: C.muted, fontWeight: 700 }}>name, group, year</div>
+                    <div>Emma Johnson, Year 5 Running Club, Year 5</div>
+                    <div>Oliver Smith, Year 6 Running Club, Year 6</div>
+                  </div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 8 }}>⚠ Every row must have a <strong>name</strong> and a <strong>group</strong>. Rows missing either will be skipped.</div>
+                </>),
+              },
+              {
+                n: 3, icon: '⬆', title: 'Upload your file',
+                body: 'Save the file as CSV, then upload it below. You\'ll see a preview before anything is imported — you can review and confirm.',
+                action: <button onClick={() => { setShowCSVGuide(false); csvRef.current?.click(); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.blue, color: C.white, border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }}>⬆ Choose CSV file</button>,
+              },
+            ].map(step => (
+              <div key={step.n} style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
+                <div style={{ width: 30, height: 30, borderRadius: '50%', background: C.blue, color: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>{step.n}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{step.title}</div>
+                  <div style={{ fontSize: 13, color: C.textSecondary, lineHeight: 1.6 }}>{step.body}</div>
+                  {step.action && <div style={{ marginTop: 10 }}>{step.action}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* CSV Preview Modal */}
       {showCSVModal && csvPreview && (() => {
         const validRows = csvPreview.filter(r => r.errors.length === 0);
@@ -2471,7 +2525,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           {!isMobile && <Button variant="ghost" size="sm" onClick={downloadCSVTemplate}>⬇ CSV Template</Button>}
-          <Button variant="secondary" size={isMobile ? 'sm' : 'md'} onClick={() => csvRef.current?.click()}>⬆ CSV</Button>
+          <Button size={isMobile ? 'sm' : 'md'} style={{ background: C.blue, boxShadow: '0 2px 8px rgba(37,99,235,0.28)' }} onClick={() => { sfx.click(); setShowCSVGuide(true); }}>⬆ Import CSV</Button>
           <Button size={isMobile ? 'sm' : 'md'} onClick={() => setShowAddModal(true)}>+ Add</Button>
         </div>
       </div>
