@@ -1100,6 +1100,7 @@ function OrganisationsPage({ setPage }) {
 
   function handleSendInvite() {
     if (!inviteForm.email.trim()) return;
+    sfx.confirm();
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     const next = {
       id: `inv-${Date.now()}`,
@@ -1120,11 +1121,13 @@ function OrganisationsPage({ setPage }) {
   }
 
   function handleResend(id) {
+    sfx.click();
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     setInvites(prev => prev.map(inv => inv.id === id ? { ...inv, status: 'sent', sentAt: today } : inv));
   }
 
   function handleRevoke(id) {
+    sfx.dismiss();
     setInvites(prev => prev.filter(inv => inv.id !== id));
   }
 
@@ -1335,7 +1338,7 @@ function OrganisationsPage({ setPage }) {
           { id: 'orgs',    label: `Organisations (${orgs.length})` },
           { id: 'invites', label: `Invitations (${invites.filter(i => i.status === 'sent').length} pending)` },
         ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
+          <button key={t.id} onClick={() => { sfx.click(); setTab(t.id); }} style={{
             padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',
             fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
             color: tab === t.id ? C.orange : C.muted,
@@ -1790,6 +1793,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
 
   function handleSendLeadInvite() {
     if (!inviteForm.email.trim()) return;
+    sfx.confirm();
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     setLeadInvites(prev => [{ id: `li-${Date.now()}`, email: inviteForm.email.trim(), name: inviteForm.name.trim(), groups: inviteForm.groups, sentAt: today, status: 'sent' }, ...prev]);
     setInviteSent(true);
@@ -1969,6 +1973,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               disabled={!newForm.name.trim()}
               onClick={() => {
                 if (!newForm.name.trim()) return;
+                sfx.confirm();
                 setGroups(gs => [...gs, {
                   id: Date.now(), name: newForm.name.trim(), type: newForm.type,
                   lead: newForm.lead || '', members: 0, lastEvent: '—', nextEvent: '—',
@@ -2010,6 +2015,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
           <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', marginTop: 8 }}>
             <Button variant="danger" onClick={() => {
               if (!window.confirm(`Archive "${editGroup.name}"? The group will be hidden but its event history is preserved.`)) return;
+              sfx.dismiss();
               setGroups(gs => gs.map(g => g.id === editGroup.id ? { ...g, archived: true } : g));
               setEditGroup(null);
             }}>
@@ -2020,6 +2026,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               <Button
                 disabled={!editGroup.name.trim()}
                 onClick={() => {
+                  sfx.confirm();
                   setGroups(gs => gs.map(g => g.id === editGroup.id ? { ...g, name: editGroup.name, type: editGroup.type, lead: editGroup.lead || '' } : g));
                   setEditGroup(null);
                 }}
@@ -2083,12 +2090,13 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
                 <Badge label={s.label} bg={s.bg} color={s.color} />
                 {inv.status !== 'accepted' && (
                   <button onClick={() => {
+                    sfx.click();
                     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                     setLeadInvites(prev => prev.map(i => i.id === inv.id ? { ...i, status: 'sent', sentAt: today } : i));
                   }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.text, fontFamily: 'Inter', flexShrink: 0 }}>Resend</button>
                 )}
                 {inv.status !== 'accepted' && (
-                  <button onClick={() => setLeadInvites(prev => prev.filter(i => i.id !== inv.id))} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.danger, fontFamily: 'Inter', flexShrink: 0 }}>Revoke</button>
+                  <button onClick={() => { sfx.dismiss(); setLeadInvites(prev => prev.filter(i => i.id !== inv.id)); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.danger, fontFamily: 'Inter', flexShrink: 0 }}>Revoke</button>
                 )}
               </div>
             );
@@ -2119,6 +2127,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
 
   function handleEditSave() {
     if (!editForm.name.trim()) return;
+    sfx.confirm();
     setRunners(runners.map(r => r.id === editRunner.id
       ? { ...r, name: editForm.name.trim(), groups: editForm.group ? [editForm.group] : [] }
       : r
@@ -2343,7 +2352,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                     <div style={{ fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
                       onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}>{r.name}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <button onClick={e => openEdit(r, e)}
+                      <button onClick={e => { sfx.click(); openEdit(r, e); }}
                         style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
                           padding: '3px 10px', fontSize: 11, fontWeight: 600, color: C.muted, cursor: 'pointer', fontFamily: 'Inter' }}>
                         Edit
@@ -2405,7 +2414,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                       <td style={{ padding: '12px', fontWeight: 700 }}>{r.points.toLocaleString()}</td>
                       <td style={{ padding: '12px' }}>
                         <div style={{ display: 'flex', gap: 6 }}>
-                          <Button size="sm" variant="outline" onClick={e => openEdit(r, e)}>Edit</Button>
+                          <Button size="sm" variant="outline" onClick={e => { sfx.click(); openEdit(r, e); }}>Edit</Button>
                           <Button size="sm" variant="ghost">View →</Button>
                         </div>
                       </td>
