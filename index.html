@@ -413,7 +413,7 @@ function StatCard({ label, value, sub, color, icon, onClick }) {
     if (!isNaN(num) && num > 0 && !/[:/a-zA-Z]/.test(str)) {
       const useCommas = str.includes(',');
       let start = null;
-      const dur = 850;
+      const dur = 480;
       const step = (ts) => {
         if (!start) start = ts;
         const t = Math.min((ts - start) / dur, 1);
