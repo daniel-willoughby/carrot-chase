@@ -15,9 +15,11 @@
     body { font-family: 'Inter', sans-serif; background: #FAF6F1; color: #1a1a1a; line-height: 1.5; -webkit-font-smoothing: antialiased; }
     h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.025em; }
     p { line-height: 1.6; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #FAF6F1; }
+    ::-webkit-scrollbar-thumb { background: #C8B8A8; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #E8520A; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid #E8520A !important; outline-offset: 0; border-color: #E8520A !important; }
 
     @keyframes confettiFall {
       0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
@@ -679,10 +681,19 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, children 
                   border: 'none', background: 'transparent', cursor: 'pointer',
                   color: active ? C.orange : C.muted,
                   fontFamily: 'Inter, sans-serif',
+                  position: 'relative',
                 }}
               >
-                <span style={{ fontSize: 18 }}>{item.icon}</span>
-                <span style={{ fontSize: 10, fontWeight: active ? 700 : 500 }}>{item.label}</span>
+                {active && (
+                  <div style={{
+                    position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)',
+                    width: 44, height: 30, borderRadius: 999,
+                    background: C.orangeLight,
+                    zIndex: 0,
+                  }} />
+                )}
+                <span style={{ fontSize: 18, position: 'relative', zIndex: 1 }}>{item.icon}</span>
+                <span style={{ fontSize: 10, fontWeight: active ? 700 : 500, position: 'relative', zIndex: 1 }}>{item.label}</span>
               </button>
             );
           })}
@@ -2520,9 +2531,11 @@ function EventsPage({ setPage }) {
 
   const EventCard = ({ ev }) => {
     const s = statusBadge(ev.status);
+    const accentColor = ev.status === 'upcoming' ? C.orange : ev.status === 'completed' ? C.success : C.muted;
     return (
       <div style={{
-        padding: '14px 0', borderBottom: `1px solid ${C.border}`,
+        padding: '14px 0 14px 12px', borderBottom: `1px solid ${C.border}`,
+        borderLeft: `3px solid ${accentColor}`, marginLeft: -4, paddingLeft: 12,
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -3682,20 +3695,24 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 12, marginBottom: 20 }}>
               {[top3[1], top3[0], top3[2]].map((item, pi) => {
                 if (!item) return <div key={pi} style={{ flex: 1 }} />;
-                const heights = [60, 80, 45];
-                const bgs = ['#C0C0C0', '#FFD700', '#CD7F32'];
+                const heights = [75, 108, 52];
+                const bgs = ['linear-gradient(180deg,#d4d4d4,#a8a8a8)', 'linear-gradient(180deg,#FFE066,#F59E0B)', 'linear-gradient(180deg,#e8b07a,#b5651d)'];
+                const shadowColors = ['rgba(168,168,168,0.4)', 'rgba(245,158,11,0.45)', 'rgba(181,101,29,0.35)'];
                 const medals = ['🥈', '🥇', '🥉'];
+                const medalSizes = [36, 52, 30];
                 const labels = ['2nd', '1st', '3rd'];
                 return (
                   <div key={pi} style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ fontSize: pi === 1 ? 40 : 32 }}>{medals[pi]}</div>
+                    <div style={{ fontSize: medalSizes[pi], lineHeight: 1, marginBottom: pi === 1 ? 8 : 6, filter: pi === 1 ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'none' }}>{medals[pi]}</div>
                     <div style={{
-                      background: bgs[pi], height: heights[pi], borderRadius: '8px 8px 0 0',
+                      background: bgs[pi], height: heights[pi], borderRadius: '10px 10px 0 0',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: C.white, fontWeight: 700, fontSize: 13,
+                      color: C.white, fontWeight: 800, fontSize: pi === 1 ? 16 : 13,
+                      boxShadow: `0 -2px 12px ${shadowColors[pi]}`,
+                      letterSpacing: '-0.02em',
                     }}>{labels[pi]}</div>
-                    <div style={{ fontWeight: 700, fontSize: 13, marginTop: 6 }}>{item.runner?.name?.split(' ')[0]}</div>
-                    {item.f?.adjTime && <div style={{ fontSize: 11, color: C.muted }}>{fmtSecs(item.f.adjTime)}</div>}
+                    <div style={{ fontWeight: 700, fontSize: 13, marginTop: 8 }}>{item.runner?.name?.split(' ')[0]}</div>
+                    {item.f?.adjTime && <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{fmtSecs(item.f.adjTime)}</div>}
                   </div>
                 );
               })}
@@ -3912,31 +3929,50 @@ function RunnerProfilePage({ runner, setPage, runners }) {
         ← Back to Members
       </button>
 
-      {/* Header */}
-      <Card style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+      {/* Hero */}
+      <div style={{
+        background: C.orangeGradient, borderRadius: 16, padding: '24px 20px 18px', marginBottom: 20,
+        position: 'relative', overflow: 'hidden', boxShadow: C.shadowLg,
+      }}>
+        {/* Decorative circles */}
+        <div style={{ position: 'absolute', top: -28, right: -28, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 50, right: 30, width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, position: 'relative' }}>
+          {/* Avatar */}
           <div style={{
-            width: 80, height: 80, borderRadius: '50%',
-            background: C.orange, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 32, fontWeight: 800, color: C.white,
+            width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
+            background: 'rgba(255,255,255,0.18)', border: '3px solid rgba(255,255,255,0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 30, fontWeight: 800, color: C.white,
           }}>
             {runner.name[0]}
           </div>
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{runner.name}</h1>
-            <div style={{ fontFamily: 'monospace', fontSize: 13, color: C.muted, marginBottom: 8 }}>{runner.id}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{
-                background: lc.bg, color: lc.color, border: `2px solid ${lc.border}`,
-                borderRadius: 999, padding: '4px 16px', fontSize: 18, fontWeight: 800,
-              }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 2, lineHeight: 1.2 }}>{runner.name}</h1>
+            <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.65)', marginBottom: 10 }}>{runner.id}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <div style={{ background: 'rgba(255,255,255,0.22)', border: '1.5px solid rgba(255,255,255,0.3)', color: C.white, borderRadius: 999, padding: '3px 11px', fontSize: 13, fontWeight: 700 }}>
                 Level {runner.level}
               </div>
-              {rGroups(runner).map(g => <Badge key={g} label={g} bg={C.orangeLight} color={C.orange} />)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.14)', borderRadius: 999, padding: '3px 10px' }}>
+                <span style={{ fontSize: 11 }}>🔥</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.white }}>{runner.streak} streak</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.14)', borderRadius: 999, padding: '3px 10px' }}>
+                <span style={{ fontSize: 11 }}>⭐</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.white }}>{runner.points.toLocaleString()} pts</span>
+              </div>
             </div>
           </div>
         </div>
-      </Card>
+        {rGroups(runner).length > 0 && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+            {rGroups(runner).map(g => (
+              <div key={g} style={{ background: 'rgba(255,255,255,0.15)', color: C.white, borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 600 }}>{g}</div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Stats */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -3989,16 +4025,33 @@ function RunnerProfilePage({ runner, setPage, runners }) {
 
       {/* Awards */}
       <Card>
-        <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 12 }}>Awards & Stickers</div>
+        <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 14 }}>Awards & Stickers</div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          {awards.map((a, i) => (
-            <div key={i} style={{
-              background: C.orangeLight, borderRadius: 12, padding: '10px 16px',
-              fontSize: 14, fontWeight: 600, color: C.orange,
-            }}>
-              {a}
-            </div>
-          ))}
+          {awards.map((a, i) => {
+            let bg, color, icon;
+            if (/streak/i.test(a) || a.includes('🔥')) {
+              bg = '#FFF3E0'; color = '#C2410C'; icon = a.includes('🔥') ? '' : '🔥';
+            } else if (/top.?3|podium/i.test(a)) {
+              bg = '#FFFBEB'; color = '#92400E'; icon = '🏆';
+            } else if (/pb|personal best/i.test(a)) {
+              bg = C.successLight; color = '#166534'; icon = '⚡';
+            } else if (/consistent/i.test(a)) {
+              bg = C.blueLight; color = '#1e40af'; icon = '💪';
+            } else {
+              bg = C.orangeLight; color = C.orange; icon = '⭐';
+            }
+            return (
+              <div key={i} style={{
+                background: bg, borderRadius: 12, padding: '8px 14px',
+                fontSize: 13, fontWeight: 700, color,
+                display: 'flex', alignItems: 'center', gap: 6,
+                border: `1px solid ${color}22`,
+              }}>
+                {icon && <span style={{ fontSize: 15 }}>{icon}</span>}
+                {a}
+              </div>
+            );
+          })}
         </div>
       </Card>
     </div>
