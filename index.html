@@ -32,7 +32,7 @@
       50% { background: #ff7a2f; }
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
     @keyframes countdown {
@@ -51,7 +51,14 @@
       animation: flash 0.3s ease;
     }
     .fade-in {
-      animation: fadeIn 0.3s ease forwards;
+      animation: fadeIn 0.35s ease-out forwards;
+    }
+    .card-hover {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.11), 0 2px 8px rgba(0,0,0,0.06);
     }
   </style>
 </head>
@@ -311,9 +318,9 @@ const sfx = (() => {
 
 // ── Shared UI components ─────────────────────────────────────────────────────
 
-function Card({ children, style }) {
+function Card({ children, style, className, onClick }) {
   return (
-    <div style={{
+    <div className={className} onClick={onClick} style={{
       background: C.white, borderRadius: 16, boxShadow: C.shadowMd,
       border: `1px solid ${C.border}`, padding: 24, ...style
     }}>
@@ -370,12 +377,10 @@ function StatCard({ label, value, sub, color, icon, onClick }) {
   const hasTrendDown = sub && /^-/.test(sub.trim());
   const bgTint = color ? `${color}08` : 'transparent';
   return (
-    <Card onClick={onClick} style={{
+    <Card onClick={onClick} className={onClick ? 'card-hover' : ''} style={{
       flex: 1, minWidth: 160, padding: 0, overflow: 'hidden',
       borderTop: `3px solid ${accent}`,
       cursor: onClick ? 'pointer' : 'default',
-      transition: 'transform 0.12s, box-shadow 0.12s',
-      ...(onClick ? { ':hover': { transform: 'translateY(-2px)' } } : {}),
     }}>
       <div style={{ padding: '18px 20px 16px', background: bgTint }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
@@ -1629,7 +1634,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
         <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 16 }}>Groups</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
           {GROUPS.map(g => (
-            <Card key={g.id} style={{ cursor: 'pointer' }} onClick={() => { sfx.click(); setPage('groups'); }}>
+            <Card key={g.id} className="card-hover" style={{ cursor: 'pointer' }} onClick={() => { sfx.click(); setPage('groups'); }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ fontWeight: 700, marginBottom: 4 }}>{g.name}</div>
@@ -3010,7 +3015,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: 24, minHeight: '100vh', background: C.bg }}>
+    <div className="fade-in" style={{ display: 'flex', justifyContent: 'center', padding: 24, minHeight: '100vh', background: C.bg }}>
       <div style={{ width: '100%', maxWidth: 480 }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
@@ -3658,7 +3663,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: isMobile ? '16px 12px' : 24, minHeight: '100vh', background: C.bg }}>
+    <div className="fade-in" style={{ display: 'flex', justifyContent: 'center', padding: isMobile ? '16px 12px' : 24, minHeight: '100vh', background: C.bg }}>
       {showConf && <Confetti />}
       <div style={{ width: '100%', maxWidth: 520 }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
@@ -4066,11 +4071,13 @@ function LeaderboardPage({ runners }) {
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '12px 4px',
                   borderBottom: `1px solid ${C.border}`,
-                  background: i === 0 ? '#fffbeb' : 'transparent',
+                  background: i === 0 ? '#fffbeb' : i === 1 ? '#f8f9fa' : i === 2 ? '#fdf6ee' : 'transparent',
                 }}>
                   {/* Rank */}
-                  <div style={{ width: 24, textAlign: 'center', fontWeight: 700, color: i < 3 ? C.orange : C.muted, fontSize: 14, flexShrink: 0 }}>
-                    {i + 1}
+                  <div style={{ width: 28, textAlign: 'center', fontWeight: 800, fontSize: 14, flexShrink: 0,
+                    color: i === 0 ? '#B7791F' : i === 1 ? '#718096' : i === 2 ? '#9C6B2E' : C.muted,
+                  }}>
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
                   </div>
                   {/* Avatar initial */}
                   <div style={{
@@ -4114,9 +4121,11 @@ function LeaderboardPage({ runners }) {
                 return (
                   <tr key={r.id} style={{
                     borderBottom: `1px solid ${C.border}`,
-                    background: i === 0 ? '#fffbeb' : 'transparent',
+                    background: i === 0 ? '#fffbeb' : i === 1 ? '#f8f9fa' : i === 2 ? '#fdf6ee' : 'transparent',
                   }}>
-                    <td style={{ padding: '12px 10px', fontWeight: 700, color: i < 3 ? C.orange : C.muted }}>{i + 1}</td>
+                    <td style={{ padding: '12px 10px', fontWeight: 800, fontSize: 15 }}>
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : <span style={{ color: C.muted, fontWeight: 600, fontSize: 13 }}>{i + 1}</span>}
+                    </td>
                     <td style={{ padding: '12px 10px', fontWeight: 600 }}>{r.name}</td>
                     <td style={{ padding: '12px 10px' }}>
                       <span style={{
