@@ -137,12 +137,17 @@ const CURRENT_TERM = 'Spring Term 2026';
 
 // ── Colours & shared tokens ──────────────────────────────────────────────────
 const C = {
-  orange: '#D4520A',
-  orangeLight: '#FFF0E8',
+  orange: '#E8520A',
+  orangeDark: '#C44008',
+  orangeLight: '#FEF0E7',
+  orangeGradient: 'linear-gradient(135deg, #E8520A 0%, #C44008 100%)',
   bg: '#FAF6F1',
+  bgSubtle: '#F5EFE8',
   white: '#FFFFFF',
-  border: '#E8E0D8',
+  border: '#E3D8CE',
+  borderStrong: '#C8B8A8',
   text: '#1a1a1a',
+  textSecondary: '#374151',
   muted: '#6b6b6b',
   success: '#16a34a',
   successLight: '#dcfce7',
@@ -154,6 +159,9 @@ const C = {
   blueLight: '#dbeafe',
   purple: '#7c3aed',
   purpleLight: '#ede9fe',
+  shadowSm: '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)',
+  shadowMd: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)',
+  shadowLg: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
 };
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
@@ -304,8 +312,8 @@ const sfx = (() => {
 function Card({ children, style }) {
   return (
     <div style={{
-      background: C.white, borderRadius: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-      padding: 24, ...style
+      background: C.white, borderRadius: 16, boxShadow: C.shadowMd,
+      border: `1px solid ${C.border}`, padding: 24, ...style
     }}>
       {children}
     </div>
@@ -325,12 +333,12 @@ function Button({ children, onClick, variant='primary', size='md', disabled, sty
     xl: { padding: '18px 36px', fontSize: 18 },
   };
   const variants = {
-    primary:   { background: C.orange, color: C.white },
-    secondary: { background: '#f3f0ec', color: C.text },
+    primary:   { background: C.orangeGradient, color: C.white, boxShadow: '0 2px 8px rgba(232,82,10,0.28)' },
+    secondary: { background: C.bgSubtle, color: C.textSecondary, border: `1px solid ${C.border}` },
     outline:   { background: 'transparent', color: C.orange, border: `2px solid ${C.orange}` },
     ghost:     { background: 'transparent', color: C.muted },
-    danger:    { background: C.danger, color: C.white },
-    success:   { background: C.success, color: C.white },
+    danger:    { background: C.danger, color: C.white, boxShadow: '0 2px 8px rgba(220,38,38,0.22)' },
+    success:   { background: C.success, color: C.white, boxShadow: '0 2px 8px rgba(22,163,74,0.22)' },
   };
   return (
     <button
@@ -469,12 +477,13 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
               onClick={() => { sfx.click(); setPage(item.id); }}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px', borderRadius: 999, border: 'none',
-                background: active ? C.orange : 'transparent',
-                color: active ? C.white : C.text,
+                padding: '10px 14px', borderRadius: 10, border: 'none',
+                background: active ? C.orangeGradient : 'transparent',
+                color: active ? C.white : C.textSecondary,
                 fontFamily: 'Inter, sans-serif', fontWeight: active ? 600 : 500,
                 fontSize: 14, cursor: 'pointer', marginBottom: 2,
                 transition: 'all 0.15s',
+                boxShadow: active ? '0 2px 8px rgba(232,82,10,0.22)' : 'none',
               }}
             >
               <span style={{ fontSize: 16 }}>{item.icon}</span>
@@ -730,7 +739,8 @@ function LoginPage({ onLogin }) {
       {/* Top/Left — orange panel */}
       <div style={{
         flex: isMobile ? 'none' : 1,
-        background: C.orange, display: 'flex', flexDirection: 'column',
+        background: 'linear-gradient(160deg, #F06318 0%, #C44008 60%, #A33206 100%)',
+        display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: isMobile ? '28px 20px' : 48,
         color: C.white,
@@ -1243,7 +1253,7 @@ function OrganisationsPage({ setPage }) {
         }}>
           <div style={{
             background: C.white, borderRadius: 20, padding: 28,
-            width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+            width: '100%', maxWidth: 420, boxShadow: C.shadowLg,
           }}>
             <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 20 }}>New Organisation</div>
             {[
@@ -1283,7 +1293,7 @@ function OrganisationsPage({ setPage }) {
       {/* Invite modal */}
       {showInviteModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto' }}>
-          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
+          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420, boxShadow: C.shadowLg }}>
             {inviteSent ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>✉️</div>
@@ -1716,7 +1726,7 @@ function LeadDashboard({ setPage, user }) {
         <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} />
       </div>
 
-      <Card style={{ background: C.orange, color: C.white, marginBottom: isMobile ? 16 : 28 }}>
+      <Card style={{ background: 'linear-gradient(135deg, #F06318 0%, #C44008 100%)', color: C.white, marginBottom: isMobile ? 16 : 28, border: 'none', boxShadow: '0 4px 20px rgba(232,82,10,0.32)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: isMobile ? 15 : 18, fontWeight: 700, marginBottom: 6 }}>Ready to run an event?</div>
@@ -1814,7 +1824,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
     }} onClick={onClose}>
       <div style={{
         background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+        boxShadow: C.shadowLg,
       }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontWeight: 800, fontSize: 18 }}>{title}</div>
@@ -1846,7 +1856,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
       {/* Invite Lead modal */}
       {showInviteModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto' }}>
-          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
+          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420, boxShadow: C.shadowLg }}>
             {inviteSent ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>✉️</div>
@@ -2213,7 +2223,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
       {/* Add Runner Modal */}
       {showAddModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '64px 16px 16px', overflowY: 'auto' }}>
-          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 400, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
+          <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 400, boxShadow: C.shadowLg }}>
             <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 20 }}>Add Runner</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
               <div>
@@ -2251,7 +2261,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
         const errorRows = csvPreview.filter(r => r.errors.length > 0);
         return (
           <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto' }}>
-            <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 440, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', maxHeight: '80vh', overflowY: 'auto' }}>
+            <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 440, boxShadow: C.shadowLg, maxHeight: '80vh', overflowY: 'auto' }}>
               <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>CSV Preview</div>
               <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
                 <span style={{ background: C.successLight, color: C.success, borderRadius: 999, padding: '3px 10px', fontSize: 12, fontWeight: 700 }}>
@@ -3061,7 +3071,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
             {/* Late arrival modal */}
             {showLateModal && (
               <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '64px 16px 16px', overflowY: 'auto' }}>
-                <div style={{ background: C.white, borderRadius: 20, padding: 24, width: '100%', maxWidth: 360, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }} onClick={e => e.stopPropagation()}>
+                <div style={{ background: C.white, borderRadius: 20, padding: 24, width: '100%', maxWidth: 360, boxShadow: C.shadowLg }} onClick={e => e.stopPropagation()}>
                   <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Late Arrival</div>
                   <div style={{ fontSize: 13, color: C.muted, marginBottom: 16 }}>Add a runner who turned up after registration closed.</div>
                   <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>Full name</label>
