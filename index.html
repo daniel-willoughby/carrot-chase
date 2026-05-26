@@ -887,9 +887,9 @@ function SuperAdminDashboard({ setPage }) {
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>Recent Organisations</div>
-          <Button variant="outline" size="sm" onClick={() => setPage('organisations')}>View all</Button>
+          <Button variant="outline" size="sm" onClick={() => { sfx.click(); setPage('organisations'); }}>View all</Button>
         </div>
-        <OrgTable orgs={ORGS.slice(0,3)} compact isMobile={isMobile} onView={() => setPage('organisations')} />
+        <OrgTable orgs={ORGS.slice(0,3)} compact isMobile={isMobile} onView={() => { sfx.click(); setPage('organisations'); }} />
       </Card>
     </div>
   );
@@ -1581,7 +1581,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Groups</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
           {GROUPS.map(g => (
-            <Card key={g.id} style={{ cursor: 'pointer' }} onClick={() => setPage('groups')}>
+            <Card key={g.id} style={{ cursor: 'pointer' }} onClick={() => { sfx.click(); setPage('groups'); }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ fontWeight: 700, marginBottom: 4 }}>{g.name}</div>
@@ -1614,7 +1614,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
         <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontWeight: 700, fontSize: 16 }}>Upcoming Events</div>
-            <Button variant="outline" size="sm" onClick={() => setPage('events')}>View all</Button>
+            <Button variant="outline" size="sm" onClick={() => { sfx.click(); setPage('events'); }}>View all</Button>
           </div>
           {upcomingEvents.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No upcoming events</div>}
           {upcomingEvents.map(ev => (
@@ -1632,7 +1632,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
         <Card>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontWeight: 700, fontSize: 16 }}>Recent Results</div>
-            <Button variant="outline" size="sm" onClick={() => setPage('events')}>View all</Button>
+            <Button variant="outline" size="sm" onClick={() => { sfx.click(); setPage('events'); }}>View all</Button>
           </div>
           {recentEvents.length === 0 && <div style={{ color: C.muted, fontSize: 13 }}>No completed events</div>}
           {recentEvents.map(ev => (
@@ -1927,7 +1927,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Button size="sm" variant="outline" onClick={() => { setMemberGroupFilter(g.name); setPage('members'); }}>
+              <Button size="sm" variant="outline" onClick={() => { sfx.click(); setMemberGroupFilter(g.name); setPage('members'); }}>
                 View members
               </Button>
               <Button size="sm" variant="secondary" onClick={() => { setShowNewModal(false); setEditGroup({ ...g }); }}>
@@ -2493,7 +2493,7 @@ function EventsPage({ setPage }) {
             <h1 style={{ fontSize: 22, fontWeight: 800 }}>Events</h1>
             <p style={{ color: C.muted, marginTop: 2, fontSize: 13 }}>Scheduled and past events</p>
           </div>
-          <Button size="sm" onClick={() => setPage('createevent')}>+ Create</Button>
+          <Button size="sm" onClick={() => { sfx.click(); setPage('createevent'); }}>+ Create</Button>
         </div>
 
         <Card style={{ marginBottom: 16 }}>
@@ -2525,7 +2525,7 @@ function EventsPage({ setPage }) {
           <p style={{ color: C.muted, marginTop: 4 }}>All scheduled and past events</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <Button variant="secondary" onClick={() => setPage('createevent')}>+ Create Event</Button>
+          <Button variant="secondary" onClick={() => { sfx.click(); setPage('createevent'); }}>+ Create Event</Button>
           <Button onClick={() => { sfx.click(); setPage('runevent'); }}>Run Event</Button>
         </div>
       </div>
@@ -2596,7 +2596,7 @@ function CreateEventPage({ setPage, runners }) {
     <div className="fade-in">
       <div style={{ marginBottom: 28 }}>
         <button
-          onClick={() => setPage('events')}
+          onClick={() => { sfx.click(); setPage('events'); }}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter', marginBottom: 8 }}
         >
           ← Back to Events
@@ -3407,7 +3407,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                 const dnsRunners = RUN_RUNNERS.filter(r => attendance[r.id] !== true);
 
                 setRaceResult({ finishers: allFinishers, presentRunners, dnsRunners, startGroups, staggerFn: staggerGap });
-                setPage('results');
+                sfx.click(); setPage('results');
               }}>
               Confirm Results →
             </Button>
@@ -3845,7 +3845,7 @@ function RunnerProfilePage({ runner, setPage, runners }) {
   return (
     <div className="fade-in">
       <button
-        onClick={() => setPage('members')}
+        onClick={() => { sfx.click(); setPage('members'); }}
         style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter', marginBottom: 16 }}
       >
         ← Back to Members
