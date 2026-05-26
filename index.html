@@ -364,12 +364,30 @@ function Badge({ label, bg, color }) {
   );
 }
 
-function StatCard({ label, value, sub, color }) {
+function StatCard({ label, value, sub, color, icon }) {
+  const accent = color || C.border;
+  const hasTrendUp   = sub && /^\+/.test(sub.trim());
+  const hasTrendDown = sub && /^-/.test(sub.trim());
+  const bgTint = color ? `${color}08` : 'transparent';
   return (
-    <Card style={{ flex: 1, minWidth: 160 }}>
-      <div style={{ color: C.muted, fontSize: 11, fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: color || C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 6, lineHeight: 1.4 }}>{sub}</div>}
+    <Card style={{
+      flex: 1, minWidth: 160, padding: 0, overflow: 'hidden',
+      borderTop: `3px solid ${accent}`,
+    }}>
+      <div style={{ padding: '18px 20px 16px', background: bgTint }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+          <div style={{ color: C.muted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1.3 }}>{label}</div>
+          {icon && <span style={{ fontSize: 16, opacity: 0.7 }}>{icon}</span>}
+        </div>
+        <div style={{ fontSize: 28, fontWeight: 800, color: color || C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{value}</div>
+        {sub && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8 }}>
+            {hasTrendUp   && <span style={{ fontSize: 11, color: C.success, fontWeight: 700 }}>↑</span>}
+            {hasTrendDown && <span style={{ fontSize: 11, color: C.danger,  fontWeight: 700 }}>↓</span>}
+            <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.4 }}>{sub}</div>
+          </div>
+        )}
+      </div>
     </Card>
   );
 }
@@ -879,10 +897,10 @@ function SuperAdminDashboard({ setPage }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Total Organisations" value="24" sub="+3 this month" />
-        <StatCard label="Total Runners" value="5,842" sub="+218 this month" color={C.orange} />
-        <StatCard label="Total Events" value="486" sub="All time" />
-        <StatCard label="Monthly Revenue" value="£1,176" sub="+£205 this month" color={C.success} />
+        <StatCard label="Total Organisations" value="24" sub="+3 this month" icon="🏫" />
+        <StatCard label="Total Runners" value="5,842" sub="+218 this month" color={C.orange} icon="🏃" />
+        <StatCard label="Total Events" value="486" sub="All time" icon="📅" />
+        <StatCard label="Monthly Revenue" value="£1,176" sub="+£205 this month" color={C.success} icon="💷" />
       </div>
 
       {/* Chart */}
@@ -1459,9 +1477,9 @@ function BillingPage() {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Monthly Revenue" value="£205" sub="4 active plans" color={C.success} />
-        <StatCard label="Active Licences" value="4" sub="2 Pro, 2 Standard" />
-        <StatCard label="Trials" value="1" sub="Expires 1 Jun" color={C.warning} />
+        <StatCard label="Monthly Revenue" value="£205" sub="4 active plans" color={C.success} icon="💷" />
+        <StatCard label="Active Licences" value="4" sub="2 Pro, 2 Standard" icon="✅" />
+        <StatCard label="Trials" value="1" sub="Expires 1 Jun" color={C.warning} icon="⏳" />
       </div>
 
       <Card style={{ marginBottom: 24 }}>
@@ -1586,10 +1604,10 @@ function SchoolAdminDashboard({ setPage, runners }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Total Runners" value={String(liveRunners.length)} sub="+8 this term" color={C.orange} />
-        <StatCard label="Active Groups" value="4" sub="All active" />
-        <StatCard label="Events This Term" value="18" sub="6 remaining" />
-        <StatCard label="Series Leader" value={leaderName} sub={`${leader?.points?.toLocaleString() ?? '—'} pts`} color={C.purple} />
+        <StatCard label="Total Runners" value={String(liveRunners.length)} sub="+8 this term" color={C.orange} icon="🏃" />
+        <StatCard label="Active Groups" value="4" sub="All active" icon="👥" />
+        <StatCard label="Events This Term" value="18" sub="6 remaining" icon="📅" />
+        <StatCard label="Series Leader" value={leaderName} sub={`${leader?.points?.toLocaleString() ?? '—'} pts`} color={C.purple} icon="🏆" />
       </div>
 
       {/* Groups grid */}
@@ -1722,10 +1740,10 @@ function LeadDashboard({ setPage, user }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Runners" value={String(myRunners.length)} sub="In your group" color={C.orange} />
-        <StatCard label="Upcoming" value={String(upcoming.length)} sub="Events scheduled" />
-        <StatCard label="Streak Leader" value={streakLeader ? streakLeader.name.split(' ')[0] : '—'} sub={`${streakLeader?.streak ?? 0} events in a row`} color={C.success} />
-        <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} />
+        <StatCard label="Runners" value={String(myRunners.length)} sub="In your group" color={C.orange} icon="🏃" />
+        <StatCard label="Upcoming" value={String(upcoming.length)} sub="Events scheduled" icon="📅" />
+        <StatCard label="Streak Leader" value={streakLeader ? streakLeader.name.split(' ')[0] : '—'} sub={`${streakLeader?.streak ?? 0} events in a row`} color={C.success} icon="🔥" />
+        <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} icon="⭐" />
       </div>
 
       <Card style={{ background: C.orangeGradient, color: C.white, marginBottom: isMobile ? 16 : 28, border: 'none', boxShadow: '0 4px 20px rgba(232,82,10,0.28)' }}>
@@ -3901,10 +3919,10 @@ function RunnerProfilePage({ runner, setPage, runners }) {
 
       {/* Stats */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <StatCard label="Personal Best" value={runner.pb} sub="Fastest time" />
-        <StatCard label="Events Run" value={String(Math.max(runner.times?.length || 0, Math.floor(runner.points / 80)))} sub="All time" />
-        <StatCard label="Current Streak" value={runner.streak} sub="events" color={C.orange} />
-        <StatCard label="Total Points" value={runner.points.toLocaleString()} sub={CURRENT_TERM} color={C.purple} />
+        <StatCard label="Personal Best" value={runner.pb} sub="Fastest time" icon="⏱" />
+        <StatCard label="Events Run" value={String(Math.max(runner.times?.length || 0, Math.floor(runner.points / 80)))} sub="All time" icon="📅" />
+        <StatCard label="Current Streak" value={runner.streak} sub="events" color={C.orange} icon="🔥" />
+        <StatCard label="Total Points" value={runner.points.toLocaleString()} sub={CURRENT_TERM} color={C.purple} icon="⭐" />
       </div>
 
       {/* Level chart */}
