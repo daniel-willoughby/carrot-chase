@@ -3060,14 +3060,18 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
                 <button
-                  onClick={() => setAttendance(Object.fromEntries(RUN_RUNNERS.map(r => [r.id, true])))}
+                  onClick={() => {
+                    sfx.confirm();
+                    setAttendance(Object.fromEntries(RUN_RUNNERS.map(r => [r.id, true])));
+                  }}
                   style={{
-                    background: C.successLight, color: C.success, border: `1px solid ${C.success}`,
-                    borderRadius: 8, padding: '5px 10px', fontSize: 11, fontWeight: 700,
+                    background: C.success, color: C.white, border: 'none',
+                    borderRadius: 10, padding: '10px 20px', fontSize: 14, fontWeight: 700,
                     cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    boxShadow: '0 2px 8px rgba(22,163,74,0.28)',
                   }}
                 >
-                  ✓ All present
+                  ✓ Mark all present
                 </button>
               </div>
               {runList.map(r => {
