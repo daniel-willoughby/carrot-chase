@@ -172,7 +172,7 @@ function useIsMobile() {
 const CURRENT_TERM = 'Spring Term 2026';
 
 // ── Colours & shared tokens ──────────────────────────────────────────────────
-const C = {
+const LIGHT_C = {
   orange: '#E8520A',
   orangeDark: '#D04A08',
   orangeLight: '#FEF0E7',
@@ -185,20 +185,39 @@ const C = {
   text: '#1a1a1a',
   textSecondary: '#3d3530',
   muted: '#7a6f68',
-  success: '#16a34a',
-  successLight: '#dcfce7',
-  danger: '#dc2626',
-  dangerLight: '#fee2e2',
-  warning: '#d97706',
-  warningLight: '#fef3c7',
-  blue: '#2563eb',
-  blueLight: '#dbeafe',
-  purple: '#7c3aed',
-  purpleLight: '#ede9fe',
+  success: '#16a34a', successLight: '#dcfce7',
+  danger: '#dc2626', dangerLight: '#fee2e2',
+  warning: '#d97706', warningLight: '#fef3c7',
+  blue: '#2563eb', blueLight: '#dbeafe',
+  purple: '#7c3aed', purpleLight: '#ede9fe',
   shadowSm: '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)',
   shadowMd: '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05)',
   shadowLg: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
 };
+const DARK_C = {
+  orange: '#FF6B2B',
+  orangeDark: '#E8520A',
+  orangeLight: '#2D1508',
+  orangeGradient: 'linear-gradient(135deg, #FF6B2B 0%, #E8520A 100%)',
+  bg: '#13151A',
+  bgSubtle: '#1A1D24',
+  white: '#1E2128',
+  border: '#2E3340',
+  borderStrong: '#3D4455',
+  text: '#F0EDE8',
+  textSecondary: '#C8C0B8',
+  muted: '#7A7570',
+  success: '#22c55e', successLight: '#0C2518',
+  danger: '#f87171', dangerLight: '#280C0C',
+  warning: '#fbbf24', warningLight: '#271C08',
+  blue: '#60a5fa', blueLight: '#0C1C30',
+  purple: '#a78bfa', purpleLight: '#180C30',
+  shadowSm: '0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04)',
+  shadowMd: '0 4px 16px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.4)',
+  shadowLg: '0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.5)',
+};
+let _isDark = false;
+const C = new Proxy(LIGHT_C, { get(_, key) { return (_isDark ? DARK_C : LIGHT_C)[key]; } });
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
 const RUNNERS = [
@@ -549,7 +568,7 @@ function LineChart({ data, labels, title, height=200, color=C.orange }) {
 }
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
+function Sidebar({ role, page, setPage, user, onLogout, onResetData, isDark, onToggleDark }) {
   const isMobile = useIsMobile();
   if (isMobile) return null;
 
@@ -645,6 +664,16 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
           );
         })()}
         <button
+          onClick={onToggleDark}
+          style={{
+            width: '100%', padding: '8px', borderRadius: 999, border: `1px solid ${C.border}`,
+            background: 'transparent', color: C.muted, fontSize: 13, fontWeight: 500,
+            cursor: 'pointer', fontFamily: 'Inter, sans-serif', marginBottom: 6,
+          }}
+        >
+          {isDark ? '☀ Light mode' : '🌙 Dark mode'}
+        </button>
+        <button
           onClick={() => { sfx.dismiss(); onLogout(); }}
           style={{
             width: '100%', padding: '8px', borderRadius: 999, border: `1px solid ${C.border}`,
@@ -669,7 +698,7 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
 }
 
 // ── Layout wrapper for authed pages ─────────────────────────────────────────
-function AppLayout({ role, page, setPage, user, onLogout, onResetData, children }) {
+function AppLayout({ role, page, setPage, user, onLogout, onResetData, isDark, onToggleDark, children }) {
   const isMobile = useIsMobile();
 
   const navs = {
@@ -722,8 +751,13 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, children 
           <div style={{ fontWeight: 700, fontSize: 15, textAlign: 'center', flex: 1 }}>
             {pageTitle}
           </div>
-          {/* Sign-out button — initial + label */}
-          <div style={{ width: 64, display: 'flex', justifyContent: 'flex-end' }}>
+          {/* Dark mode + sign-out */}
+          <div style={{ width: 64, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
+            <button
+              onClick={onToggleDark}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px', lineHeight: 1 }}
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >{isDark ? '☀' : '🌙'}</button>
             <button
               onClick={() => { if (window.confirm('Sign out?')) { sfx.dismiss(); onLogout(); } }}
               style={{
@@ -795,7 +829,7 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, children 
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: C.bg }}>
-      <Sidebar role={role} page={page} setPage={setPage} user={user} onLogout={onLogout} onResetData={onResetData} />
+      <Sidebar role={role} page={page} setPage={setPage} user={user} onLogout={onLogout} onResetData={onResetData} isDark={isDark} onToggleDark={onToggleDark} />
       <main style={{ flex: 1, marginLeft: 240, minHeight: '100vh', padding: 32 }}>
         {children}
       </main>
@@ -4475,6 +4509,25 @@ function ToastContainer({ toasts }) {
 function App() {
   const [user, setUser] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('cc_dark') === '1');
+
+  // Keep module-level flag in sync — components re-render and pick up new C values via Proxy
+  _isDark = isDark;
+
+  useEffect(() => {
+    localStorage.setItem('cc_dark', isDark ? '1' : '0');
+    document.body.style.background = isDark ? DARK_C.bg : LIGHT_C.bg;
+    document.body.style.color = isDark ? DARK_C.text : LIGHT_C.text;
+    // Update scrollbar colours
+    const id = 'cc-dark-scrollbar';
+    let el = document.getElementById(id);
+    if (!el) { el = document.createElement('style'); el.id = id; document.head.appendChild(el); }
+    el.textContent = isDark
+      ? '::-webkit-scrollbar-track{background:#1A1D24}::-webkit-scrollbar-thumb{background:#3D4455}::-webkit-scrollbar-thumb:hover{background:#FF6B2B}'
+      : '::-webkit-scrollbar-track{background:#FAF6F1}::-webkit-scrollbar-thumb{background:#C8B8A8}::-webkit-scrollbar-thumb:hover{background:#E8520A}';
+  }, [isDark]);
+
+  function toggleDark() { setIsDark(d => !d); }
 
   useEffect(() => {
     _showToast = (msg, type = 'success') => {
@@ -4545,7 +4598,7 @@ function App() {
 
   return (
     <>
-      <AppLayout role={role} page={page} setPage={setPage} user={user} onLogout={handleLogout} onResetData={resetData}>
+      <AppLayout role={role} page={page} setPage={setPage} user={user} onLogout={handleLogout} onResetData={resetData} isDark={isDark} onToggleDark={toggleDark}>
         {renderPage()}
       </AppLayout>
       <ToastContainer toasts={toasts} />
