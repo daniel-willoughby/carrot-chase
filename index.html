@@ -3653,7 +3653,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                 const dnsRunners = RUN_RUNNERS.filter(r => attendance[r.id] !== true);
 
                 setRaceResult({ finishers: allFinishers, presentRunners, dnsRunners, startGroups, staggerFn: staggerGap });
-                sfx.click(); setPage('results');
+                sfx.fanfare(); setPage('results');
               }}>
               Confirm Results →
             </Button>
@@ -3708,7 +3708,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
   const [dsqSet, setDsqSet] = useState(new Set());
   const isMobile = useIsMobile();
   useEffect(() => { const t = setTimeout(() => setShowConf(false), 5000); return () => clearTimeout(t); }, []);
-  useEffect(() => { sfx.fanfare(); }, []);
+  // fanfare triggered at the button click (user gesture) rather than here
 
   // ── Compute results from real race data (or fall back to mock) ───────────────
   const computed = React.useMemo(() => {
