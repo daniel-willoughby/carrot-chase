@@ -1715,7 +1715,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
           <OrgLogo org={schoolOrg} size={isMobile ? 44 : 52} />
           <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800 }}>Good morning, Sarah!</h1>
+            <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800 }}>{(() => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; })()}, Sarah!</h1>
             <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 12 : 13 }}>
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · {CURRENT_TERM}
             </p>
@@ -1855,7 +1855,7 @@ function LeadDashboard({ setPage, user, setSelectedRunner }) {
   return (
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
-        <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800 }}>Good morning, {firstName}!</h1>
+        <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800 }}>{(() => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; })()}, {firstName}!</h1>
         <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 12 : 13 }}>
           {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · {CURRENT_TERM}
         </p>
