@@ -1721,17 +1721,6 @@ function SchoolAdminDashboard({ setPage, runners }) {
             </p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{ background: C.orangeLight, color: C.orange, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
-            📅 {EVENTS.filter(e => e.status === 'upcoming').length} upcoming events
-          </div>
-          <div style={{ background: C.successLight, color: C.success, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
-            🏃 {liveRunners.length} runners active
-          </div>
-          <div style={{ background: C.blueLight, color: C.blue, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
-            👥 {GROUPS.length} groups
-          </div>
-        </div>
       </div>
 
       <div style={{
@@ -1867,17 +1856,9 @@ function LeadDashboard({ setPage, user, setSelectedRunner }) {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800 }}>Good morning, {firstName}!</h1>
-        <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 12 : 13, marginBottom: 10 }}>
+        <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 12 : 13 }}>
           {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · {CURRENT_TERM}
         </p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{ background: C.orangeLight, color: C.orange, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
-            📅 {upcoming.length} upcoming event{upcoming.length !== 1 ? 's' : ''}
-          </div>
-          <div style={{ background: C.successLight, color: C.success, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
-            🏃 {myRunners.length} runners in {myGroupName}
-          </div>
-        </div>
       </div>
 
       {/* Stats row */}
