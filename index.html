@@ -275,11 +275,11 @@ const sfx = (() => {
   }
   return {
     // Soft tick when marking a runner present
-    tick()   { tone(700, 0.055, 0.055); },
+    tick()   { tone(700, 0.055, 0.025); },
     // Satisfying thud when tapping a finisher
-    tap()    { tone(160, 0.09, 0.22, 'sine'); tone(320, 0.06, 0.1, 'sine'); },
+    tap()    { tone(160, 0.09, 0.09, 'sine'); tone(320, 0.06, 0.04, 'sine'); },
     // Gentle chime when assigning a runner to a position
-    assign() { tone(880, 0.07, 0.07); tone(1100, 0.05, 0.04, 'sine', 0.06); },
+    assign() { tone(880, 0.07, 0.03); tone(1100, 0.05, 0.018, 'sine', 0.06); },
     // Triumphant fanfare for Race Complete
     fanfare() {
       [[523,0.18,0.3,0.0],[659,0.18,0.3,0.14],[784,0.18,0.3,0.28],[1047,0.55,0.42,0.43],
