@@ -1235,7 +1235,8 @@ function OrganisationsPage({ setPage }) {
         <div style={{
           position: 'fixed', inset: 0, zIndex: 500,
           background: 'rgba(0,0,0,0.35)', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', padding: 16,
+          alignItems: 'flex-start', justifyContent: 'center',
+          padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto',
         }}>
           <div style={{
             background: C.white, borderRadius: 20, padding: 28,
@@ -1278,7 +1279,7 @@ function OrganisationsPage({ setPage }) {
 
       {/* Invite modal */}
       {showInviteModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto' }}>
           <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
             {inviteSent ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
@@ -1804,8 +1805,8 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
   const Modal = ({ title, onClose, children }) => (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 500,
-      background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 16,
+      background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto',
     }} onClick={onClose}>
       <div style={{
         background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420,
@@ -1840,7 +1841,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
     <div className="fade-in">
       {/* Invite Lead modal */}
       {showInviteModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto' }}>
           <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 420, boxShadow: '0 8px 40px rgba(0,0,0,0.18)' }}>
             {inviteSent ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
@@ -2240,7 +2241,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
         const validRows = csvPreview.filter(r => r.errors.length === 0);
         const errorRows = csvPreview.filter(r => r.errors.length > 0);
         return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto' }}>
             <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 440, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', maxHeight: '80vh', overflowY: 'auto' }}>
               <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>CSV Preview</div>
               <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
