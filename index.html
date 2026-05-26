@@ -364,15 +364,18 @@ function Badge({ label, bg, color }) {
   );
 }
 
-function StatCard({ label, value, sub, color, icon }) {
+function StatCard({ label, value, sub, color, icon, onClick }) {
   const accent = color || C.border;
   const hasTrendUp   = sub && /^\+/.test(sub.trim());
   const hasTrendDown = sub && /^-/.test(sub.trim());
   const bgTint = color ? `${color}08` : 'transparent';
   return (
-    <Card style={{
+    <Card onClick={onClick} style={{
       flex: 1, minWidth: 160, padding: 0, overflow: 'hidden',
       borderTop: `3px solid ${accent}`,
+      cursor: onClick ? 'pointer' : 'default',
+      transition: 'transform 0.12s, box-shadow 0.12s',
+      ...(onClick ? { ':hover': { transform: 'translateY(-2px)' } } : {}),
     }}>
       <div style={{ padding: '18px 20px 16px', background: bgTint }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
@@ -912,10 +915,10 @@ function SuperAdminDashboard({ setPage }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Total Organisations" value="24" sub="+3 this month" icon="🏫" />
-        <StatCard label="Total Runners" value="5,842" sub="+218 this month" color={C.orange} icon="🏃" />
-        <StatCard label="Total Events" value="486" sub="All time" icon="📅" />
-        <StatCard label="Monthly Revenue" value="£1,176" sub="+£205 this month" color={C.success} icon="💷" />
+        <StatCard label="Total Organisations" value="24" sub="+3 this month" icon="🏫" onClick={() => { sfx.click(); setPage('organisations'); }} />
+        <StatCard label="Total Runners" value="5,842" sub="+218 this month" color={C.orange} icon="🏃" onClick={() => { sfx.click(); setPage('organisations'); }} />
+        <StatCard label="Total Events" value="486" sub="All time" icon="📅" onClick={() => { sfx.click(); setPage('organisations'); }} />
+        <StatCard label="Monthly Revenue" value="£1,176" sub="+£205 this month" color={C.success} icon="💷" onClick={() => { sfx.click(); setPage('billing'); }} />
       </div>
 
       {/* Chart */}
@@ -1615,10 +1618,10 @@ function SchoolAdminDashboard({ setPage, runners }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Total Runners" value={String(liveRunners.length)} sub="+8 this term" color={C.orange} icon="🏃" />
-        <StatCard label="Active Groups" value="4" sub="All active" icon="👥" />
-        <StatCard label="Events This Term" value="18" sub="6 remaining" icon="📅" />
-        <StatCard label="Series Leader" value={leaderName} sub={`${leader?.points?.toLocaleString() ?? '—'} pts`} color={C.purple} icon="🏆" />
+        <StatCard label="Total Runners" value={String(liveRunners.length)} sub="+8 this term" color={C.orange} icon="🏃" onClick={() => { sfx.click(); setPage('members'); }} />
+        <StatCard label="Active Groups" value="4" sub="All active" icon="👥" onClick={() => { sfx.click(); setPage('groups'); }} />
+        <StatCard label="Events This Term" value="18" sub="6 remaining" icon="📅" onClick={() => { sfx.click(); setPage('events'); }} />
+        <StatCard label="Series Leader" value={leaderName} sub={`${leader?.points?.toLocaleString() ?? '—'} pts`} color={C.purple} icon="🏆" onClick={() => { sfx.click(); setPage('leaderboard'); }} />
       </div>
 
       {/* Groups grid */}
@@ -1721,7 +1724,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
 }
 
 // ── LEAD DASHBOARD ───────────────────────────────────────────────────────────
-function LeadDashboard({ setPage, user }) {
+function LeadDashboard({ setPage, user, setSelectedRunner }) {
   const isMobile = useIsMobile();
 
   // Derive group from the lead invites data using the logged-in user's name
@@ -1751,10 +1754,10 @@ function LeadDashboard({ setPage, user }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Runners" value={String(myRunners.length)} sub="In your group" color={C.orange} icon="🏃" />
-        <StatCard label="Upcoming" value={String(upcoming.length)} sub="Events scheduled" icon="📅" />
-        <StatCard label="Streak Leader" value={streakLeader ? streakLeader.name.split(' ')[0] : '—'} sub={`${streakLeader?.streak ?? 0} events in a row`} color={C.success} icon="🔥" />
-        <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} icon="⭐" />
+        <StatCard label="Runners" value={String(myRunners.length)} sub="In your group" color={C.orange} icon="🏃" onClick={() => { sfx.click(); setPage('members'); }} />
+        <StatCard label="Upcoming" value={String(upcoming.length)} sub="Events scheduled" icon="📅" onClick={() => { sfx.click(); setPage('events'); }} />
+        <StatCard label="Streak Leader" value={streakLeader ? streakLeader.name.split(' ')[0] : '—'} sub={`${streakLeader?.streak ?? 0} events in a row`} color={C.success} icon="🔥" onClick={() => { sfx.click(); setSelectedRunner(streakLeader); setPage('runnerprofile'); }} />
+        <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} icon="⭐" onClick={() => { sfx.click(); setSelectedRunner(mostImproved); setPage('runnerprofile'); }} />
       </div>
 
       <Card style={{ background: C.orangeGradient, color: C.white, marginBottom: isMobile ? 16 : 28, border: 'none', boxShadow: '0 4px 20px rgba(232,82,10,0.28)' }}>
@@ -4178,7 +4181,7 @@ function App() {
       case 'dashboard':
         if (role === 'superadmin')  return <SuperAdminDashboard setPage={setPage} runners={runners} />;
         if (role === 'schooladmin') return <SchoolAdminDashboard setPage={setPage} runners={runners} />;
-        if (role === 'lead')        return <LeadDashboard setPage={setPage} user={user} />;
+        if (role === 'lead')        return <LeadDashboard setPage={setPage} user={user} setSelectedRunner={setSelectedRunner} />;
         break;
       case 'organisations':
         return <OrganisationsPage setPage={setPage} />;
