@@ -2470,7 +2470,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          {!isMobile && <Button variant="ghost" size="sm" onClick={downloadCSVTemplate}>⬇ Template</Button>}
+          {!isMobile && <Button variant="ghost" size="sm" onClick={downloadCSVTemplate}>⬇ CSV Template</Button>}
           <Button variant="secondary" size={isMobile ? 'sm' : 'md'} onClick={() => csvRef.current?.click()}>⬆ CSV</Button>
           <Button size={isMobile ? 'sm' : 'md'} onClick={() => setShowAddModal(true)}>+ Add</Button>
         </div>
