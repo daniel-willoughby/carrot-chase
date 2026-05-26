@@ -34,9 +34,20 @@
       50% { background: #ff7a2f; }
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes streakFlame {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.35); }
+    }
+    .streak-flame { display: inline-block; animation: streakFlame 0.85s ease-in-out infinite; }
+    @keyframes tapPulse {
+      0%   { box-shadow: 0 4px 20px rgba(232,82,10,0.35), 0 0 0 0 rgba(232,82,10,0.4); }
+      70%  { box-shadow: 0 4px 20px rgba(232,82,10,0.35), 0 0 0 22px rgba(232,82,10,0); }
+      100% { box-shadow: 0 4px 20px rgba(232,82,10,0.35), 0 0 0 0 rgba(232,82,10,0); }
+    }
+    .tap-pulse { animation: tapPulse 1.6s ease-out infinite; }
     @keyframes countdown {
       from { stroke-dashoffset: 0; }
       to { stroke-dashoffset: 283; }
@@ -417,7 +428,40 @@ function EmptyState({ icon, heading, sub, action }) {
   );
 }
 
-// ── SVG Line Chart ───────────────────────────────────────────────────────────
+// ── Avatar Stack ─────────────────────────────────────────────────────────────
+function AvatarStack({ runners, max = 5 }) {
+  const shown = runners.slice(0, max);
+  const rest = runners.length - max;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {shown.map((r, i) => {
+        const lc = levelColor(r.level);
+        return (
+          <div key={r.id} style={{
+            width: 28, height: 28, borderRadius: '50%',
+            background: lc.bg, border: `2px solid ${C.white}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 11, fontWeight: 800, color: lc.color,
+            marginLeft: i === 0 ? 0 : -8,
+            position: 'relative', zIndex: shown.length - i,
+            title: r.name,
+          }}>{r.name[0]}</div>
+        );
+      })}
+      {rest > 0 && (
+        <div style={{
+          width: 28, height: 28, borderRadius: '50%',
+          background: C.bgSubtle, border: `2px solid ${C.white}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 10, fontWeight: 700, color: C.muted,
+          marginLeft: -8, position: 'relative', zIndex: 0,
+        }}>+{rest}</div>
+      )}
+    </div>
+  );
+}
+
+// ── SVG Line Chart ─────────────────────────────────────────────────────────────
 function LineChart({ data, labels, title, height=200, color=C.orange }) {
   const W = 560, H = height;
   const pad = { top: 20, right: 20, bottom: 30, left: 50 };
@@ -1620,11 +1664,26 @@ function SchoolAdminDashboard({ setPage, runners }) {
 
   return (
     <div className="fade-in">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: isMobile ? 16 : 28 }}>
-        <OrgLogo org={schoolOrg} size={isMobile ? 44 : 52} />
-        <div>
-          <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
-          <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 13 : 14 }}>Welcome back, Sarah!</p>
+      <div style={{ marginBottom: isMobile ? 16 : 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
+          <OrgLogo org={schoolOrg} size={isMobile ? 44 : 52} />
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800 }}>Good morning, Sarah!</h1>
+            <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 12 : 13 }}>
+              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · {CURRENT_TERM}
+            </p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ background: C.orangeLight, color: C.orange, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
+            📅 {EVENTS.filter(e => e.status === 'upcoming').length} upcoming events
+          </div>
+          <div style={{ background: C.successLight, color: C.success, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
+            🏃 {liveRunners.length} runners active
+          </div>
+          <div style={{ background: C.blueLight, color: C.blue, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
+            👥 {GROUPS.length} groups
+          </div>
         </div>
       </div>
 
@@ -1646,7 +1705,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
           {GROUPS.map(g => (
             <Card key={g.id} className="card-hover" style={{ cursor: 'pointer' }} onClick={() => { sfx.click(); setPage('groups'); }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                 <div>
                   <div style={{ fontWeight: 700, marginBottom: 4 }}>{g.name}</div>
                   <div style={{ fontSize: 13, color: C.muted }}>{g.members} runners</div>
@@ -1658,6 +1717,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
                   {g.members}
                 </div>
               </div>
+              <AvatarStack runners={RUNNERS.filter(r => rGroups(r).includes(g.name))} />
               <div style={{ marginTop: 12, display: 'flex', gap: 16 }}>
                 <div>
                   <div style={{ fontSize: 11, color: C.muted }}>Last event</div>
@@ -1759,8 +1819,18 @@ function LeadDashboard({ setPage, user, setSelectedRunner }) {
   return (
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
-        <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
-        <p style={{ color: C.muted, marginTop: 4, fontSize: 14 }}>Welcome back, {firstName}!</p>
+        <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 800 }}>Good morning, {firstName}!</h1>
+        <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 12 : 13, marginBottom: 10 }}>
+          {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · {CURRENT_TERM}
+        </p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ background: C.orangeLight, color: C.orange, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
+            📅 {upcoming.length} upcoming event{upcoming.length !== 1 ? 's' : ''}
+          </div>
+          <div style={{ background: C.successLight, color: C.success, borderRadius: 999, padding: '4px 12px', fontSize: 12, fontWeight: 600 }}>
+            🏃 {myRunners.length} runners in {myGroupName}
+          </div>
+        </div>
       </div>
 
       {/* Stats row */}
@@ -1980,6 +2050,9 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
             <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 4 }}>{g.name}</div>
             <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>
               {g.type}{g.lead ? ` · Lead: ${g.lead}` : ''}
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <AvatarStack runners={RUNNERS.filter(r => rGroups(r).includes(g.name))} />
             </div>
             <div style={{ display: 'flex', gap: 20, marginBottom: 16 }}>
               <div>
@@ -2406,28 +2479,41 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
               const lc = levelColor(r.level);
               return (
                 <div key={r.id} style={{ border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 14px', background: C.bg }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                      onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}>{r.name}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <button onClick={e => { sfx.click(); openEdit(r, e); }}
-                        style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
-                          padding: '3px 10px', fontSize: 11, fontWeight: 600, color: C.muted, cursor: 'pointer', fontFamily: 'Inter' }}>
-                        Edit
-                      </button>
-                      <span style={{
-                        background: lc.bg, color: lc.color, border: `1px solid ${lc.border}`,
-                        borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700,
-                      }}>L{r.level}</span>
-                    </div>
-                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
+                    <div
+                      onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}
+                      style={{
+                        width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                        background: lc.bg, border: `2.5px solid ${lc.border}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 15, fontWeight: 800, color: lc.color, cursor: 'pointer',
+                      }}
+                    >{r.name[0]}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+                          onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}>{r.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <button onClick={e => { sfx.click(); openEdit(r, e); }}
+                            style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
+                              padding: '3px 10px', fontSize: 11, fontWeight: 600, color: C.muted, cursor: 'pointer', fontFamily: 'Inter' }}>
+                            Edit
+                          </button>
+                          <span style={{
+                            background: lc.bg, color: lc.color, border: `1px solid ${lc.border}`,
+                            borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 700,
+                          }}>L{r.level}</span>
+                        </div>
+                      </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: 12, cursor: 'pointer' }}
                     onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}>
                     <div><span style={{ color: C.muted }}>ID </span><span style={{ fontFamily: 'monospace' }}>{r.id}</span></div>
                     <div><span style={{ color: C.muted }}>PB </span><span style={{ fontWeight: 600 }}>{r.pb}</span></div>
-                    <div><span style={{ color: C.muted }}>Streak </span><span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}🔥</span></div>
+                    <div><span style={{ color: C.muted }}>Streak </span><span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}<span className={r.streak >= 10 ? 'streak-flame' : ''}>🔥</span></span></div>
                     <div><span style={{ color: C.muted }}>Points </span><span style={{ fontWeight: 700 }}>{r.points.toLocaleString()}</span></div>
                     <div style={{ gridColumn: '1 / -1' }}><span style={{ color: C.muted }}>Group </span><span style={{ fontWeight: 600 }}>{rGroups(r).join(', ') || '—'}</span></div>
+                  </div>
+                    </div>
                   </div>
                 </div>
               );
@@ -2455,7 +2541,17 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                       onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}
                     >
                       <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: 12, color: C.muted }}>{r.id}</td>
-                      <td style={{ padding: '12px', fontWeight: 600 }}>{r.name}</td>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{
+                            width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                            background: lc.bg, border: `2px solid ${lc.border}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 13, fontWeight: 800, color: lc.color,
+                          }}>{r.name[0]}</div>
+                          <span style={{ fontWeight: 600 }}>{r.name}</span>
+                        </div>
+                      </td>
                       <td style={{ padding: '12px' }}>
                         <span style={{
                           background: lc.bg, color: lc.color, border: `1px solid ${lc.border}`,
@@ -2467,7 +2563,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                       <td style={{ padding: '12px', fontWeight: 600 }}>{r.pb}</td>
                       <td style={{ padding: '12px', color: C.muted, fontSize: 13 }}>{rGroups(r).join(', ') || '—'}</td>
                       <td style={{ padding: '12px' }}>
-                        <span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}🔥</span>
+                        <span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}<span className={r.streak >= 10 ? 'streak-flame' : ''}>🔥</span></span>
                       </td>
                       <td style={{ padding: '12px', fontWeight: 700 }}>{r.points.toLocaleString()}</td>
                       <td style={{ padding: '12px' }}>
@@ -3046,16 +3142,41 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
           </div>
         </div>
 
-        {/* Step progress bar */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: 24 }}>
-          {[1,2,3,4].map(s => (
-            <div key={s} style={{
-              flex: 1, height: 4, borderRadius: 99,
-              background: s <= step ? C.orange : C.border,
-              transition: 'background 0.3s',
-            }} />
-          ))}
-        </div>
+        {/* Step progress dots */}
+        {(() => {
+          const labels = ['Attendance', 'Start Order', 'Timing', 'Match Names'];
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 24 }}>
+              {labels.map((label, i) => {
+                const n = i + 1;
+                const done = n < step;
+                const active = n === step;
+                return (
+                  <React.Fragment key={n}>
+                    {i > 0 && (
+                      <div style={{ height: 2, width: 28, background: done ? C.orange : C.border, transition: 'background 0.3s', flexShrink: 0 }} />
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                      <div style={{
+                        width: active ? 30 : 24, height: active ? 30 : 24, borderRadius: '50%',
+                        background: done ? C.orange : active ? C.orange : C.white,
+                        border: `2px solid ${(done || active) ? C.orange : C.border}`,
+                        color: (done || active) ? C.white : C.muted,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: active ? 12 : 11, fontWeight: 800,
+                        transition: 'all 0.25s ease',
+                        boxShadow: active ? `0 0 0 4px ${C.orangeLight}` : 'none',
+                      }}>
+                        {done ? '✓' : n}
+                      </div>
+                      <div style={{ fontSize: 10, fontWeight: active ? 700 : 500, color: active ? C.orange : C.muted, whiteSpace: 'nowrap' }}>{label}</div>
+                    </div>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* ─ Step 1: Attendance ─ */}
         {step === 1 && (
@@ -3259,14 +3380,14 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
             <button
               onClick={handleTap}
               disabled={tapCount >= presentCount}
+              className={tapCount < presentCount && !tapping ? 'tap-pulse' : ''}
               style={{
                 width: '100%', padding: '36px 24px', borderRadius: 20,
                 background: tapCount >= presentCount ? '#ccc' : C.orange,
                 color: C.white, fontSize: 22, fontWeight: 800, border: 'none',
                 cursor: tapCount >= presentCount ? 'default' : 'pointer',
                 fontFamily: 'Inter, sans-serif', marginBottom: 16,
-                animation: tapping ? 'flash 0.3s ease' : 'none',
-                boxShadow: '0 4px 20px rgba(212,82,10,0.35)',
+                animation: tapping ? 'flash 0.3s ease' : undefined,
                 transition: 'background 0.15s',
               }}
             >
@@ -3972,6 +4093,22 @@ function RunnerProfilePage({ runner, setPage, runners }) {
             ))}
           </div>
         )}
+        {(() => {
+          const mod = runner.level % 10;
+          const pct = mod === 0 ? 0 : Math.round(((10 - mod) / 10) * 100);
+          const nextMilestone = mod === 0 ? runner.level - 10 : runner.level - mod;
+          return (
+            <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>Progress to Level {nextMilestone}</div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: C.white }}>{pct}%</div>
+              </div>
+              <div style={{ height: 5, borderRadius: 999, background: 'rgba(255,255,255,0.18)' }}>
+                <div style={{ height: '100%', borderRadius: 999, background: 'rgba(255,255,255,0.75)', width: `${pct}%`, transition: 'width 0.7s ease' }} />
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Stats */}
