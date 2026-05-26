@@ -385,10 +385,11 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
       { id: 'leaderboard', icon: '🏆', label: 'Leaderboard' },
     ],
     lead: [
-      { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
-      { id: 'members',   icon: '🏃', label: 'Members'   },
-      { id: 'events',    icon: '📅', label: 'Events'    },
-      { id: 'runevent',  icon: '🏁', label: 'Run Event' },
+      { id: 'dashboard',   icon: '⊞', label: 'Dashboard'   },
+      { id: 'members',     icon: '🏃', label: 'Members'     },
+      { id: 'events',      icon: '📅', label: 'Events'      },
+      { id: 'leaderboard', icon: '🏆', label: 'Leaderboard' },
+      { id: 'runevent',    icon: '🏁', label: 'Run Event'   },
     ],
   };
 
@@ -495,10 +496,11 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, children 
       { id: 'leaderboard',  icon: '🏆', label: 'Leaderboard'},
     ],
     lead: [
-      { id: 'dashboard', icon: '⊞', label: 'Dashboard' },
-      { id: 'members',   icon: '🏃', label: 'Members'   },
-      { id: 'events',    icon: '📅', label: 'Events'    },
-      { id: 'runevent',  icon: '🏁', label: 'Run Event' },
+      { id: 'dashboard',   icon: '⊞', label: 'Dashboard'   },
+      { id: 'members',     icon: '🏃', label: 'Members'     },
+      { id: 'events',      icon: '📅', label: 'Events'      },
+      { id: 'leaderboard', icon: '🏆', label: 'Leaderboard' },
+      { id: 'runevent',    icon: '🏁', label: 'Run Event'   },
     ],
   };
   const items = navs[role] || [];
@@ -1241,7 +1243,7 @@ function OrganisationsPage({ setPage }) {
             ) : (
               <>
                 <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Invite School Admin</div>
-                <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>They'll receive an email with a setup link — expires after 72 hours.</div>
+                <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>They'll receive an email with a setup link (expires in 72 hours).</div>
                 {[
                   { label: 'Email address *', key: 'email', placeholder: 'admin@school.co.uk', type: 'email', cap: 'none' },
                   { label: 'Name (optional)', key: 'name',  placeholder: 'e.g. Jane Smith', type: 'text', cap: 'words' },
@@ -1512,7 +1514,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
         <OrgLogo org={schoolOrg} size={isMobile ? 44 : 52} />
         <div>
           <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
-          <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 13 : 14 }}>Hampton Primary — Welcome back, Sarah!</p>
+          <p style={{ color: C.muted, marginTop: 2, fontSize: isMobile ? 13 : 14 }}>Welcome back, Sarah!</p>
         </div>
       </div>
 
@@ -1648,7 +1650,7 @@ function LeadDashboard({ setPage, user }) {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>{myGroupName} — Welcome back, {firstName}!</p>
+        <p style={{ color: C.muted, marginTop: 4 }}>Welcome back, {firstName}!</p>
       </div>
 
       {/* Stats row */}
@@ -1803,7 +1805,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
             ) : (
               <>
                 <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Invite Lead</div>
-                <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>They'll receive an email with a setup link — expires after 72 hours.</div>
+                <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>They'll receive an email with a setup link (expires in 72 hours).</div>
                 <div style={{ marginBottom: 14 }}>
                   <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Email address *</label>
                   <input type="email" value={inviteForm.email} onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))} placeholder="lead@school.co.uk" autoCapitalize="none" style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white, boxSizing: 'border-box' }} />
@@ -1813,7 +1815,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
                   <input type="text" value={inviteForm.name} onChange={e => setInviteForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. James Carter" autoCapitalize="words" style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white, boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8, color: C.muted }}>Assign to group(s) — optional</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8, color: C.muted }}>Assign to group(s) (optional)</label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {groups.filter(g => !g.archived).map(g => {
                       const checked = inviteForm.groups.includes(g.name);
@@ -2533,9 +2535,9 @@ function CreateEventPage({ setPage, runners }) {
   const [customCourseInput, setCustomCourseInput] = useState('');
 
   const FORMAT_HINTS = {
-    Pursuit:  '🐇 Handicap — runners start in staggered groups by level; slower runners go first. Aim: everyone finishes together.',
-    Scratch:  '🏁 Scratch — all runners start simultaneously. First across the line wins outright.',
-    Relay:    '🔄 Relay — team event with baton or tag handover. Assign runners to teams after creation.',
+    Pursuit:  '🐇 Handicap: runners start in staggered groups by level; slower runners go first. Aim: everyone finishes together.',
+    Scratch:  '🏁 Scratch: all runners start simultaneously. First across the line wins outright.',
+    Relay:    '🔄 Relay: team event with baton or tag handover. Assign runners to teams after creation.',
   };
 
   const allCourses = ['1.5km Loop', '2km Track', '5km Road', 'Cross Country', ...customCourses];
@@ -3061,7 +3063,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                 <Card key={gi} style={{ marginBottom: 16, opacity: waiting ? 0.5 : 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <div style={{ fontWeight: 700, fontSize: 15 }}>
-                      Group {gi + 1} {gi === 0 ? '(Slowest — first to start)' : gi === startGroups.length - 1 ? '(Fastest — last to start)' : '(Middle)'}
+                      Group {gi + 1} {gi === 0 ? '(Slowest, first to start)' : gi === startGroups.length - 1 ? '(Fastest, last to start)' : '(Middle)'}
                     </div>
                     {started && <Badge label="Started ✓" bg={C.successLight} color={C.success} />}
                   </div>
@@ -3706,7 +3708,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {newBadgesAll.map((b, i) => (
                 <div key={i} style={{ background: C.orangeLight, borderRadius: 12, padding: '8px 14px', fontSize: 13, fontWeight: 600, color: C.orange }}>
-                  {b.badge} <span style={{ fontWeight: 400, color: C.muted, fontSize: 12 }}>— {b.name?.split(' ')[0]}</span>
+                  {b.badge} <span style={{ fontWeight: 400, color: C.muted, fontSize: 12 }}>{b.name?.split(' ')[0]}</span>
                 </div>
               ))}
             </div>
@@ -3912,7 +3914,7 @@ function LeaderboardPage({ runners }) {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Leaderboard</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>Series standings — {CURRENT_TERM}</p>
+        <p style={{ color: C.muted, marginTop: 4 }}>{CURRENT_TERM} standings</p>
       </div>
 
       {/* Top 3 podium */}
