@@ -288,6 +288,14 @@ const sfx = (() => {
       tone(659, 0.7, 0.18, 'sine', 0.43);
       tone(523, 0.7, 0.13, 'sine', 0.43);
     },
+    // Very soft tap for navigation / generic button press
+    click()   { tone(600, 0.04, 0.018); },
+    // Soft ascending two-note for positive confirmations (add, save, create)
+    confirm() { tone(523, 0.07, 0.022); tone(784, 0.1, 0.028, 'sine', 0.08); },
+    // Soft descending two-note for dismiss / cancel / back / sign out
+    dismiss() { tone(440, 0.07, 0.02); tone(330, 0.09, 0.022, 'sine', 0.07); },
+    // Gentle ascending three-note for successful login
+    login()   { tone(523, 0.06, 0.02); tone(659, 0.06, 0.022, 'sine', 0.09); tone(784, 0.1, 0.028, 'sine', 0.18); },
   };
 })();
 
@@ -458,7 +466,7 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
           return (
             <button
               key={item.id}
-              onClick={() => setPage(item.id)}
+              onClick={() => { sfx.click(); setPage(item.id); }}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 14px', borderRadius: 999, border: 'none',
@@ -492,7 +500,7 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData }) {
           </div>
         </div>
         <button
-          onClick={onLogout}
+          onClick={() => { sfx.dismiss(); onLogout(); }}
           style={{
             width: '100%', padding: '8px', borderRadius: 999, border: `1px solid ${C.border}`,
             background: 'transparent', color: C.muted, fontSize: 13, fontWeight: 500,
@@ -572,7 +580,7 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, children 
           {/* Sign-out button — initial + label */}
           <div style={{ width: 64, display: 'flex', justifyContent: 'flex-end' }}>
             <button
-              onClick={() => { if (window.confirm('Sign out?')) onLogout(); }}
+              onClick={() => { if (window.confirm('Sign out?')) { sfx.dismiss(); onLogout(); } }}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                 background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px',
@@ -612,7 +620,7 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, children 
             return (
               <button
                 key={item.id}
-                onClick={() => setPage(item.id)}
+                onClick={() => { sfx.click(); setPage(item.id); }}
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center', gap: 2,
@@ -661,13 +669,13 @@ function LoginPage({ onLogin }) {
   function handleLogin(e) {
     e.preventDefault();
     const match = CREDS.find(c => c.email === email && c.password === password);
-    if (match) { setPendingUser({ email: match.email, role: match.role, name: match.name }); }
+    if (match) { sfx.click(); setPendingUser({ email: match.email, role: match.role, name: match.name }); }
     else { setError('Invalid credentials. Try the demo credentials below.'); }
   }
 
   function handleVerify(e) {
     e.preventDefault();
-    if (twoFACode === DEMO_CODE) { onLogin(pendingUser); }
+    if (twoFACode === DEMO_CODE) { sfx.login(); onLogin(pendingUser); }
     else { setTwoFAError('Incorrect code. Try the demo code shown above.'); }
   }
 
@@ -1084,6 +1092,7 @@ function OrganisationsPage({ setPage }) {
       events: 0,
       status: 'active',
     };
+    sfx.confirm();
     setOrgs([...orgs, next]);
     setNewForm({ name: '', type: 'School', location: '', admin: '' });
     setShowNewModal(false);
@@ -1614,7 +1623,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
               <div style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>{ev.date} · {ev.group}</div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'space-between' }}>
                 <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
-                <Button size="sm" onClick={() => setPage('runevent')}>Run →</Button>
+                <Button size="sm" onClick={() => { sfx.click(); setPage('runevent'); }}>Run →</Button>
               </div>
             </div>
           ))}
@@ -1710,7 +1719,7 @@ function LeadDashboard({ setPage, user }) {
             <div style={{ opacity: 0.85, fontSize: isMobile ? 12 : 14 }}>Year 6 Pursuit Run #14 is scheduled for tomorrow</div>
           </div>
           <Button
-            onClick={() => setPage('runevent')}
+            onClick={() => { sfx.click(); setPage('runevent'); }}
             style={{ background: C.white, color: C.orange, flexShrink: 0 }}
             size={isMobile ? 'sm' : 'lg'}
           >
@@ -1734,7 +1743,7 @@ function LeadDashboard({ setPage, user }) {
                   <Badge label={ev.format} bg={C.orangeLight} color={C.orange} />
                 </div>
               </div>
-              <Button size="sm" style={{ flexShrink: 0 }} onClick={() => setPage('runevent')}>Run →</Button>
+              <Button size="sm" style={{ flexShrink: 0 }} onClick={() => { sfx.click(); setPage('runevent'); }}>Run →</Button>
             </div>
           ))}
         </Card>
@@ -2133,6 +2142,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
     const nextNum = runners.length + 1;
     const id = `CC-${String(nextNum).padStart(4, '0')}`;
     const newRunner = { id, name, level: 99, pb: '—', groups: addForm.group ? [addForm.group] : [], streak: 0, points: 0, times: [420,420,420,420,420], badges: [] };
+    sfx.confirm();
     setRunners([...runners, newRunner]);
     setAddForm({ firstName: '', lastName: '', year: 'Year 5', group: 'Year 5 Running Club' });
     setShowAddModal(false);
@@ -2180,6 +2190,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
       id: `CC-${String(runners.length + i + 1).padStart(4, '0')}`,
       name: r.name, level: 99, pb: '—', groups: r.group ? [r.group] : [], streak: 0, points: 0, times: [420,420,420,420,420], badges: [],
     }));
+    sfx.confirm();
     setRunners([...runners, ...newRunners]);
     setShowCSVModal(false); setCsvPreview(null);
   }
@@ -2329,7 +2340,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                 <div key={r.id} style={{ border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 14px', background: C.bg }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                      onClick={() => { setSelectedRunner(r); setPage('runnerprofile'); }}>{r.name}</div>
+                      onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}>{r.name}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button onClick={e => openEdit(r, e)}
                         style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
@@ -2343,7 +2354,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: 12, cursor: 'pointer' }}
-                    onClick={() => { setSelectedRunner(r); setPage('runnerprofile'); }}>
+                    onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}>
                     <div><span style={{ color: C.muted }}>ID </span><span style={{ fontFamily: 'monospace' }}>{r.id}</span></div>
                     <div><span style={{ color: C.muted }}>PB </span><span style={{ fontWeight: 600 }}>{r.pb}</span></div>
                     <div><span style={{ color: C.muted }}>Streak </span><span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}🔥</span></div>
@@ -2373,7 +2384,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                     <tr
                       key={r.id}
                       style={{ borderBottom: `1px solid ${C.border}`, cursor: 'pointer' }}
-                      onClick={() => { setSelectedRunner(r); setPage('runnerprofile'); }}
+                      onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}
                     >
                       <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: 12, color: C.muted }}>{r.id}</td>
                       <td style={{ padding: '12px', fontWeight: 600 }}>{r.name}</td>
@@ -2467,7 +2478,7 @@ function EventsPage({ setPage }) {
             </div>
           </div>
           {ev.status === 'upcoming' && (
-            <Button size="sm" onClick={() => setPage('runevent')} style={{ flexShrink: 0 }}>Run →</Button>
+            <Button size="sm" onClick={() => { sfx.click(); setPage('runevent'); }} style={{ flexShrink: 0 }}>Run →</Button>
           )}
         </div>
       </div>
@@ -2515,7 +2526,7 @@ function EventsPage({ setPage }) {
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <Button variant="secondary" onClick={() => setPage('createevent')}>+ Create Event</Button>
-          <Button onClick={() => setPage('runevent')}>Run Event</Button>
+          <Button onClick={() => { sfx.click(); setPage('runevent'); }}>Run Event</Button>
         </div>
       </div>
 
@@ -2543,7 +2554,7 @@ function EventsPage({ setPage }) {
                   <td style={{ padding: '12px' }}><Badge label={s.label} bg={s.bg} color={s.color} /></td>
                   <td style={{ padding: '12px' }}>
                     {ev.status === 'upcoming' && (
-                      <Button size="sm" onClick={() => setPage('runevent')}>Run →</Button>
+                      <Button size="sm" onClick={() => { sfx.click(); setPage('runevent'); }}>Run →</Button>
                     )}
                   </td>
                 </tr>
@@ -2773,7 +2784,7 @@ function CreateEventPage({ setPage, runners }) {
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
               <Button variant="secondary" onClick={() => setStep(2)}>← Back</Button>
-              <Button size="lg" onClick={() => { alert(`Event created!\n\n${form.group} · ${form.format} · ${form.course}\n${form.date} at ${form.time}\n\n[In production this would save to the database]`); setPage('events'); }}>✓ Create Event</Button>
+              <Button size="lg" onClick={() => { sfx.confirm(); alert(`Event created!\n\n${form.group} · ${form.format} · ${form.course}\n${form.date} at ${form.time}\n\n[In production this would save to the database]`); setPage('events'); }}>✓ Create Event</Button>
             </div>
           </div>
         )}
@@ -2952,7 +2963,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
           <button
-            onClick={() => step === 1 ? setPage('events') : setStep(s => s - 1)}
+            onClick={() => { sfx.dismiss(); step === 1 ? setPage('events') : setStep(s => s - 1); }}
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: C.muted }}
           >
             ←
@@ -3799,10 +3810,10 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 12 }}>
-          <Button size="lg" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { commitResults(); setPage('dashboard'); }}>
+          <Button size="lg" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { sfx.confirm(); commitResults(); setPage('dashboard'); }}>
             Save & Done
           </Button>
-          <Button size="lg" variant="outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { commitResults(); setPage('leaderboard'); }}>
+          <Button size="lg" variant="outline" style={{ flex: 1, justifyContent: 'center' }} onClick={() => { sfx.confirm(); commitResults(); setPage('leaderboard'); }}>
             Save & View Leaderboard
           </Button>
         </div>
