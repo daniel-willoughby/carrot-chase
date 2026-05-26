@@ -138,9 +138,9 @@ const CURRENT_TERM = 'Spring Term 2026';
 // ── Colours & shared tokens ──────────────────────────────────────────────────
 const C = {
   orange: '#E8520A',
-  orangeDark: '#C44008',
+  orangeDark: '#D04A08',
   orangeLight: '#FEF0E7',
-  orangeGradient: 'linear-gradient(135deg, #E8520A 0%, #C44008 100%)',
+  orangeGradient: 'linear-gradient(135deg, #EC560C 0%, #D04A08 100%)',
   bg: '#FAF6F1',
   bgSubtle: '#F5EFE8',
   white: '#FFFFFF',
@@ -739,7 +739,7 @@ function LoginPage({ onLogin }) {
       {/* Top/Left — orange panel */}
       <div style={{
         flex: isMobile ? 'none' : 1,
-        background: 'linear-gradient(160deg, #F06318 0%, #C44008 60%, #A33206 100%)',
+        background: 'linear-gradient(160deg, #EC5A10 0%, #D04A08 100%)',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: isMobile ? '28px 20px' : 48,
@@ -1726,7 +1726,7 @@ function LeadDashboard({ setPage, user }) {
         <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} />
       </div>
 
-      <Card style={{ background: 'linear-gradient(135deg, #F06318 0%, #C44008 100%)', color: C.white, marginBottom: isMobile ? 16 : 28, border: 'none', boxShadow: '0 4px 20px rgba(232,82,10,0.32)' }}>
+      <Card style={{ background: C.orangeGradient, color: C.white, marginBottom: isMobile ? 16 : 28, border: 'none', boxShadow: '0 4px 20px rgba(232,82,10,0.28)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: isMobile ? 15 : 18, fontWeight: 700, marginBottom: 6 }}>Ready to run an event?</div>
