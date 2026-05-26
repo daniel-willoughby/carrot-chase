@@ -6,13 +6,15 @@
   <title>Carrot Chase</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #FAF6F1; color: #1a1a1a; }
+    body { font-family: 'Inter', sans-serif; background: #FAF6F1; color: #1a1a1a; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.025em; }
+    p { line-height: 1.6; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #f1f1f1; }
     ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
@@ -147,8 +149,8 @@ const C = {
   border: '#E3D8CE',
   borderStrong: '#C8B8A8',
   text: '#1a1a1a',
-  textSecondary: '#374151',
-  muted: '#6b6b6b',
+  textSecondary: '#3d3530',
+  muted: '#7a6f68',
   success: '#16a34a',
   successLight: '#dcfce7',
   danger: '#dc2626',
@@ -365,9 +367,9 @@ function Badge({ label, bg, color }) {
 function StatCard({ label, value, sub, color }) {
   return (
     <Card style={{ flex: 1, minWidth: 160 }}>
-      <div style={{ color: C.muted, fontSize: 13, fontWeight: 500, marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 800, color: color || C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{sub}</div>}
+      <div style={{ color: C.muted, fontSize: 11, fontWeight: 600, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: color || C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: C.muted, marginTop: 6, lineHeight: 1.4 }}>{sub}</div>}
     </Card>
   );
 }
@@ -387,7 +389,7 @@ function LineChart({ data, labels, title, height=200, color=C.orange }) {
 
   return (
     <div>
-      {title && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>{title}</div>}
+      {title && <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 12 }}>{title}</div>}
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: H }} xmlns="http://www.w3.org/2000/svg">
         {yTicks.map((v, i) => {
           const y = pad.top + h - (v / (max || 1)) * h;
@@ -867,7 +869,7 @@ function SuperAdminDashboard({ setPage }) {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>Welcome back, Alex. Here's what's happening.</p>
+        <p style={{ color: C.muted, marginTop: 4, fontSize: 14 }}>Welcome back, Alex. Here's what's happening.</p>
       </div>
 
       {/* Stats */}
@@ -1180,7 +1182,7 @@ function OrganisationsPage({ setPage }) {
           <StatCard label="Admin" value={viewOrg.admin.split(' ')[0]} sub={viewOrg.admin} />
         </div>
         <Card style={{ marginBottom: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Organisation Details</div>
+          <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 16 }}>Organisation Details</div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
             {[
               ['Name', viewOrg.name],
@@ -1198,7 +1200,7 @@ function OrganisationsPage({ setPage }) {
         </Card>
         {/* Groups */}
         <Card style={{ marginBottom: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 14 }}>Groups</div>
+          <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 14 }}>Groups</div>
           {GROUPS.map(g => (
             <div key={g.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${C.border}`, fontSize: 14 }}>
               <div>
@@ -1215,7 +1217,7 @@ function OrganisationsPage({ setPage }) {
 
         {/* Recent events */}
         <Card style={{ marginBottom: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 14 }}>Recent Events</div>
+          <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 14 }}>Recent Events</div>
           {EVENTS.filter(e => e.status === 'completed').slice(0, 4).map(ev => (
             <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid ${C.border}`, fontSize: 14 }}>
               <div>
@@ -1255,7 +1257,7 @@ function OrganisationsPage({ setPage }) {
             background: C.white, borderRadius: 20, padding: 28,
             width: '100%', maxWidth: 420, boxShadow: C.shadowLg,
           }}>
-            <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 20 }}>New Organisation</div>
+            <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', marginBottom: 20 }}>New Organisation</div>
             {[
               { label: 'Name', key: 'name', placeholder: 'e.g. Riverside Academy' },
               { label: 'Location', key: 'location', placeholder: 'e.g. London' },
@@ -1297,12 +1299,12 @@ function OrganisationsPage({ setPage }) {
             {inviteSent ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>✉️</div>
-                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>Invitation sent!</div>
+                <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', marginBottom: 6 }}>Invitation sent!</div>
                 <div style={{ fontSize: 14, color: C.muted }}>A setup link has been sent to {inviteForm.email}. It expires in 72 hours.</div>
               </div>
             ) : (
               <>
-                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Invite School Admin</div>
+                <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', marginBottom: 4 }}>Invite School Admin</div>
                 <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>They'll receive an email with a setup link (expires in 72 hours).</div>
                 {[
                   { label: 'Email address *', key: 'email', placeholder: 'admin@school.co.uk', type: 'email', cap: 'none' },
@@ -1448,7 +1450,7 @@ function BillingPage() {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Billing</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>Manage licences and invoices</p>
+        <p style={{ color: C.muted, marginTop: 4, fontSize: 14 }}>Manage licences and invoices</p>
       </div>
 
       <div style={{
@@ -1463,7 +1465,7 @@ function BillingPage() {
       </div>
 
       <Card style={{ marginBottom: 24 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Licence Overview</div>
+        <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 16 }}>Licence Overview</div>
 
         {isMobile ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -1528,7 +1530,7 @@ function BillingPage() {
       </Card>
 
       <Card>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Manual Invoice</div>
+        <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 16 }}>Manual Invoice</div>
         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12, alignItems: isMobile ? 'stretch' : 'flex-end' }}>
           <div style={{ flex: isMobile ? 'unset' : 1 }}>
             <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Organisation</label>
@@ -1592,7 +1594,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
 
       {/* Groups grid */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Groups</div>
+        <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 16 }}>Groups</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
           {GROUPS.map(g => (
             <Card key={g.id} style={{ cursor: 'pointer' }} onClick={() => { sfx.click(); setPage('groups'); }}>
@@ -1678,9 +1680,9 @@ function SchoolAdminDashboard({ setPage, runners }) {
             { label: 'Annual projected', value: '£1,080', sub: 'vs £250 licence', color: C.purple },
           ].map(item => (
             <div key={item.label} style={{ background: C.bg, borderRadius: 12, padding: 14 }}>
-              <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>{item.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: item.color }}>{item.value}</div>
-              <div style={{ fontSize: 11, color: C.muted }}>{item.sub}</div>
+              <div style={{ fontSize: 11, color: C.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{item.label}</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: item.color, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{item.value}</div>
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{item.sub}</div>
             </div>
           ))}
         </div>
@@ -1710,7 +1712,7 @@ function LeadDashboard({ setPage, user }) {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Dashboard</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>Welcome back, {firstName}!</p>
+        <p style={{ color: C.muted, marginTop: 4, fontSize: 14 }}>Welcome back, {firstName}!</p>
       </div>
 
       {/* Stats row */}
@@ -1744,7 +1746,7 @@ function LeadDashboard({ setPage, user }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 12 : 24 }}>
         <Card>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Upcoming Events</div>
+          <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 16 }}>Upcoming Events</div>
           {upcoming.map(ev => (
             <div key={ev.id} style={{
               padding: '12px 0', borderBottom: `1px solid ${C.border}`,
@@ -1763,7 +1765,7 @@ function LeadDashboard({ setPage, user }) {
         </Card>
 
         <Card>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Recent Results</div>
+          <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 16 }}>Recent Results</div>
           {recent.map(ev => (
             <div key={ev.id} style={{
               padding: '12px 0', borderBottom: `1px solid ${C.border}`,
@@ -1860,12 +1862,12 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
             {inviteSent ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>✉️</div>
-                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>Invitation sent!</div>
+                <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', marginBottom: 6 }}>Invitation sent!</div>
                 <div style={{ fontSize: 14, color: C.muted }}>A setup link has been sent to {inviteForm.email}. It expires in 72 hours.</div>
               </div>
             ) : (
               <>
-                <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Invite Lead</div>
+                <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', marginBottom: 4 }}>Invite Lead</div>
                 <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>They'll receive an email with a setup link (expires in 72 hours).</div>
                 <div style={{ marginBottom: 14 }}>
                   <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Email address *</label>
@@ -1927,7 +1929,7 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               }}>{g.name.charAt(0)}</div>
               <Badge label={`${g.members} runners`} bg={C.orangeLight} color={C.orange} />
             </div>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{g.name}</div>
+            <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 4 }}>{g.name}</div>
             <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>
               {g.type}{g.lead ? ` · Lead: ${g.lead}` : ''}
             </div>
@@ -2224,7 +2226,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
       {showAddModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '64px 16px 16px', overflowY: 'auto' }}>
           <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 400, boxShadow: C.shadowLg }}>
-            <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 20 }}>Add Runner</div>
+            <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', marginBottom: 20 }}>Add Runner</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>First name</label>
@@ -2262,7 +2264,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
         return (
           <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px 16px', paddingTop: 'max(16px, 8vh)', overflowY: 'auto' }}>
             <div style={{ background: C.white, borderRadius: 20, padding: 28, width: '100%', maxWidth: 440, boxShadow: C.shadowLg, maxHeight: '80vh', overflowY: 'auto' }}>
-              <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>CSV Preview</div>
+              <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', marginBottom: 6 }}>CSV Preview</div>
               <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
                 <span style={{ background: C.successLight, color: C.success, borderRadius: 999, padding: '3px 10px', fontSize: 12, fontWeight: 700 }}>
                   ✓ {validRows.length} valid
@@ -2308,7 +2310,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
           <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>
             {groupFilter ? groupFilter : 'Members'}
           </h1>
-          <p style={{ color: C.muted, marginTop: 4 }}>
+          <p style={{ color: C.muted, marginTop: 4, fontSize: 14 }}>
             {filtered.length} runner{filtered.length !== 1 ? 's' : ''}{groupFilter ? ` · ` : ` registered`}
             {groupFilter && (
               <button onClick={() => setGroupFilter(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.orange, fontFamily: 'Inter', fontSize: 13, padding: 0 }}>
@@ -2542,7 +2544,7 @@ function EventsPage({ setPage }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: 26, fontWeight: 800 }}>Events</h1>
-          <p style={{ color: C.muted, marginTop: 4 }}>All scheduled and past events</p>
+          <p style={{ color: C.muted, marginTop: 4, fontSize: 14 }}>All scheduled and past events</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <Button variant="secondary" onClick={() => { sfx.click(); setPage('createevent'); }}>+ Create Event</Button>
@@ -3072,7 +3074,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
             {showLateModal && (
               <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '64px 16px 16px', overflowY: 'auto' }}>
                 <div style={{ background: C.white, borderRadius: 20, padding: 24, width: '100%', maxWidth: 360, boxShadow: C.shadowLg }} onClick={e => e.stopPropagation()}>
-                  <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Late Arrival</div>
+                  <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', marginBottom: 4 }}>Late Arrival</div>
                   <div style={{ fontSize: 13, color: C.muted, marginBottom: 16 }}>Add a runner who turned up after registration closed.</div>
                   <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>Full name</label>
                   <input
@@ -3775,7 +3777,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
         {/* Badges earned */}
         {newBadgesAll.length > 0 && (
           <Card style={{ marginBottom: 20 }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Badges Earned</div>
+            <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 12 }}>Badges Earned</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {newBadgesAll.map((b, i) => (
                 <div key={i} style={{ background: C.orangeLight, borderRadius: 12, padding: '8px 14px', fontSize: 13, fontWeight: 600, color: C.orange }}>
@@ -3806,7 +3808,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
         {/* Series Standings */}
         {committed && (
           <Card style={{ marginBottom: 20, background: '#fffbeb', border: `1px solid #fde68a` }}>
-            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>📊 Series Standings</div>
+            <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 4 }}>📊 Series Standings</div>
             <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>Cumulative points after today's event</div>
             {[...runners].sort((a, b) => b.points - a.points).slice(0, 5).map((r, i) => {
               const medals = ['🥇', '🥈', '🥉'];
@@ -3917,7 +3919,7 @@ function RunnerProfilePage({ runner, setPage, runners }) {
 
       {/* Recent events */}
       <Card style={{ marginBottom: 20 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Recent Events</div>
+        <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 12 }}>Recent Events</div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${C.border}` }}>
@@ -3948,7 +3950,7 @@ function RunnerProfilePage({ runner, setPage, runners }) {
 
       {/* Awards */}
       <Card>
-        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 12 }}>Awards & Stickers</div>
+        <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 12 }}>Awards & Stickers</div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {awards.map((a, i) => (
             <div key={i} style={{
@@ -3985,7 +3987,7 @@ function LeaderboardPage({ runners }) {
     <div className="fade-in">
       <div style={{ marginBottom: isMobile ? 16 : 28 }}>
         <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Leaderboard</h1>
-        <p style={{ color: C.muted, marginTop: 4 }}>{CURRENT_TERM} standings</p>
+        <p style={{ color: C.muted, marginTop: 4, fontSize: 14 }}>{CURRENT_TERM} standings</p>
       </div>
 
       {/* Top 3 podium */}
