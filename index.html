@@ -747,6 +747,9 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData, isDark, onT
 function AppLayout({ role, page, setPage, user, onLogout, onResetData, isDark, onToggleDark, children }) {
   const isMobile = useIsMobile();
 
+  // Scroll to top whenever the active page changes
+  React.useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [page]);
+
   const navs = {
     superadmin: [
       { id: 'dashboard',     icon: 'dashboard', label: 'Dashboard'    },
@@ -1125,75 +1128,204 @@ function SuperAdminDashboard({ setPage }) {
 
 // ── ORGANISATIONS PAGE ───────────────────────────────────────────────────────
 // ── Org crest SVGs ───────────────────────────────────────────────────────────
-// Heraldic heater-shield shape; symbols are white on brand colour
-const SHIELD   = 'M10,4 L90,4 L90,62 Q90,92 50,108 Q10,92 10,62 Z';
-const SHIELD_I = 'M16,10 L84,10 L84,61 Q84,88 50,103 Q16,88 16,61 Z'; // inner border
+// Heraldic heater-shield with crown, per-fess chief, charges, and motto scroll
+// ViewBox 0 0 100 128: crown y=0–14, shield y=14–118, motto y=116–128
+const SHIELD   = 'M12,14 L88,14 L88,72 Q88,103 50,118 Q12,103 12,72 Z';
+const SHIELD_I = 'M17,19 L83,19 L83,71 Q83,100 50,113 Q17,100 17,71 Z';
 
 const ORG_CRESTS = {
-  // Hampton Primary School — blue — 5-pointed star
-  1: { bg:'#3B82F6', bd:'#1D4ED8', hi:'#93C5FD', symbol: (
-    <polygon points="50,19 57,40 79,40 62,53 69,74 50,61 31,74 38,53 21,40 43,40" fill="white" opacity="0.93"/>
-  )},
-  // Riverside Academy — cyan — three waves
-  2: { bg:'#06B6D4', bd:'#0E7490', hi:'#67E8F9', symbol: (
-    <>
-      <path d="M24,38 Q37,26 50,38 Q63,50 76,38" stroke="white" strokeWidth="5" fill="none" strokeLinecap="round"/>
-      <path d="M24,54 Q37,42 50,54 Q63,66 76,54" stroke="white" strokeWidth="5" fill="none" strokeLinecap="round"/>
-      <path d="M24,70 Q37,58 50,70 Q63,82 76,70" stroke="white" strokeWidth="5" fill="none" strokeLinecap="round"/>
+  // Hampton Primary School — azure, a mullet or in chief, label of three
+  1: {
+    bg:'#2563EB', chief:'#1E3A8A', bd:'#1D4ED8', hi:'#93C5FD', gold:'#F59E0B', goldDk:'#B45309', motto:'EXCEL',
+    chiefSymbol: <>
+      <polygon points="30,21 31.5,26 37,26 32.5,29 34,34 30,31 26,34 27.5,29 23,26 28.5,26" fill="white" opacity="0.75"/>
+      <polygon points="50,21 51.5,26 57,26 52.5,29 54,34 50,31 46,34 47.5,29 43,26 48.5,26" fill="white" opacity="0.75"/>
+      <polygon points="70,21 71.5,26 77,26 72.5,29 74,34 70,31 66,34 67.5,29 63,26 68.5,26" fill="white" opacity="0.75"/>
+    </>,
+    symbol: <>
+      {/* 8-pointed mullet (star of eight) */}
+      <polygon points="50,50 53,62 63,62 55.5,69 58.5,81 50,74 41.5,81 44.5,69 37,62 47,62" fill="white" opacity="0.95"/>
+      <polygon points="50,57 51.5,62 56.5,62 52.5,65.5 54,70 50,67 46,70 47.5,65.5 43.5,62 48.5,62" fill="#2563EB" opacity="0.55"/>
+      {/* acanthus scroll hints at base */}
+      <path d="M36,88 Q42,82 50,85 Q58,82 64,88" stroke="white" strokeWidth="2" fill="none" opacity="0.5" strokeLinecap="round"/>
     </>
-  )},
-  // St Mary's C of E — purple — ornate cross
-  3: { bg:'#8B5CF6', bd:'#6D28D9', hi:'#C4B5FD', symbol: (
-    <>
-      <rect x="44" y="15" width="12" height="76" rx="3" fill="white" opacity="0.93"/>
-      <rect x="20" y="37" width="60" height="12" rx="3" fill="white" opacity="0.93"/>
-      <rect x="38" y="15" width="24" height="12" rx="3" fill="white" opacity="0.5"/>
+  },
+  // Riverside Academy — barry wavy azure and argent, a lymphad
+  2: {
+    bg:'#0891B2', chief:'#164E63', bd:'#0E7490', hi:'#67E8F9', gold:'#F59E0B', goldDk:'#B45309', motto:'PER MARE',
+    chiefSymbol: <>
+      {/* Three small anchors in chief */}
+      <path d="M29,23 L29,33 M26,26 L32,26 M26,32 Q29,35 32,32" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <circle cx="29" cy="21.5" r="2" stroke="white" strokeWidth="1.5" fill="none"/>
+      <path d="M49,23 L49,33 M46,26 L52,26 M46,32 Q49,35 52,32" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <circle cx="49" cy="21.5" r="2" stroke="white" strokeWidth="1.5" fill="none"/>
+      <path d="M69,23 L69,33 M66,26 L72,26 M66,32 Q69,35 72,32" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <circle cx="69" cy="21.5" r="2" stroke="white" strokeWidth="1.5" fill="none"/>
+    </>,
+    symbol: <>
+      {/* Ship hull */}
+      <path d="M28,84 L72,84 L68,92 L32,92 Z" fill="white" opacity="0.9"/>
+      {/* Mast */}
+      <rect x="49" y="52" width="3" height="33" rx="1" fill="white" opacity="0.9"/>
+      {/* Main sail */}
+      <path d="M52,53 L70,62 L52,70 Z" fill="white" opacity="0.85"/>
+      {/* Foresail */}
+      <path d="M49,55 L32,63 L49,70 Z" fill="white" opacity="0.7"/>
+      {/* Waves */}
+      <path d="M22,94 Q31,89 40,94 Q49,99 58,94 Q67,89 76,94" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.7"/>
     </>
-  )},
-  // Oakwood Secondary — green — oak tree
-  4: { bg:'#10B981', bd:'#047857', hi:'#6EE7B7', symbol: (
-    <>
-      <ellipse cx="50" cy="38" rx="22" ry="20" fill="white" opacity="0.93"/>
-      <ellipse cx="32" cy="50" rx="16" ry="14" fill="white" opacity="0.93"/>
-      <ellipse cx="68" cy="50" rx="16" ry="14" fill="white" opacity="0.93"/>
-      <ellipse cx="50" cy="52" rx="18" ry="14" fill="white" opacity="0.93"/>
-      <rect x="45" y="60" width="10" height="24" rx="3" fill="white" opacity="0.93"/>
+  },
+  // St Mary's C of E — purpure, a cross patée or
+  3: {
+    bg:'#7C3AED', chief:'#4C1D95', bd:'#6D28D9', hi:'#C4B5FD', gold:'#F59E0B', goldDk:'#B45309', motto:'DEO ET HOMINIBUS',
+    chiefSymbol: <>
+      {/* IHS monogram in chief */}
+      <text x="50" y="33" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="Georgia,serif" opacity="0.85">IHS</text>
+    </>,
+    symbol: <>
+      {/* Cross pattée (flaring arms) */}
+      {/* Vertical arm */}
+      <path d="M44,48 Q46,52 47,57 L47,95 Q48,101 50,103 Q52,101 53,95 L53,57 Q54,52 56,48 Z" fill="white" opacity="0.93"/>
+      {/* Horizontal arm */}
+      <path d="M26,66 Q30,68 35,69 L65,69 Q70,68 74,66 Q70,64 65,63 L35,63 Q30,64 26,66 Z" fill="white" opacity="0.93"/>
+      {/* Small roses at arm ends */}
+      <circle cx="50" cy="48" r="4" fill="white" opacity="0.7"/>
+      <circle cx="74" cy="66" r="4" fill="white" opacity="0.7"/>
+      <circle cx="26" cy="66" r="4" fill="white" opacity="0.7"/>
+      <circle cx="50" cy="103" r="4" fill="white" opacity="0.7"/>
     </>
-  )},
-  // Thames Valley Running Club — orange — runner in motion
-  5: { bg:'#F97316', bd:'#C2410C', hi:'#FED7AA', symbol: (
-    <>
-      <circle cx="60" cy="21" r="9" fill="white" opacity="0.93"/>
-      <path d="M56,30 L46,54" stroke="white" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
-      <path d="M46,54 L30,68" stroke="white" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
-      <path d="M56,30 L68,48" stroke="white" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
-      <path d="M68,48 L74,68" stroke="white" strokeWidth="5.5" fill="none" strokeLinecap="round"/>
-      <path d="M38,43 L72,33" stroke="white" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+  },
+  // Oakwood Secondary — vert, an oak tree proper
+  4: {
+    bg:'#059669', chief:'#064E3B', bd:'#047857', hi:'#6EE7B7', gold:'#F59E0B', goldDk:'#B45309', motto:'PER ARDUA',
+    chiefSymbol: <>
+      {/* Three acorns in chief */}
+      <ellipse cx="30" cy="26" rx="4" ry="3.5" fill="white" opacity="0.8"/>
+      <rect x="29" y="20" width="2" height="5" rx="1" fill="white" opacity="0.7"/>
+      <path d="M28,20 Q30,18 32,20" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.7"/>
+      <ellipse cx="50" cy="26" rx="4" ry="3.5" fill="white" opacity="0.8"/>
+      <rect x="49" y="20" width="2" height="5" rx="1" fill="white" opacity="0.7"/>
+      <path d="M48,20 Q50,18 52,20" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.7"/>
+      <ellipse cx="70" cy="26" rx="4" ry="3.5" fill="white" opacity="0.8"/>
+      <rect x="69" y="20" width="2" height="5" rx="1" fill="white" opacity="0.7"/>
+      <path d="M68,20 Q70,18 72,20" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.7"/>
+    </>,
+    symbol: <>
+      {/* Oak trunk */}
+      <rect x="46" y="87" width="8" height="18" rx="2.5" fill="white" opacity="0.93"/>
+      {/* Ground line */}
+      <path d="M38,105 L62,105" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.6"/>
+      {/* Tree crown: layered lobed canopy */}
+      <ellipse cx="50" cy="68" rx="22" ry="18" fill="white" opacity="0.93"/>
+      <ellipse cx="34" cy="76" rx="14" ry="12" fill="white" opacity="0.85"/>
+      <ellipse cx="66" cy="76" rx="14" ry="12" fill="white" opacity="0.85"/>
+      <ellipse cx="50" cy="78" rx="16" ry="11" fill="white" opacity="0.8"/>
+      {/* Leaf texture dots */}
+      <circle cx="44" cy="63" r="2.5" fill="#059669" opacity="0.3"/>
+      <circle cx="55" cy="60" r="2" fill="#059669" opacity="0.3"/>
+      <circle cx="50" cy="72" r="2" fill="#059669" opacity="0.3"/>
     </>
-  )},
-  // Hillside Business Group — grey — classical columns
-  6: { bg:'#6B7280', bd:'#374151', hi:'#D1D5DB', symbol: (
-    <>
-      <rect x="18" y="21" width="64" height="9" rx="2" fill="white" opacity="0.93"/>
-      <rect x="22" y="30" width="10" height="38" rx="1.5" fill="white" opacity="0.93"/>
-      <rect x="37" y="30" width="10" height="38" rx="1.5" fill="white" opacity="0.93"/>
-      <rect x="53" y="30" width="10" height="38" rx="1.5" fill="white" opacity="0.93"/>
-      <rect x="68" y="30" width="10" height="38" rx="1.5" fill="white" opacity="0.93"/>
-      <rect x="18" y="66" width="64" height="9" rx="2" fill="white" opacity="0.93"/>
+  },
+  // Thames Valley Running Club — or, a winged foot azure
+  5: {
+    bg:'#EA580C', chief:'#7C2D12', bd:'#C2410C', hi:'#FED7AA', gold:'#F59E0B', goldDk:'#B45309', motto:'SWIFT',
+    chiefSymbol: <>
+      {/* Three chevrons in chief (speed marks) */}
+      <path d="M24,33 L30,26 L36,33" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
+      <path d="M44,33 L50,26 L56,33" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
+      <path d="M64,33 L70,26 L76,33" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
+    </>,
+    symbol: <>
+      {/* Heraldic runner — bold silhouette leaning forward */}
+      <circle cx="58" cy="52" r="7" fill="white" opacity="0.93"/>
+      {/* Body */}
+      <path d="M55,59 L46,76" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
+      {/* Lead leg forward */}
+      <path d="M46,76 L38,90" stroke="white" strokeWidth="4.5" strokeLinecap="round" fill="none"/>
+      {/* Trail leg kick */}
+      <path d="M46,76 L62,82 L66,72" stroke="white" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      {/* Arms */}
+      <path d="M55,64 L68,59" stroke="white" strokeWidth="4" strokeLinecap="round" fill="none"/>
+      <path d="M50,68 L38,65" stroke="white" strokeWidth="4" strokeLinecap="round" fill="none"/>
+      {/* Wings on heels */}
+      <path d="M38,90 Q34,85 32,79 Q38,82 40,88" fill="white" opacity="0.65"/>
+      <path d="M38,90 Q34,94 32,100 Q38,96 40,90" fill="white" opacity="0.65"/>
     </>
-  )},
+  },
+  // Hillside Business Group — argent, a classical portico
+  6: {
+    bg:'#4B5563', chief:'#111827', bd:'#374151', hi:'#D1D5DB', gold:'#9CA3AF', goldDk:'#6B7280', motto:'RISE',
+    chiefSymbol: <>
+      {/* Three towers / merlons in chief */}
+      <rect x="24" y="20" width="8" height="14" rx="1" fill="white" opacity="0.75"/>
+      <rect x="22" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
+      <rect x="27" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
+      <rect x="46" y="20" width="8" height="14" rx="1" fill="white" opacity="0.75"/>
+      <rect x="44" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
+      <rect x="49" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
+      <rect x="68" y="20" width="8" height="14" rx="1" fill="white" opacity="0.75"/>
+      <rect x="66" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
+      <rect x="71" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
+    </>,
+    symbol: <>
+      {/* Pediment triangle */}
+      <path d="M20,72 L50,54 L80,72 Z" fill="white" opacity="0.93"/>
+      {/* Entablature (frieze) */}
+      <rect x="20" y="72" width="60" height="7" rx="1" fill="white" opacity="0.93"/>
+      {/* Columns */}
+      <rect x="23" y="79" width="6" height="26" rx="1.5" fill="white" opacity="0.93"/>
+      <rect x="36" y="79" width="6" height="26" rx="1.5" fill="white" opacity="0.93"/>
+      <rect x="50" y="79" width="6" height="26" rx="1.5" fill="white" opacity="0.93"/>
+      <rect x="64" y="79" width="6" height="26" rx="1.5" fill="white" opacity="0.93"/>
+      {/* Stylobate (steps) */}
+      <rect x="18" y="105" width="64" height="5" rx="1.5" fill="white" opacity="0.85"/>
+      <rect x="16" y="109" width="68" height="4" rx="1" fill="white" opacity="0.65"/>
+    </>
+  },
 };
 
 function OrgLogo({ org, size = 40 }) {
   const crest = ORG_CRESTS[org.id];
   if (crest) {
+    const gold = crest.gold || '#F59E0B';
+    const goldDk = crest.goldDk || '#B45309';
     return (
-      <svg width={size} height={size} viewBox="0 0 100 112" xmlns="http://www.w3.org/2000/svg"
+      <svg width={size} height={size * 1.28} viewBox="0 0 100 128" xmlns="http://www.w3.org/2000/svg"
         style={{ display: 'block', flexShrink: 0 }}>
-        <path d={SHIELD} fill={crest.bg} />
+
+        {/* ── Crown ── */}
+        <path d="M33,14 L36,5 L43,10 L50,2 L57,10 L64,5 L67,14 Z" fill={gold}/>
+        <circle cx="36" cy="4.5" r="3" fill={gold}/>
+        <circle cx="50" cy="2" r="3.5" fill={gold}/>
+        <circle cx="64" cy="4.5" r="3" fill={gold}/>
+
+        {/* ── Shield: main field ── */}
+        <path d={SHIELD} fill={crest.bg}/>
+
+        {/* ── Chief (per-fess top band) ── */}
+        <rect x="12" y="14" width="76" height="28" fill={crest.chief}/>
+        {crest.chiefSymbol}
+
+        {/* ── Chief / field divider ── */}
+        <line x1="12" y1="42" x2="88" y2="42" stroke={crest.bd} strokeWidth="1.5" opacity="0.7"/>
+
+        {/* ── Main charge ── */}
+        {crest.symbol}
+
+        {/* ── Shield borders (drawn last to clean up edges) ── */}
         <path d={SHIELD} fill="none" stroke={crest.bd} strokeWidth="2.5"/>
         <path d={SHIELD_I} fill="none" stroke={crest.hi} strokeWidth="1.5" opacity="0.45"/>
-        {crest.symbol}
+
+        {/* ── Motto scroll ── */}
+        {/* Left curl (darker fold) */}
+        <path d="M12,116 Q4,116 4,124 Q4,128 12,128 L12,122 Z" fill={goldDk}/>
+        {/* Right curl */}
+        <path d="M88,116 L88,122 Q96,128 96,124 Q96,116 88,116 Z" fill={goldDk}/>
+        {/* Main ribbon */}
+        <path d="M12,116 L88,116 L88,122 L12,122 Z" fill={gold}/>
+        {/* Motto text */}
+        <text x="50" y="121" textAnchor="middle" fill="white" fontSize="6" fontWeight="bold"
+          fontFamily="Georgia, serif" letterSpacing="1.5" opacity="0.95">{crest.motto}</text>
       </svg>
     );
   }
