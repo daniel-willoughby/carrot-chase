@@ -4556,8 +4556,8 @@ function LeaderboardPage({ runners }) {
         })}
       </div>
 
-      <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <Card style={isMobile ? { padding: 0, overflow: 'hidden' } : {}}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, ...(isMobile ? { padding: '16px 16px 0' } : {}) }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>Full Standings</div>
           <select
             value={group}
@@ -4573,14 +4573,14 @@ function LeaderboardPage({ runners }) {
 
         {isMobile ? (
           /* Mobile: compact row cards */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginTop: 12 }}>
             {filtered.map((r, i) => {
               const lc = levelColor(r.level);
               const m = medalData[r.id];
               return (
                 <div key={r.id} style={{
                   display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 4px',
+                  padding: '12px 16px',
                   borderBottom: `1px solid ${C.border}`,
                   background: i === 0 ? (_isDark ? 'rgba(251,191,36,0.10)' : '#fffbeb') : i === 1 ? C.bgSubtle : i === 2 ? (_isDark ? 'rgba(255,107,43,0.08)' : '#fdf6ee') : 'transparent',
                 }}>
