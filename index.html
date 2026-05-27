@@ -1773,7 +1773,7 @@ function BillingPage() {
 }
 
 // ── SCHOOL ADMIN DASHBOARD ───────────────────────────────────────────────────
-function SchoolAdminDashboard({ setPage, runners }) {
+function SchoolAdminDashboard({ setPage, runners, setMemberGroupFilter }) {
   const isMobile = useIsMobile();
   const upcomingEvents = EVENTS.filter(e => e.status === 'upcoming').slice(0, 3);
   const recentEvents = EVENTS.filter(e => e.status === 'completed').slice(0, 3);
@@ -1813,7 +1813,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
         <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 16 }}>Groups</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
           {GROUPS.map(g => (
-            <Card key={g.id} className="card-hover" style={{ cursor: 'pointer' }} onClick={() => { sfx.click(); setPage('groups'); }}>
+            <Card key={g.id} className="card-hover" style={{ cursor: 'pointer' }} onClick={() => { sfx.click(); setMemberGroupFilter(g.name); setPage('members'); }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                 <div>
                   <div style={{ fontWeight: 700, marginBottom: 4 }}>{g.name}</div>
@@ -4753,7 +4753,7 @@ function App() {
     switch (page) {
       case 'dashboard':
         if (role === 'superadmin')  return <SuperAdminDashboard setPage={setPage} runners={runners} />;
-        if (role === 'schooladmin') return <SchoolAdminDashboard setPage={setPage} runners={runners} />;
+        if (role === 'schooladmin') return <SchoolAdminDashboard setPage={setPage} runners={runners} setMemberGroupFilter={setMemberGroupFilter} />;
         if (role === 'lead')        return <LeadDashboard setPage={setPage} user={user} setSelectedRunner={setSelectedRunner} />;
         break;
       case 'organisations':
