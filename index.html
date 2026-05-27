@@ -1985,6 +1985,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteForm, setInviteForm] = useState({ email: '', name: '', groups: [] });
   const [inviteSent, setInviteSent] = useState(false);
+  const [mergeMode, setMergeMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [mergeName, setMergeName] = useState('');
@@ -2021,6 +2022,11 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
     setShowMergeModal(true);
   }
 
+  function cancelMerge() {
+    setMergeMode(false);
+    setSelectedIds(new Set());
+  }
+
   function handleMerge() {
     if (!mergeName.trim() || selectedIds.size < 2) return;
     sfx.confirm();
@@ -2043,6 +2049,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
     const mergedGroup = { ...biggest, id: Date.now(), name: targetName, members: totalMembers };
     setGroups(gs => [...gs.filter(g => !selectedIds.has(g.id)), mergedGroup]);
     setSelectedIds(new Set());
+    setMergeMode(false);
     setShowMergeModal(false);
     setMergeName('');
     toast(`Merged into "${targetName}"`);
@@ -2143,17 +2150,26 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
           <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Groups</h1>
           <p style={{ color: C.muted, marginTop: 4, fontSize: isMobile ? 13 : 14 }}>Manage your running groups</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
-          {selectedIds.size >= 2 && (
-            <Button size="sm" style={{ background: C.purple, boxShadow: `0 2px 8px rgba(124,58,237,0.3)` }} onClick={() => { sfx.click(); openMergeModal(); }}>
-              ⇢ Merge {selectedIds.size} groups
-            </Button>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap', alignItems: 'center' }}>
+          {mergeMode ? (
+            <>
+              <span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>
+                {selectedIds.size < 2 ? 'Select 2 or more groups' : `${selectedIds.size} selected`}
+              </span>
+              {selectedIds.size >= 2 && (
+                <Button size="sm" style={{ background: C.purple, boxShadow: `0 2px 8px rgba(124,58,237,0.3)` }} onClick={() => { sfx.click(); openMergeModal(); }}>
+                  Merge {selectedIds.size} →
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => { sfx.dismiss(); cancelMerge(); }}>Cancel</Button>
+            </>
+          ) : (
+            <>
+              <Button size="sm" variant="outline" onClick={() => { sfx.click(); setMergeMode(true); }}>⇢ Merge groups</Button>
+              <Button variant="outline" size="sm" onClick={() => setShowInviteModal(true)}>{isMobile ? '✉️ Invite' : '✉️ Invite Lead'}</Button>
+              <Button size="sm" onClick={() => { setEditGroup(null); setNewForm({ name: '', type: 'Running Club', lead: '' }); setShowNewModal(true); }}>+ New Group</Button>
+            </>
           )}
-          {selectedIds.size > 0 && (
-            <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>Clear</Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => setShowInviteModal(true)}>{isMobile ? '✉️ Invite' : '✉️ Invite Lead'}</Button>
-          <Button size="sm" onClick={() => { setEditGroup(null); setNewForm({ name: '', type: 'Running Club', lead: '' }); setShowNewModal(true); }}>+ New Group</Button>
         </div>
       </div>
 
@@ -2161,16 +2177,24 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
         {groups.filter(g => !g.archived).map(g => {
           const isSelected = selectedIds.has(g.id);
           return (
-          <Card key={g.id} style={isSelected ? { border: `2px solid ${C.purple}`, boxShadow: `0 0 0 3px ${_isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.08)'}` } : {}}>
+          <Card key={g.id}
+            onClick={mergeMode ? () => toggleSelect(g.id) : undefined}
+            style={{
+              ...(mergeMode ? { cursor: 'pointer', userSelect: 'none' } : {}),
+              ...(isSelected ? { border: `2px solid ${C.purple}`, boxShadow: `0 0 0 3px ${_isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.08)'}` } : {}),
+              ...(mergeMode && !isSelected ? { opacity: 0.75 } : {}),
+            }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => toggleSelect(g.id)}
-                  onClick={e => e.stopPropagation()}
-                  style={{ width: 16, height: 16, accentColor: C.purple, cursor: 'pointer', flexShrink: 0 }}
-                />
+                {mergeMode && (
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelect(g.id)}
+                    onClick={e => e.stopPropagation()}
+                    style={{ width: 16, height: 16, accentColor: C.purple, cursor: 'pointer', flexShrink: 0 }}
+                  />
+                )}
                 <div style={{
                   width: 44, height: 44, borderRadius: 12, background: C.orangeLight,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
@@ -2196,12 +2220,14 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Button size="sm" variant="outline" onClick={() => { sfx.click(); setMemberGroupFilter(g.name); setPage('members'); }}>
+              <Button size="sm" variant="outline" onClick={e => { e.stopPropagation(); sfx.click(); setMemberGroupFilter(g.name); setPage('members'); }}>
                 View members
               </Button>
-              <Button size="sm" variant="secondary" onClick={() => { setShowNewModal(false); setEditGroup({ ...g }); }}>
-                Edit
-              </Button>
+              {!mergeMode && (
+                <Button size="sm" variant="secondary" onClick={e => { e.stopPropagation(); setShowNewModal(false); setEditGroup({ ...g }); }}>
+                  Edit
+                </Button>
+              )}
             </div>
           </Card>
           );
