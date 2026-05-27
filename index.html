@@ -1128,204 +1128,476 @@ function SuperAdminDashboard({ setPage }) {
 
 // ── ORGANISATIONS PAGE ───────────────────────────────────────────────────────
 // ── Org crest SVGs ───────────────────────────────────────────────────────────
-// Heraldic heater-shield with crown, per-fess chief, charges, and motto scroll
-// ViewBox 0 0 100 128: crown y=0–14, shield y=14–118, motto y=116–128
-const SHIELD   = 'M12,14 L88,14 L88,72 Q88,103 50,118 Q12,103 12,72 Z';
-const SHIELD_I = 'M17,19 L83,19 L83,71 Q83,100 50,113 Q17,100 17,71 Z';
+// Each crest is a fully composed heraldic mark with unique headgear, field
+// pattern, charges, and motto. ViewBox 0 0 100 128 throughout.
+// All crests pass a clipPath ID prefix so multiple instances can coexist.
+const SHIELD = 'M12,14 L88,14 L88,72 Q88,103 50,118 Q12,103 12,72 Z';
+const SHIELD_INNER = 'M16,18 L84,18 L84,71 Q84,100 50,114 Q16,100 16,71 Z';
+
+function MottoBanner({ text, color = '#F59E0B', dark = '#B45309' }) {
+  return <>
+    <path d="M12,116 Q4,116 4,124 Q4,128 12,128 L12,122 Z" fill={dark}/>
+    <path d="M88,116 L88,122 Q96,128 96,124 Q96,116 88,116 Z" fill={dark}/>
+    <path d="M12,116 L88,116 L88,122 L12,122 Z" fill={color}/>
+    <text x="50" y="121" textAnchor="middle" fill="white" fontSize="5.6" fontWeight="bold"
+      fontFamily="Georgia, serif" letterSpacing="0.6" opacity="0.96">{text}</text>
+  </>;
+}
 
 const ORG_CRESTS = {
-  // Hampton Primary School — azure, a mullet or in chief, label of three
-  1: {
-    bg:'#2563EB', chief:'#1E3A8A', bd:'#1D4ED8', hi:'#93C5FD', gold:'#F59E0B', goldDk:'#B45309', motto:'EXCEL',
-    chiefSymbol: <>
-      <polygon points="30,21 31.5,26 37,26 32.5,29 34,34 30,31 26,34 27.5,29 23,26 28.5,26" fill="white" opacity="0.75"/>
-      <polygon points="50,21 51.5,26 57,26 52.5,29 54,34 50,31 46,34 47.5,29 43,26 48.5,26" fill="white" opacity="0.75"/>
-      <polygon points="70,21 71.5,26 77,26 72.5,29 74,34 70,31 66,34 67.5,29 63,26 68.5,26" fill="white" opacity="0.75"/>
-    </>,
-    symbol: <>
-      {/* 8-pointed mullet (star of eight) */}
-      <polygon points="50,50 53,62 63,62 55.5,69 58.5,81 50,74 41.5,81 44.5,69 37,62 47,62" fill="white" opacity="0.95"/>
-      <polygon points="50,57 51.5,62 56.5,62 52.5,65.5 54,70 50,67 46,70 47.5,65.5 43.5,62 48.5,62" fill="#2563EB" opacity="0.55"/>
-      {/* acanthus scroll hints at base */}
-      <path d="M36,88 Q42,82 50,85 Q58,82 64,88" stroke="white" strokeWidth="2" fill="none" opacity="0.5" strokeLinecap="round"/>
-    </>
-  },
-  // Riverside Academy — barry wavy azure and argent, a lymphad
-  2: {
-    bg:'#0891B2', chief:'#164E63', bd:'#0E7490', hi:'#67E8F9', gold:'#F59E0B', goldDk:'#B45309', motto:'PER MARE',
-    chiefSymbol: <>
-      {/* Three small anchors in chief */}
-      <path d="M29,23 L29,33 M26,26 L32,26 M26,32 Q29,35 32,32" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
-      <circle cx="29" cy="21.5" r="2" stroke="white" strokeWidth="1.5" fill="none"/>
-      <path d="M49,23 L49,33 M46,26 L52,26 M46,32 Q49,35 52,32" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
-      <circle cx="49" cy="21.5" r="2" stroke="white" strokeWidth="1.5" fill="none"/>
-      <path d="M69,23 L69,33 M66,26 L72,26 M66,32 Q69,35 72,32" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
-      <circle cx="69" cy="21.5" r="2" stroke="white" strokeWidth="1.5" fill="none"/>
-    </>,
-    symbol: <>
-      {/* Ship hull */}
-      <path d="M28,84 L72,84 L68,92 L32,92 Z" fill="white" opacity="0.9"/>
-      {/* Mast */}
-      <rect x="49" y="52" width="3" height="33" rx="1" fill="white" opacity="0.9"/>
-      {/* Main sail */}
-      <path d="M52,53 L70,62 L52,70 Z" fill="white" opacity="0.85"/>
-      {/* Foresail */}
-      <path d="M49,55 L32,63 L49,70 Z" fill="white" opacity="0.7"/>
-      {/* Waves */}
-      <path d="M22,94 Q31,89 40,94 Q49,99 58,94 Q67,89 76,94" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.7"/>
-    </>
-  },
-  // St Mary's C of E — purpure, a cross patée or
-  3: {
-    bg:'#7C3AED', chief:'#4C1D95', bd:'#6D28D9', hi:'#C4B5FD', gold:'#F59E0B', goldDk:'#B45309', motto:'DEO ET HOMINIBUS',
-    chiefSymbol: <>
-      {/* IHS monogram in chief */}
-      <text x="50" y="33" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="Georgia,serif" opacity="0.85">IHS</text>
-    </>,
-    symbol: <>
-      {/* Cross pattée (flaring arms) */}
-      {/* Vertical arm */}
-      <path d="M44,48 Q46,52 47,57 L47,95 Q48,101 50,103 Q52,101 53,95 L53,57 Q54,52 56,48 Z" fill="white" opacity="0.93"/>
-      {/* Horizontal arm */}
-      <path d="M26,66 Q30,68 35,69 L65,69 Q70,68 74,66 Q70,64 65,63 L35,63 Q30,64 26,66 Z" fill="white" opacity="0.93"/>
-      {/* Small roses at arm ends */}
-      <circle cx="50" cy="48" r="4" fill="white" opacity="0.7"/>
-      <circle cx="74" cy="66" r="4" fill="white" opacity="0.7"/>
-      <circle cx="26" cy="66" r="4" fill="white" opacity="0.7"/>
-      <circle cx="50" cy="103" r="4" fill="white" opacity="0.7"/>
-    </>
-  },
-  // Oakwood Secondary — vert, an oak tree proper
-  4: {
-    bg:'#059669', chief:'#064E3B', bd:'#047857', hi:'#6EE7B7', gold:'#F59E0B', goldDk:'#B45309', motto:'PER ARDUA',
-    chiefSymbol: <>
-      {/* Three acorns in chief */}
-      <ellipse cx="30" cy="26" rx="4" ry="3.5" fill="white" opacity="0.8"/>
-      <rect x="29" y="20" width="2" height="5" rx="1" fill="white" opacity="0.7"/>
-      <path d="M28,20 Q30,18 32,20" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.7"/>
-      <ellipse cx="50" cy="26" rx="4" ry="3.5" fill="white" opacity="0.8"/>
-      <rect x="49" y="20" width="2" height="5" rx="1" fill="white" opacity="0.7"/>
-      <path d="M48,20 Q50,18 52,20" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.7"/>
-      <ellipse cx="70" cy="26" rx="4" ry="3.5" fill="white" opacity="0.8"/>
-      <rect x="69" y="20" width="2" height="5" rx="1" fill="white" opacity="0.7"/>
-      <path d="M68,20 Q70,18 72,20" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.7"/>
-    </>,
-    symbol: <>
-      {/* Oak trunk */}
-      <rect x="46" y="87" width="8" height="18" rx="2.5" fill="white" opacity="0.93"/>
-      {/* Ground line */}
-      <path d="M38,105 L62,105" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.6"/>
-      {/* Tree crown: layered lobed canopy */}
-      <ellipse cx="50" cy="68" rx="22" ry="18" fill="white" opacity="0.93"/>
-      <ellipse cx="34" cy="76" rx="14" ry="12" fill="white" opacity="0.85"/>
-      <ellipse cx="66" cy="76" rx="14" ry="12" fill="white" opacity="0.85"/>
-      <ellipse cx="50" cy="78" rx="16" ry="11" fill="white" opacity="0.8"/>
-      {/* Leaf texture dots */}
-      <circle cx="44" cy="63" r="2.5" fill="#059669" opacity="0.3"/>
-      <circle cx="55" cy="60" r="2" fill="#059669" opacity="0.3"/>
-      <circle cx="50" cy="72" r="2" fill="#059669" opacity="0.3"/>
-    </>
-  },
-  // Thames Valley Running Club — or, a winged foot azure
-  5: {
-    bg:'#EA580C', chief:'#7C2D12', bd:'#C2410C', hi:'#FED7AA', gold:'#F59E0B', goldDk:'#B45309', motto:'SWIFT',
-    chiefSymbol: <>
-      {/* Three chevrons in chief (speed marks) */}
-      <path d="M24,33 L30,26 L36,33" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
-      <path d="M44,33 L50,26 L56,33" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
-      <path d="M64,33 L70,26 L76,33" stroke="white" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
-    </>,
-    symbol: <>
-      {/* Heraldic runner — bold silhouette leaning forward */}
-      <circle cx="58" cy="52" r="7" fill="white" opacity="0.93"/>
-      {/* Body */}
-      <path d="M55,59 L46,76" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"/>
-      {/* Lead leg forward */}
-      <path d="M46,76 L38,90" stroke="white" strokeWidth="4.5" strokeLinecap="round" fill="none"/>
-      {/* Trail leg kick */}
-      <path d="M46,76 L62,82 L66,72" stroke="white" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      {/* Arms */}
-      <path d="M55,64 L68,59" stroke="white" strokeWidth="4" strokeLinecap="round" fill="none"/>
-      <path d="M50,68 L38,65" stroke="white" strokeWidth="4" strokeLinecap="round" fill="none"/>
-      {/* Wings on heels */}
-      <path d="M38,90 Q34,85 32,79 Q38,82 40,88" fill="white" opacity="0.65"/>
-      <path d="M38,90 Q34,94 32,100 Q38,96 40,90" fill="white" opacity="0.65"/>
-    </>
-  },
-  // Hillside Business Group — argent, a classical portico
-  6: {
-    bg:'#4B5563', chief:'#111827', bd:'#374151', hi:'#D1D5DB', gold:'#9CA3AF', goldDk:'#6B7280', motto:'RISE',
-    chiefSymbol: <>
-      {/* Three towers / merlons in chief */}
-      <rect x="24" y="20" width="8" height="14" rx="1" fill="white" opacity="0.75"/>
-      <rect x="22" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
-      <rect x="27" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
-      <rect x="46" y="20" width="8" height="14" rx="1" fill="white" opacity="0.75"/>
-      <rect x="44" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
-      <rect x="49" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
-      <rect x="68" y="20" width="8" height="14" rx="1" fill="white" opacity="0.75"/>
-      <rect x="66" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
-      <rect x="71" y="17" width="3" height="5" rx="1" fill="white" opacity="0.75"/>
-    </>,
-    symbol: <>
-      {/* Pediment triangle */}
-      <path d="M20,72 L50,54 L80,72 Z" fill="white" opacity="0.93"/>
-      {/* Entablature (frieze) */}
-      <rect x="20" y="72" width="60" height="7" rx="1" fill="white" opacity="0.93"/>
-      {/* Columns */}
-      <rect x="23" y="79" width="6" height="26" rx="1.5" fill="white" opacity="0.93"/>
-      <rect x="36" y="79" width="6" height="26" rx="1.5" fill="white" opacity="0.93"/>
-      <rect x="50" y="79" width="6" height="26" rx="1.5" fill="white" opacity="0.93"/>
-      <rect x="64" y="79" width="6" height="26" rx="1.5" fill="white" opacity="0.93"/>
-      {/* Stylobate (steps) */}
-      <rect x="18" y="105" width="64" height="5" rx="1.5" fill="white" opacity="0.85"/>
-      <rect x="16" y="109" width="68" height="4" rx="1" fill="white" opacity="0.65"/>
-    </>
-  },
+  // ─── 1. Hampton Primary School ─────────────────────────────────
+  // Mural crown (civic) | Quarterly azure & argent | Sun, book, lamp, mullet
+  1: (cid) => <>
+    {/* Mural crown — battlement style for a municipal / civic institution */}
+    <g>
+      <rect x="26" y="8" width="48" height="6" fill="#D97706"/>
+      <rect x="28" y="3" width="6" height="5" fill="#D97706"/>
+      <rect x="40" y="3" width="6" height="5" fill="#D97706"/>
+      <rect x="54" y="3" width="6" height="5" fill="#D97706"/>
+      <rect x="66" y="3" width="6" height="5" fill="#D97706"/>
+      <line x1="26" y1="10.5" x2="74" y2="10.5" stroke="#92400E" strokeWidth="0.5" opacity="0.55"/>
+      <rect x="49" y="9.5" width="2" height="2.5" fill="#92400E" opacity="0.4"/>
+    </g>
+
+    <defs>
+      <clipPath id={`${cid}-s`}><path d={SHIELD}/></clipPath>
+    </defs>
+    <path d={SHIELD} fill="#F8FAFC"/>
+    <g clipPath={`url(#${cid}-s)`}>
+      {/* Quarterly: Q1 & Q4 azure */}
+      <rect x="12" y="14" width="38" height="52" fill="#1E40AF"/>
+      <rect x="50" y="66" width="38" height="60" fill="#1E40AF"/>
+
+      {/* Q1 (top-left, azure): Sun in splendour */}
+      <circle cx="31" cy="40" r="6.5" fill="#FBBF24"/>
+      <g stroke="#FBBF24" strokeWidth="1.6" strokeLinecap="round">
+        <line x1="31" y1="26" x2="31" y2="30"/>
+        <line x1="31" y1="50" x2="31" y2="54"/>
+        <line x1="17" y1="40" x2="21" y2="40"/>
+        <line x1="41" y1="40" x2="45" y2="40"/>
+        <line x1="22" y1="31" x2="25" y2="34"/>
+        <line x1="37" y1="46" x2="40" y2="49"/>
+        <line x1="22" y1="49" x2="25" y2="46"/>
+        <line x1="37" y1="34" x2="40" y2="31"/>
+      </g>
+
+      {/* Q2 (top-right, argent): Open book */}
+      <g>
+        <path d="M55,32 L66,34 L66,48 L55,46 Z" fill="white" stroke="#92400E" strokeWidth="0.5"/>
+        <path d="M77,32 L66,34 L66,48 L77,46 Z" fill="white" stroke="#92400E" strokeWidth="0.5"/>
+        <line x1="66" y1="34" x2="66" y2="48" stroke="#92400E" strokeWidth="0.6"/>
+        <line x1="57" y1="37" x2="64" y2="38" stroke="#1E40AF" strokeWidth="0.4"/>
+        <line x1="57" y1="40" x2="64" y2="41" stroke="#1E40AF" strokeWidth="0.4"/>
+        <line x1="57" y1="43" x2="64" y2="44" stroke="#1E40AF" strokeWidth="0.4"/>
+        <line x1="75" y1="37" x2="68" y2="38" stroke="#1E40AF" strokeWidth="0.4"/>
+        <line x1="75" y1="40" x2="68" y2="41" stroke="#1E40AF" strokeWidth="0.4"/>
+        <line x1="75" y1="43" x2="68" y2="44" stroke="#1E40AF" strokeWidth="0.4"/>
+      </g>
+
+      {/* Q3 (bottom-left, argent): Lamp of knowledge */}
+      <g>
+        <ellipse cx="31" cy="92" rx="11" ry="3" fill="#FBBF24" stroke="#92400E" strokeWidth="0.4"/>
+        <path d="M21,92 Q21,85 31,83 Q41,85 41,92 Z" fill="#FBBF24" stroke="#92400E" strokeWidth="0.5"/>
+        <rect x="28" y="76" width="6" height="7" rx="0.5" fill="#FBBF24" stroke="#92400E" strokeWidth="0.4"/>
+        <path d="M31,70 Q34,74 31,78 Q28,74 31,70 Z" fill="#EA580C"/>
+        <path d="M30,72 Q32,75 30,77" fill="none" stroke="#FBBF24" strokeWidth="0.5"/>
+        <rect x="21" y="95" width="20" height="2" fill="#92400E"/>
+      </g>
+
+      {/* Q4 (bottom-right, azure): Mullet (5-point star) */}
+      <polygon points="68,80 70.5,87 78,87 72,91.5 74.5,99 68,94.5 61.5,99 64,91.5 58,87 65.5,87" fill="#FBBF24" stroke="#B45309" strokeWidth="0.4"/>
+
+      {/* Quartering lines */}
+      <line x1="50" y1="14" x2="50" y2="118" stroke="#0F172A" strokeWidth="0.7" opacity="0.45"/>
+      <line x1="12" y1="66" x2="88" y2="66" stroke="#0F172A" strokeWidth="0.7" opacity="0.45"/>
+    </g>
+
+    <path d={SHIELD} fill="none" stroke="#1E3A8A" strokeWidth="2.5"/>
+    <path d={SHIELD_INNER} fill="none" stroke="#93C5FD" strokeWidth="0.8" opacity="0.5"/>
+
+    <MottoBanner text="DISCE ET VIVE"/>
+  </>,
+
+  // ─── 2. Riverside Academy ─────────────────────────────────────
+  // Naval crown | Per fess wavy or & azure | Lymphad in chief, fish in base
+  2: (cid) => <>
+    {/* Naval crown — alternating sails and ship sterns */}
+    <g>
+      <rect x="26" y="9" width="48" height="5" fill="#D97706"/>
+      <path d="M30,9 L33,3 L36,9 Z" fill="#D97706"/>
+      <path d="M48,9 L51,3 L54,9 Z" fill="#D97706"/>
+      <path d="M66,9 L69,3 L72,9 Z" fill="#D97706"/>
+      <path d="M38,9 L38,7 Q42,5 46,7 L46,9 Z" fill="#D97706"/>
+      <path d="M56,9 L56,7 Q60,5 64,7 L64,9 Z" fill="#D97706"/>
+      <line x1="26" y1="11.5" x2="74" y2="11.5" stroke="#92400E" strokeWidth="0.5" opacity="0.5"/>
+    </g>
+
+    <defs>
+      <clipPath id={`${cid}-s`}><path d={SHIELD}/></clipPath>
+    </defs>
+    <path d={SHIELD} fill="#0E7490"/>
+    <g clipPath={`url(#${cid}-s)`}>
+      {/* Or (gold) top half with wavy lower edge */}
+      <path d="M12,14 L88,14 L88,55 Q82,52 76,55 Q68,58 60,55 Q52,52 44,55 Q36,58 28,55 Q22,52 12,55 Z" fill="#FBBF24"/>
+
+      {/* Lymphad (medieval ship) in chief */}
+      <g>
+        {/* Hull */}
+        <path d="M28,44 L72,44 L66,52 L34,52 Z" fill="#7F1D1D" stroke="#451A03" strokeWidth="0.4"/>
+        {/* Mast */}
+        <line x1="50" y1="22" x2="50" y2="44" stroke="#451A03" strokeWidth="1.6"/>
+        {/* Square sail */}
+        <path d="M40,26 L60,26 L60,42 L40,42 Z" fill="#FEF3C7" stroke="#7F1D1D" strokeWidth="0.5"/>
+        <line x1="40" y1="34" x2="60" y2="34" stroke="#7F1D1D" strokeWidth="0.4" opacity="0.5"/>
+        {/* Crossbar */}
+        <line x1="38" y1="26" x2="62" y2="26" stroke="#451A03" strokeWidth="1"/>
+        {/* Pennon */}
+        <path d="M50,22 L58,20 L50,18 Z" fill="#DC2626"/>
+        {/* Oars */}
+        <line x1="32" y1="46" x2="28" y2="50" stroke="#451A03" strokeWidth="0.7"/>
+        <line x1="40" y1="46" x2="36" y2="50" stroke="#451A03" strokeWidth="0.7"/>
+        <line x1="60" y1="46" x2="64" y2="50" stroke="#451A03" strokeWidth="0.7"/>
+        <line x1="68" y1="46" x2="72" y2="50" stroke="#451A03" strokeWidth="0.7"/>
+      </g>
+
+      {/* Fish naiant in base (3 fish swimming) */}
+      <g>
+        <path d="M22,72 Q28,68 34,72 L38,68 L38,76 L34,72 Q28,76 22,72 Z" fill="#FBBF24"/>
+        <circle cx="25" cy="72" r="0.8" fill="#0E7490"/>
+
+        <path d="M58,86 Q66,82 74,86 L80,82 L80,90 L74,86 Q66,90 58,86 Z" fill="#FBBF24"/>
+        <circle cx="62" cy="86" r="0.8" fill="#0E7490"/>
+
+        <path d="M28,100 Q36,96 44,100 L48,96 L48,104 L44,100 Q36,104 28,100 Z" fill="#FBBF24"/>
+        <circle cx="32" cy="100" r="0.8" fill="#0E7490"/>
+      </g>
+
+      {/* Wavy fess line */}
+      <path d="M12,55 Q22,52 28,55 Q36,58 44,55 Q52,52 60,55 Q68,58 76,55 Q82,52 88,55"
+        fill="none" stroke="#164E63" strokeWidth="1.2"/>
+    </g>
+    <path d={SHIELD} fill="none" stroke="#164E63" strokeWidth="2.5"/>
+    <path d={SHIELD_INNER} fill="none" stroke="#67E8F9" strokeWidth="0.8" opacity="0.5"/>
+
+    <MottoBanner text="ULTRA MARE"/>
+  </>,
+
+  // ─── 3. St Mary's C of E ──────────────────────────────────────
+  // Bishop's mitre | Purpure with cross argent overall | Fleur-de-lys in quarters
+  3: (cid) => <>
+    {/* Bishop's mitre with infulae */}
+    <g>
+      <path d="M38,14 Q40,8 44,5 Q47,2 50,2 Q53,2 56,5 Q60,8 62,14 Z" fill="white" stroke="#92400E" strokeWidth="0.7"/>
+      <path d="M38,13 Q50,15 62,13 L62,11 Q50,13 38,11 Z" fill="#D97706"/>
+      <line x1="50" y1="4" x2="50" y2="13" stroke="#D97706" strokeWidth="0.7"/>
+      <line x1="46" y1="8" x2="54" y2="8" stroke="#D97706" strokeWidth="0.6"/>
+      {/* Cross at top of mitre */}
+      <line x1="50" y1="0" x2="50" y2="4" stroke="#D97706" strokeWidth="0.7"/>
+      <line x1="48" y1="2" x2="52" y2="2" stroke="#D97706" strokeWidth="0.7"/>
+      {/* Infulae (hanging ribbons) */}
+      <path d="M42,14 L41.5,18 L43,18 Z" fill="white" stroke="#92400E" strokeWidth="0.4"/>
+      <path d="M58,14 L58.5,18 L57,18 Z" fill="white" stroke="#92400E" strokeWidth="0.4"/>
+      <line x1="42" y1="17" x2="43" y2="17" stroke="#D97706" strokeWidth="0.5"/>
+      <line x1="57" y1="17" x2="58" y2="17" stroke="#D97706" strokeWidth="0.5"/>
+    </g>
+
+    <defs>
+      <clipPath id={`${cid}-s`}><path d={SHIELD}/></clipPath>
+    </defs>
+    <path d={SHIELD} fill="#5B21B6"/>
+    <g clipPath={`url(#${cid}-s)`}>
+      {/* Greek cross argent overall */}
+      <path d="M44,18 L56,18 L56,58 L82,58 L82,70 L56,70 L56,114 L44,114 L44,70 L18,70 L18,58 L44,58 Z" fill="white"/>
+      <path d="M44,18 L56,18 L56,58 L82,58 L82,70 L56,70 L56,114 L44,114 L44,70 L18,70 L18,58 L44,58 Z"
+        fill="none" stroke="#FBBF24" strokeWidth="0.8"/>
+
+      {/* Fleur-de-lys in each quarter */}
+      <g fill="#FBBF24">
+        {/* Top-left */}
+        <ellipse cx="30" cy="36" rx="1.6" ry="6.5"/>
+        <ellipse cx="26.5" cy="37" rx="2.2" ry="5" transform="rotate(-28 26.5 37)"/>
+        <ellipse cx="33.5" cy="37" rx="2.2" ry="5" transform="rotate(28 33.5 37)"/>
+        <rect x="25" y="40" width="10" height="2.2" rx="1"/>
+        <ellipse cx="30" cy="30" rx="1.2" ry="2" fill="#F59E0B"/>
+
+        {/* Top-right */}
+        <ellipse cx="70" cy="36" rx="1.6" ry="6.5"/>
+        <ellipse cx="66.5" cy="37" rx="2.2" ry="5" transform="rotate(-28 66.5 37)"/>
+        <ellipse cx="73.5" cy="37" rx="2.2" ry="5" transform="rotate(28 73.5 37)"/>
+        <rect x="65" y="40" width="10" height="2.2" rx="1"/>
+        <ellipse cx="70" cy="30" rx="1.2" ry="2" fill="#F59E0B"/>
+
+        {/* Bottom-left */}
+        <ellipse cx="30" cy="88" rx="1.6" ry="6.5"/>
+        <ellipse cx="26.5" cy="89" rx="2.2" ry="5" transform="rotate(-28 26.5 89)"/>
+        <ellipse cx="33.5" cy="89" rx="2.2" ry="5" transform="rotate(28 33.5 89)"/>
+        <rect x="25" y="92" width="10" height="2.2" rx="1"/>
+        <ellipse cx="30" cy="82" rx="1.2" ry="2" fill="#F59E0B"/>
+
+        {/* Bottom-right */}
+        <ellipse cx="70" cy="88" rx="1.6" ry="6.5"/>
+        <ellipse cx="66.5" cy="89" rx="2.2" ry="5" transform="rotate(-28 66.5 89)"/>
+        <ellipse cx="73.5" cy="89" rx="2.2" ry="5" transform="rotate(28 73.5 89)"/>
+        <rect x="65" y="92" width="10" height="2.2" rx="1"/>
+        <ellipse cx="70" cy="82" rx="1.2" ry="2" fill="#F59E0B"/>
+      </g>
+
+      {/* Centre rose on the cross */}
+      <circle cx="50" cy="64" r="3.5" fill="#5B21B6"/>
+      <circle cx="50" cy="64" r="2" fill="#FBBF24"/>
+    </g>
+    <path d={SHIELD} fill="none" stroke="#4C1D95" strokeWidth="2.5"/>
+    <path d={SHIELD_INNER} fill="none" stroke="#C4B5FD" strokeWidth="0.8" opacity="0.5"/>
+
+    <MottoBanner text="AVE MARIA"/>
+  </>,
+
+  // ─── 4. Oakwood Secondary School ──────────────────────────────
+  // Tournament helm with twisted wreath | Per chevron or & vert | Oak tree + acorns
+  4: (cid) => <>
+    {/* Tournament helm with twisted wreath */}
+    <g>
+      {/* Helm */}
+      <path d="M40,12 Q40,3 50,3 Q60,3 60,12 Z" fill="#9CA3AF" stroke="#374151" strokeWidth="0.6"/>
+      {/* Helm highlight */}
+      <path d="M42,5 Q45,3.5 50,3.5 Q55,3.5 58,5" stroke="#E5E7EB" strokeWidth="0.6" fill="none" opacity="0.7"/>
+      {/* Visor */}
+      <rect x="42" y="6" width="16" height="1.5" fill="#1F2937"/>
+      <rect x="42" y="9" width="16" height="1" fill="#1F2937" opacity="0.6"/>
+      {/* Wreath (twisted) */}
+      <rect x="38" y="11.5" width="3" height="3.5" fill="#15803D"/>
+      <rect x="41" y="11.5" width="3" height="3.5" fill="#FBBF24"/>
+      <rect x="44" y="11.5" width="3" height="3.5" fill="#15803D"/>
+      <rect x="47" y="11.5" width="3" height="3.5" fill="#FBBF24"/>
+      <rect x="50" y="11.5" width="3" height="3.5" fill="#15803D"/>
+      <rect x="53" y="11.5" width="3" height="3.5" fill="#FBBF24"/>
+      <rect x="56" y="11.5" width="3" height="3.5" fill="#15803D"/>
+      <rect x="59" y="11.5" width="3" height="3.5" fill="#FBBF24"/>
+    </g>
+
+    <defs>
+      <clipPath id={`${cid}-s`}><path d={SHIELD}/></clipPath>
+    </defs>
+    <path d={SHIELD} fill="#FBBF24"/>
+    <g clipPath={`url(#${cid}-s)`}>
+      {/* Per chevron: green below the V */}
+      <path d="M12,118 L12,68 L50,42 L88,68 L88,118 Z" fill="#065F46"/>
+
+      {/* Three acorns above the chevron in the or/gold field */}
+      <g>
+        <ellipse cx="26" cy="34" rx="3.2" ry="4" fill="#92400E"/>
+        <line x1="26" y1="32" x2="26" y2="36" stroke="#451A03" strokeWidth="0.3"/>
+        <path d="M22,32 Q26,29 30,32 Q30,35 26,35 Q22,35 22,32 Z" fill="#065F46" stroke="#064E3B" strokeWidth="0.4"/>
+        <rect x="25" y="25" width="2" height="3" fill="#065F46"/>
+
+        <ellipse cx="50" cy="28" rx="3.2" ry="4" fill="#92400E"/>
+        <line x1="50" y1="26" x2="50" y2="30" stroke="#451A03" strokeWidth="0.3"/>
+        <path d="M46,26 Q50,23 54,26 Q54,29 50,29 Q46,29 46,26 Z" fill="#065F46" stroke="#064E3B" strokeWidth="0.4"/>
+        <rect x="49" y="19" width="2" height="3" fill="#065F46"/>
+
+        <ellipse cx="74" cy="34" rx="3.2" ry="4" fill="#92400E"/>
+        <line x1="74" y1="32" x2="74" y2="36" stroke="#451A03" strokeWidth="0.3"/>
+        <path d="M70,32 Q74,29 78,32 Q78,35 74,35 Q70,35 70,32 Z" fill="#065F46" stroke="#064E3B" strokeWidth="0.4"/>
+        <rect x="73" y="25" width="2" height="3" fill="#065F46"/>
+      </g>
+
+      {/* Chevron line */}
+      <path d="M12,68 L50,42 L88,68" fill="none" stroke="#064E3B" strokeWidth="1.2"/>
+
+      {/* Oak tree growing from base */}
+      <g>
+        {/* Trunk with taper */}
+        <path d="M47,86 L46,108 L54,108 L53,86 Z" fill="#451A03"/>
+        {/* Root flare */}
+        <path d="M44,108 Q47,105 50,108 Q53,105 56,108 L56,112 L44,112 Z" fill="#451A03"/>
+        {/* Canopy layered */}
+        <ellipse cx="50" cy="72" rx="22" ry="14" fill="#16A34A"/>
+        <ellipse cx="36" cy="78" rx="12" ry="10" fill="#16A34A"/>
+        <ellipse cx="64" cy="78" rx="12" ry="10" fill="#16A34A"/>
+        <ellipse cx="50" cy="66" rx="15" ry="11" fill="#22C55E"/>
+        {/* Leaf highlights */}
+        <ellipse cx="42" cy="66" rx="2.5" ry="2" fill="#86EFAC"/>
+        <ellipse cx="58" cy="70" rx="2.5" ry="2" fill="#86EFAC"/>
+        <ellipse cx="48" cy="78" rx="2.5" ry="2" fill="#86EFAC"/>
+        <ellipse cx="62" cy="74" rx="2" ry="1.5" fill="#86EFAC"/>
+        {/* Small acorns hidden in foliage */}
+        <circle cx="38" cy="74" r="1.5" fill="#92400E"/>
+        <circle cx="62" cy="73" r="1.5" fill="#92400E"/>
+        <circle cx="52" cy="84" r="1.3" fill="#92400E"/>
+      </g>
+    </g>
+    <path d={SHIELD} fill="none" stroke="#064E3B" strokeWidth="2.5"/>
+    <path d={SHIELD_INNER} fill="none" stroke="#6EE7B7" strokeWidth="0.8" opacity="0.5"/>
+
+    <MottoBanner text="ROBUR CRESCIT"/>
+  </>,
+
+  // ─── 5. Thames Valley Running Club ────────────────────────────
+  // Laurel wreath | Circular sports medal | Winged sandal + stars
+  5: (cid) => <>
+    {/* Laurel wreath above */}
+    <g fill="#16A34A">
+      <ellipse cx="32" cy="11" rx="3" ry="1.5" transform="rotate(-35 32 11)"/>
+      <ellipse cx="36" cy="8" rx="3" ry="1.5" transform="rotate(-35 36 8)"/>
+      <ellipse cx="40" cy="5" rx="2.8" ry="1.4" transform="rotate(-30 40 5)"/>
+      <ellipse cx="44" cy="3" rx="2.5" ry="1.3" transform="rotate(-15 44 3)"/>
+      <ellipse cx="68" cy="11" rx="3" ry="1.5" transform="rotate(35 68 11)"/>
+      <ellipse cx="64" cy="8" rx="3" ry="1.5" transform="rotate(35 64 8)"/>
+      <ellipse cx="60" cy="5" rx="2.8" ry="1.4" transform="rotate(30 60 5)"/>
+      <ellipse cx="56" cy="3" rx="2.5" ry="1.3" transform="rotate(15 56 3)"/>
+    </g>
+    {/* Central bow */}
+    <circle cx="50" cy="3" r="2" fill="#DC2626"/>
+    <path d="M48,3 L45,6 L48,5 Z" fill="#B91C1C"/>
+    <path d="M52,3 L55,6 L52,5 Z" fill="#B91C1C"/>
+
+    {/* Round sports medal (no shield) */}
+    <circle cx="50" cy="66" r="40" fill="#FBBF24" stroke="#B45309" strokeWidth="1.5"/>
+    <circle cx="50" cy="66" r="35" fill="#EA580C"/>
+    <circle cx="50" cy="66" r="35" fill="none" stroke="#FBBF24" strokeWidth="0.8"/>
+
+    {/* Laurel border inside the ring */}
+    <g fill="#FCD34D" opacity="0.85">
+      <ellipse cx="22" cy="55" rx="2.5" ry="1.3" transform="rotate(65 22 55)"/>
+      <ellipse cx="19" cy="62" rx="2.5" ry="1.3" transform="rotate(85 19 62)"/>
+      <ellipse cx="19" cy="70" rx="2.5" ry="1.3" transform="rotate(95 19 70)"/>
+      <ellipse cx="22" cy="77" rx="2.5" ry="1.3" transform="rotate(115 22 77)"/>
+      <ellipse cx="78" cy="55" rx="2.5" ry="1.3" transform="rotate(-65 78 55)"/>
+      <ellipse cx="81" cy="62" rx="2.5" ry="1.3" transform="rotate(-85 81 62)"/>
+      <ellipse cx="81" cy="70" rx="2.5" ry="1.3" transform="rotate(-95 81 70)"/>
+      <ellipse cx="78" cy="77" rx="2.5" ry="1.3" transform="rotate(-115 78 77)"/>
+    </g>
+
+    {/* Winged sandal (Mercury) — central charge */}
+    <g>
+      {/* Wings (large) */}
+      <path d="M50,68 L30,58 Q26,64 30,68 L40,68 L32,72 L40,76 L50,72 Z" fill="white"/>
+      <path d="M50,68 L70,58 Q74,64 70,68 L60,68 L68,72 L60,76 L50,72 Z" fill="white"/>
+      <line x1="36" y1="62" x2="42" y2="66" stroke="#EA580C" strokeWidth="0.5"/>
+      <line x1="64" y1="62" x2="58" y2="66" stroke="#EA580C" strokeWidth="0.5"/>
+      <line x1="38" y1="70" x2="44" y2="72" stroke="#EA580C" strokeWidth="0.5"/>
+      <line x1="62" y1="70" x2="56" y2="72" stroke="#EA580C" strokeWidth="0.5"/>
+      {/* Sandal sole */}
+      <ellipse cx="50" cy="80" rx="14" ry="3" fill="#92400E"/>
+      <ellipse cx="50" cy="78" rx="13.5" ry="3" fill="#FBBF24"/>
+      <path d="M40,77 Q45,73 50,77" stroke="#92400E" strokeWidth="1" fill="none"/>
+      <path d="M60,77 Q55,73 50,77" stroke="#92400E" strokeWidth="1" fill="none"/>
+      <circle cx="50" cy="77" r="1" fill="#92400E"/>
+    </g>
+
+    {/* Stars in upper arc */}
+    <polygon points="50,42 51.2,45.4 54.8,45.4 51.8,47.5 53,51 50,49 47,51 48.2,47.5 45.2,45.4 48.8,45.4" fill="#FBBF24"/>
+    <polygon points="34,46 35,48.5 37.6,48.5 35.5,50 36.4,52.8 34,51 31.6,52.8 32.5,50 30.4,48.5 33,48.5" fill="#FBBF24" opacity="0.9"/>
+    <polygon points="66,46 67,48.5 69.6,48.5 67.5,50 68.4,52.8 66,51 63.6,52.8 64.5,50 62.4,48.5 65,48.5" fill="#FBBF24" opacity="0.9"/>
+
+    <MottoBanner text="CELERITAS" color="#FBBF24" dark="#92400E"/>
+  </>,
+
+  // ─── 6. Hillside Business Group ───────────────────────────────
+  // Castle turret | Per fess azure & sable | Sun rising over a castle
+  6: (cid) => <>
+    {/* Castle turret crown — battlement silhouette */}
+    <g>
+      <rect x="34" y="6" width="32" height="8" fill="#4B5563"/>
+      <rect x="34" y="2" width="4" height="4" fill="#4B5563"/>
+      <rect x="42" y="2" width="4" height="4" fill="#4B5563"/>
+      <rect x="48" y="2" width="4" height="4" fill="#4B5563"/>
+      <rect x="54" y="2" width="4" height="4" fill="#4B5563"/>
+      <rect x="62" y="2" width="4" height="4" fill="#4B5563"/>
+      <rect x="48" y="9" width="4" height="4" fill="#1F2937"/>
+      <line x1="34" y1="11" x2="66" y2="11" stroke="#1F2937" strokeWidth="0.5" opacity="0.6"/>
+    </g>
+
+    <defs>
+      <clipPath id={`${cid}-s`}><path d={SHIELD}/></clipPath>
+    </defs>
+    <path d={SHIELD} fill="#1F2937"/>
+    <g clipPath={`url(#${cid}-s)`}>
+      {/* Sky top half with embattled fess line */}
+      <path d="M12,14 L88,14 L88,52 L82,52 L82,56 L76,56 L76,52 L70,52 L70,56 L64,56 L64,52 L58,52 L58,56 L52,56 L52,52 L46,52 L46,56 L40,56 L40,52 L34,52 L34,56 L28,56 L28,52 L22,52 L22,56 L16,56 L16,52 L12,52 Z" fill="#60A5FA"/>
+
+      {/* Sun rising */}
+      <g>
+        <circle cx="50" cy="36" r="9" fill="#FBBF24"/>
+        <g stroke="#FBBF24" strokeWidth="1.3" strokeLinecap="round">
+          <line x1="50" y1="20" x2="50" y2="23"/>
+          <line x1="38" y1="26" x2="40" y2="28"/>
+          <line x1="60" y1="28" x2="62" y2="26"/>
+          <line x1="33" y1="36" x2="36" y2="36"/>
+          <line x1="64" y1="36" x2="67" y2="36"/>
+          <line x1="40" y1="44" x2="42" y2="46"/>
+          <line x1="60" y1="44" x2="58" y2="46"/>
+        </g>
+        {/* Sun face hint */}
+        <circle cx="46" cy="35" r="0.8" fill="#92400E"/>
+        <circle cx="54" cy="35" r="0.8" fill="#92400E"/>
+        <path d="M46,39 Q50,42 54,39" stroke="#92400E" strokeWidth="0.7" fill="none"/>
+      </g>
+
+      {/* Castle */}
+      <g>
+        {/* Curtain wall */}
+        <rect x="24" y="80" width="52" height="32" fill="#9CA3AF"/>
+        {/* Battlements on curtain wall */}
+        <rect x="24" y="76" width="4" height="4" fill="#9CA3AF"/>
+        <rect x="32" y="76" width="4" height="4" fill="#9CA3AF"/>
+        <rect x="40" y="76" width="4" height="4" fill="#9CA3AF"/>
+        <rect x="48" y="76" width="4" height="4" fill="#9CA3AF"/>
+        <rect x="56" y="76" width="4" height="4" fill="#9CA3AF"/>
+        <rect x="64" y="76" width="4" height="4" fill="#9CA3AF"/>
+        <rect x="72" y="76" width="4" height="4" fill="#9CA3AF"/>
+
+        {/* Left tower */}
+        <rect x="20" y="68" width="14" height="44" fill="#D1D5DB"/>
+        <rect x="20" y="64" width="3" height="4" fill="#D1D5DB"/>
+        <rect x="25" y="64" width="3" height="4" fill="#D1D5DB"/>
+        <rect x="30" y="64" width="3" height="4" fill="#D1D5DB"/>
+        {/* Left tower conical roof */}
+        <path d="M20,64 L27,55 L34,64 Z" fill="#7F1D1D"/>
+        <circle cx="27" cy="54" r="0.8" fill="#FBBF24"/>
+
+        {/* Right tower */}
+        <rect x="66" y="68" width="14" height="44" fill="#D1D5DB"/>
+        <rect x="66" y="64" width="3" height="4" fill="#D1D5DB"/>
+        <rect x="71" y="64" width="3" height="4" fill="#D1D5DB"/>
+        <rect x="76" y="64" width="3" height="4" fill="#D1D5DB"/>
+        {/* Right tower conical roof */}
+        <path d="M66,64 L73,55 L80,64 Z" fill="#7F1D1D"/>
+        <circle cx="73" cy="54" r="0.8" fill="#FBBF24"/>
+
+        {/* Tower windows */}
+        <rect x="25" y="74" width="3" height="5" rx="0.5" fill="#1F2937"/>
+        <rect x="71" y="74" width="3" height="5" rx="0.5" fill="#1F2937"/>
+        <rect x="25" y="86" width="3" height="5" rx="0.5" fill="#1F2937"/>
+        <rect x="71" y="86" width="3" height="5" rx="0.5" fill="#1F2937"/>
+
+        {/* Gateway (arched) */}
+        <path d="M44,112 L44,94 Q44,89 50,89 Q56,89 56,94 L56,112 Z" fill="#1F2937"/>
+        <path d="M45,94 Q45,90 50,90 Q55,90 55,94" fill="none" stroke="#FBBF24" strokeWidth="0.4"/>
+        {/* Portcullis bars */}
+        <line x1="46" y1="94" x2="46" y2="106" stroke="#6B7280" strokeWidth="0.4"/>
+        <line x1="50" y1="93" x2="50" y2="106" stroke="#6B7280" strokeWidth="0.4"/>
+        <line x1="54" y1="94" x2="54" y2="106" stroke="#6B7280" strokeWidth="0.4"/>
+        <line x1="46" y1="98" x2="54" y2="98" stroke="#6B7280" strokeWidth="0.4"/>
+        <line x1="46" y1="102" x2="54" y2="102" stroke="#6B7280" strokeWidth="0.4"/>
+      </g>
+    </g>
+    <path d={SHIELD} fill="none" stroke="#0F172A" strokeWidth="2.5"/>
+    <path d={SHIELD_INNER} fill="none" stroke="#E5E7EB" strokeWidth="0.8" opacity="0.4"/>
+
+    <MottoBanner text="ALTIORA PETO" color="#D1D5DB" dark="#4B5563"/>
+  </>,
 };
 
 function OrgLogo({ org, size = 40 }) {
   const crest = ORG_CRESTS[org.id];
+  const uid = React.useId();
   if (crest) {
-    const gold = crest.gold || '#F59E0B';
-    const goldDk = crest.goldDk || '#B45309';
+    const cid = uid.replace(/:/g, '');
     return (
       <svg width={size} height={size * 1.28} viewBox="0 0 100 128" xmlns="http://www.w3.org/2000/svg"
         style={{ display: 'block', flexShrink: 0 }}>
-
-        {/* ── Crown ── */}
-        <path d="M33,14 L36,5 L43,10 L50,2 L57,10 L64,5 L67,14 Z" fill={gold}/>
-        <circle cx="36" cy="4.5" r="3" fill={gold}/>
-        <circle cx="50" cy="2" r="3.5" fill={gold}/>
-        <circle cx="64" cy="4.5" r="3" fill={gold}/>
-
-        {/* ── Shield: main field ── */}
-        <path d={SHIELD} fill={crest.bg}/>
-
-        {/* ── Chief (per-fess top band) ── */}
-        <rect x="12" y="14" width="76" height="28" fill={crest.chief}/>
-        {crest.chiefSymbol}
-
-        {/* ── Chief / field divider ── */}
-        <line x1="12" y1="42" x2="88" y2="42" stroke={crest.bd} strokeWidth="1.5" opacity="0.7"/>
-
-        {/* ── Main charge ── */}
-        {crest.symbol}
-
-        {/* ── Shield borders (drawn last to clean up edges) ── */}
-        <path d={SHIELD} fill="none" stroke={crest.bd} strokeWidth="2.5"/>
-        <path d={SHIELD_I} fill="none" stroke={crest.hi} strokeWidth="1.5" opacity="0.45"/>
-
-        {/* ── Motto scroll ── */}
-        {/* Left curl (darker fold) */}
-        <path d="M12,116 Q4,116 4,124 Q4,128 12,128 L12,122 Z" fill={goldDk}/>
-        {/* Right curl */}
-        <path d="M88,116 L88,122 Q96,128 96,124 Q96,116 88,116 Z" fill={goldDk}/>
-        {/* Main ribbon */}
-        <path d="M12,116 L88,116 L88,122 L12,122 Z" fill={gold}/>
-        {/* Motto text */}
-        <text x="50" y="121" textAnchor="middle" fill="white" fontSize="6" fontWeight="bold"
-          fontFamily="Georgia, serif" letterSpacing="1.5" opacity="0.95">{crest.motto}</text>
+        {crest(cid)}
       </svg>
     );
   }
