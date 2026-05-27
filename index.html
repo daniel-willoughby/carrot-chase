@@ -4,15 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Carrot Chase</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700,800&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #FAF6F1; color: #1a1a1a; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Satoshi', sans-serif; background: #FAF6F1; color: #1a1a1a; line-height: 1.5; -webkit-font-smoothing: antialiased; }
     h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.025em; }
     p { line-height: 1.6; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -94,21 +93,21 @@
       <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#EC560C,#D04A08);
         display:flex;align-items:center;justify-content:center;margin:0 auto 14px;
         box-shadow:0 8px 24px rgba(232,82,10,0.35);font-size:36px;">🥕</div>
-      <div style="font-size:26px; font-weight:800; color:#1a1a1a; font-family:'Inter',sans-serif; letter-spacing:-0.03em;">Carrot Chase</div>
-      <div style="font-size:14px; color:#7a6f68; margin-top:6px; font-family:'Inter',sans-serif;">Enter the access code to continue</div>
+      <div style="font-size:26px; font-weight:800; color:#1a1a1a; font-family:'Satoshi',sans-serif; letter-spacing:-0.03em;">Carrot Chase</div>
+      <div style="font-size:14px; color:#7a6f68; margin-top:6px; font-family:'Satoshi',sans-serif;">Enter the access code to continue</div>
     </div>
     <div style="background:#fff; border-radius:20px; padding:28px; box-shadow:0 8px 32px rgba(0,0,0,0.1),0 1px 4px rgba(0,0,0,0.06); border:1px solid #F0E8DF;">
       <input id="gate-input" type="password" placeholder="Access code"
         style="width:100%; padding:14px 16px; border:1.5px solid #E3D8CE; border-radius:12px;
-          font-size:16px; font-family:'Inter',sans-serif; outline:none; margin-bottom:12px;
+          font-size:16px; font-family:'Satoshi',sans-serif; outline:none; margin-bottom:12px;
           box-sizing:border-box; background:#FAF6F1; color:#1a1a1a; transition:border-color 0.15s;"
         onfocus="this.style.borderColor='#E8520A'" onblur="this.style.borderColor='#E3D8CE'"
         onkeydown="if(event.key==='Enter') checkGate()" />
-      <div id="gate-error" style="color:#dc2626; font-size:13px; font-family:'Inter',sans-serif;
+      <div id="gate-error" style="color:#dc2626; font-size:13px; font-family:'Satoshi',sans-serif;
         margin-bottom:10px; display:none; text-align:center;">Incorrect access code</div>
       <button onclick="checkGate()"
         style="width:100%; padding:14px; background:linear-gradient(135deg,#EC560C,#D04A08); color:#fff; border:none;
-          border-radius:12px; font-size:15px; font-weight:700; font-family:'Inter',sans-serif;
+          border-radius:12px; font-size:15px; font-weight:700; font-family:'Satoshi',sans-serif;
           cursor:pointer; transition:opacity 0.15s; box-shadow:0 4px 14px rgba(232,82,10,0.35);"
         onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
         Continue →
@@ -383,7 +382,7 @@ function Card({ children, style, className, onClick }) {
 function Button({ children, onClick, variant='primary', size='md', disabled, style }) {
   const base = {
     borderRadius: 999, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
-    fontFamily: 'Inter, sans-serif', fontWeight: 600, transition: 'all 0.15s',
+    fontFamily: 'Satoshi, sans-serif', fontWeight: 600, transition: 'all 0.15s',
     display: 'inline-flex', alignItems: 'center', gap: 6, opacity: disabled ? 0.5 : 1,
   };
   const sizes = {
@@ -633,7 +632,7 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData, isDark, onT
                 padding: '10px 14px', borderRadius: 10, border: 'none',
                 background: active ? C.orangeGradient : 'transparent',
                 color: active ? C.white : C.textSecondary,
-                fontFamily: 'Inter, sans-serif', fontWeight: active ? 600 : 500,
+                fontFamily: 'Satoshi, sans-serif', fontWeight: active ? 600 : 500,
                 fontSize: 14, cursor: 'pointer', marginBottom: 2,
                 transition: 'all 0.15s',
                 boxShadow: active ? '0 2px 8px rgba(232,82,10,0.22)' : 'none',
@@ -673,7 +672,7 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData, isDark, onT
           style={{
             width: '100%', padding: '8px', borderRadius: 999, border: `1px solid ${C.border}`,
             background: 'transparent', color: C.muted, fontSize: 13, fontWeight: 500,
-            cursor: 'pointer', fontFamily: 'Inter, sans-serif', marginBottom: 6,
+            cursor: 'pointer', fontFamily: 'Satoshi, sans-serif', marginBottom: 6,
           }}
         >
           {isDark ? '☀ Light mode' : '🌙 Dark mode'}
@@ -683,7 +682,7 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData, isDark, onT
           style={{
             width: '100%', padding: '8px', borderRadius: 999, border: `1px solid ${C.border}`,
             background: 'transparent', color: C.muted, fontSize: 13, fontWeight: 500,
-            cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+            cursor: 'pointer', fontFamily: 'Satoshi, sans-serif',
           }}
         >
           Sign out
@@ -692,7 +691,7 @@ function Sidebar({ role, page, setPage, user, onLogout, onResetData, isDark, onT
           <button onClick={onResetData} style={{
             width: '100%', padding: '6px', borderRadius: 999, border: 'none',
             background: 'transparent', color: C.muted, fontSize: 11,
-            cursor: 'pointer', fontFamily: 'Inter, sans-serif', marginTop: 4, opacity: 0.6,
+            cursor: 'pointer', fontFamily: 'Satoshi, sans-serif', marginTop: 4, opacity: 0.6,
           }}>
             Reset demo data
           </button>
@@ -777,7 +776,7 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, isDark, o
               }}>
                 {user.name[0]}
               </div>
-              <span style={{ fontSize: 9, color: C.muted, fontWeight: 600, letterSpacing: 0.3, fontFamily: 'Inter' }}>Sign out</span>
+              <span style={{ fontSize: 9, color: C.muted, fontWeight: 600, letterSpacing: 0.3, fontFamily: 'Satoshi' }}>Sign out</span>
             </button>
           </div>
         </header>
@@ -810,7 +809,7 @@ function AppLayout({ role, page, setPage, user, onLogout, onResetData, isDark, o
                   alignItems: 'center', justifyContent: 'center', gap: 2,
                   border: 'none', background: 'transparent', cursor: 'pointer',
                   color: active ? C.orange : C.muted,
-                  fontFamily: 'Inter, sans-serif',
+                  fontFamily: 'Satoshi, sans-serif',
                   position: 'relative',
                 }}
               >
@@ -888,7 +887,7 @@ function LoginPage({ onLogin }) {
               style={{
                 background: C.orange, color: C.white, border: 'none', borderRadius: 8,
                 padding: '6px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif', flexShrink: 0,
+                fontFamily: 'Satoshi, sans-serif', flexShrink: 0,
               }}
             >
               Fill ↓
@@ -902,7 +901,7 @@ function LoginPage({ onLogin }) {
               maxLength={6}
               style={{
                 width: '100%', padding: '14px', borderRadius: 12, border: `2px solid ${twoFAError ? C.danger : C.border}`,
-                fontSize: 22, textAlign: 'center', letterSpacing: 6, fontFamily: 'Inter', marginBottom: 12,
+                fontSize: 22, textAlign: 'center', letterSpacing: 6, fontFamily: 'Satoshi', marginBottom: 12,
                 background: C.white, boxSizing: 'border-box',
               }}
             />
@@ -910,7 +909,7 @@ function LoginPage({ onLogin }) {
             <Button style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }}>Verify →</Button>
           </form>
           <button onClick={() => { setPendingUser(null); setTwoFACode(''); setTwoFAError(''); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter' }}>
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Satoshi' }}>
             ← Back to login
           </button>
         </div>
@@ -979,7 +978,7 @@ function LoginPage({ onLogin }) {
                 style={{
                   width: '100%', padding: '12px 14px', borderRadius: 12,
                   border: `1.5px solid ${C.border}`, fontSize: 14,
-                  fontFamily: 'Inter, sans-serif', background: C.white, outline: 'none',
+                  fontFamily: 'Satoshi, sans-serif', background: C.white, outline: 'none',
                 }}
               />
             </div>
@@ -996,7 +995,7 @@ function LoginPage({ onLogin }) {
                 style={{
                   width: '100%', padding: '12px 14px', borderRadius: 12,
                   border: `1.5px solid ${C.border}`, fontSize: 14,
-                  fontFamily: 'Inter, sans-serif', background: C.white, outline: 'none',
+                  fontFamily: 'Satoshi, sans-serif', background: C.white, outline: 'none',
                 }}
               />
             </div>
@@ -1026,7 +1025,7 @@ function LoginPage({ onLogin }) {
                   style={{
                     flex: 1, padding: '10px 6px', borderRadius: 10,
                     border: `1.5px solid ${C.border}`, background: C.white,
-                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    cursor: 'pointer', fontFamily: 'Satoshi, sans-serif',
                     fontSize: 12, fontWeight: 600, color: C.text,
                     transition: 'border-color 0.15s, background 0.15s',
                   }}
@@ -1270,7 +1269,7 @@ function OrganisationsPage({ setPage }) {
   const inputStyle = {
     width: '100%', padding: '10px 14px', borderRadius: 12,
     border: `1.5px solid ${C.border}`, fontSize: 14,
-    fontFamily: 'Inter, sans-serif', background: C.white,
+    fontFamily: 'Satoshi, sans-serif', background: C.white,
     boxSizing: 'border-box',
   };
 
@@ -1338,7 +1337,7 @@ function OrganisationsPage({ setPage }) {
       <div className="fade-in">
         <button
           onClick={() => setViewOrg(null)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter', marginBottom: 16 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Satoshi', marginBottom: 16 }}
         >
           ← Back to Organisations
         </button>
@@ -1534,7 +1533,7 @@ function OrganisationsPage({ setPage }) {
         ].map(t => (
           <button key={t.id} onClick={() => { sfx.click(); setTab(t.id); }} style={{
             padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
+            fontFamily: 'Satoshi, sans-serif', fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
             color: tab === t.id ? C.orange : C.muted,
             borderBottom: `2px solid ${tab === t.id ? C.orange : 'transparent'}`,
             marginBottom: -1,
@@ -1592,14 +1591,14 @@ function OrganisationsPage({ setPage }) {
                     <button onClick={() => handleResend(inv.id)} style={{
                       background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
                       padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.text,
-                      fontFamily: 'Inter, sans-serif', fontWeight: 500,
+                      fontFamily: 'Satoshi, sans-serif', fontWeight: 500,
                     }}>Resend</button>
                   )}
                   {inv.status !== 'accepted' && (
                     <button onClick={() => handleRevoke(inv.id)} style={{
                       background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
                       padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.danger,
-                      fontFamily: 'Inter, sans-serif', fontWeight: 500,
+                      fontFamily: 'Satoshi, sans-serif', fontWeight: 500,
                     }}>Revoke</button>
                   )}
                 </div>
@@ -1714,7 +1713,7 @@ function BillingPage() {
             <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Organisation</label>
             <select style={{
               padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`,
-              fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white,
+              fontSize: 14, fontFamily: 'Satoshi, sans-serif', background: C.white,
               width: '100%',
             }}>
               {ORGS.map(o => <option key={o.id}>{o.name}</option>)}
@@ -1726,7 +1725,7 @@ function BillingPage() {
               type="text" placeholder="£49.00"
               style={{
                 padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`,
-                fontSize: 14, fontFamily: 'Inter, sans-serif', width: isMobile ? '100%' : 120,
+                fontSize: 14, fontFamily: 'Satoshi, sans-serif', width: isMobile ? '100%' : 120,
                 background: C.white, boxSizing: 'border-box',
               }}
             />
@@ -2084,7 +2083,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
         style={{
           width: '100%', padding: '11px 14px', borderRadius: 10,
           border: `1.5px solid ${C.border}`, fontSize: 14,
-          fontFamily: 'Inter, sans-serif', outline: 'none', background: C.white,
+          fontFamily: 'Satoshi, sans-serif', outline: 'none', background: C.white,
         }}
       />
     </div>
@@ -2108,11 +2107,11 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
                 <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>They'll receive an email with a setup link (expires in 72 hours).</div>
                 <div style={{ marginBottom: 14 }}>
                   <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Email address *</label>
-                  <input type="email" value={inviteForm.email} onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))} placeholder="lead@school.co.uk" autoCapitalize="none" style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white, boxSizing: 'border-box' }} />
+                  <input type="email" value={inviteForm.email} onChange={e => setInviteForm(f => ({ ...f, email: e.target.value }))} placeholder="lead@school.co.uk" autoCapitalize="none" style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', background: C.white, boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 14 }}>
                   <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6, color: C.muted }}>Name (optional)</label>
-                  <input type="text" value={inviteForm.name} onChange={e => setInviteForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. James Carter" autoCapitalize="words" style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white, boxSizing: 'border-box' }} />
+                  <input type="text" value={inviteForm.name} onChange={e => setInviteForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. James Carter" autoCapitalize="words" style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', background: C.white, boxSizing: 'border-box' }} />
                 </div>
                 <div style={{ marginBottom: 20 }}>
                   <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8, color: C.muted }}>Assign to group(s) (optional)</label>
@@ -2263,7 +2262,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
                 style={{
                   width: '100%', padding: '11px 14px', borderRadius: 10,
                   border: `1.5px solid ${C.border}`, fontSize: 14,
-                  fontFamily: 'Inter, sans-serif', outline: 'none',
+                  fontFamily: 'Satoshi, sans-serif', outline: 'none',
                   background: C.white, boxSizing: 'border-box',
                 }}
               />
@@ -2294,7 +2293,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
             <select
               value={newForm.type}
               onChange={e => setNewForm(f => ({ ...f, type: e.target.value }))}
-              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', background: C.white }}
             >
               {GROUP_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
@@ -2302,7 +2301,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Lead (optional)</label>
             <select value={newForm.lead} onChange={e => setNewForm(f => ({ ...f, lead: e.target.value }))}
-              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}>
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', background: C.white }}>
               <option value="">— Unassigned —</option>
               {leadInvites.filter(i => i.status === 'accepted').map(i => (
                 <option key={i.id} value={i.name || i.email}>{i.name || i.email}{i.groups?.length > 0 ? ` (${i.groups.join(', ')})` : ''}</option>
@@ -2339,7 +2338,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
             <select
               value={editGroup.type || 'Running Club'}
               onChange={e => setEditGroup(g => ({ ...g, type: e.target.value }))}
-              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', background: C.white }}
             >
               {GROUP_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
@@ -2347,7 +2346,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Lead</label>
             <select value={editGroup.lead || ''} onChange={e => setEditGroup(g => ({ ...g, lead: e.target.value }))}
-              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }}>
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', background: C.white }}>
               <option value="">— Unassigned —</option>
               {leadInvites.filter(i => i.status === 'accepted').map(i => (
                 <option key={i.id} value={i.name || i.email}>{i.name || i.email}</option>
@@ -2395,7 +2394,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
                   <span style={{ fontSize: 12, color: C.muted, marginLeft: 10 }}>{g.type}</span>
                 </div>
                 <button onClick={() => setGroups(gs => gs.map(x => x.id === g.id ? { ...x, archived: false } : x))}
-                  style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'Inter', color: C.text }}>
+                  style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 12px', fontSize: 12, cursor: 'pointer', fontFamily: 'Satoshi', color: C.text }}>
                   Restore
                 </button>
               </div>
@@ -2433,10 +2432,10 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
                     sfx.click();
                     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                     setLeadInvites(prev => prev.map(i => i.id === inv.id ? { ...i, status: 'sent', sentAt: today } : i));
-                  }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.text, fontFamily: 'Inter', flexShrink: 0 }}>Resend</button>
+                  }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.text, fontFamily: 'Satoshi', flexShrink: 0 }}>Resend</button>
                 )}
                 {inv.status !== 'accepted' && (
-                  <button onClick={() => { sfx.dismiss(); setLeadInvites(prev => prev.filter(i => i.id !== inv.id)); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.danger, fontFamily: 'Inter', flexShrink: 0 }}>Revoke</button>
+                  <button onClick={() => { sfx.dismiss(); setLeadInvites(prev => prev.filter(i => i.id !== inv.id)); }} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: C.danger, fontFamily: 'Satoshi', flexShrink: 0 }}>Revoke</button>
                 )}
               </div>
             );
@@ -2486,7 +2485,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
     return matchesSearch && matchesGroup;
   });
 
-  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white, boxSizing: 'border-box' };
+  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', background: C.white, boxSizing: 'border-box' };
 
   function handleAddRunner() {
     if (!addForm.firstName.trim()) return;
@@ -2609,7 +2608,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
               {
                 n: 1, icon: '⬇', title: 'Download the template',
                 body: 'Start with our pre-formatted CSV template. It has the correct column headings already set up: name, group, and year.',
-                action: <button onClick={() => { downloadCSVTemplate(); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif', color: C.text }}>⬇ Download CSV Template</button>,
+                action: <button onClick={() => { downloadCSVTemplate(); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: '7px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Satoshi, sans-serif', color: C.text }}>⬇ Download CSV Template</button>,
               },
               {
                 n: 2, icon: '✏️', title: 'Fill in your runners',
@@ -2626,7 +2625,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
               {
                 n: 3, icon: '⬆', title: 'Upload your file',
                 body: 'Save the file as CSV, then upload it below. You\'ll see a preview before anything is imported — you can review and confirm.',
-                action: <button onClick={() => { setShowCSVGuide(false); csvRef.current?.click(); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.blue, color: C.white, border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }}>⬆ Choose CSV file</button>,
+                action: <button onClick={() => { setShowCSVGuide(false); csvRef.current?.click(); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.blue, color: C.white, border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Satoshi, sans-serif', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }}>⬆ Choose CSV file</button>,
               },
             ].map(step => (
               <div key={step.n} style={{ display: 'flex', gap: 14, marginBottom: 20 }}>
@@ -2698,7 +2697,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
           <p style={{ color: C.muted, marginTop: 4, fontSize: 14 }}>
             {filtered.length} runner{filtered.length !== 1 ? 's' : ''}{groupFilter ? ` · ` : ` registered`}
             {groupFilter && (
-              <button onClick={() => setGroupFilter(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.orange, fontFamily: 'Inter', fontSize: 13, padding: 0 }}>
+              <button onClick={() => setGroupFilter(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.orange, fontFamily: 'Satoshi', fontSize: 13, padding: 0 }}>
                 Clear filter
               </button>
             )}
@@ -2722,7 +2721,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
             style={{
               width: '100%', padding: '10px 36px 10px 14px', borderRadius: 12,
               border: `1.5px solid ${C.border}`, fontSize: 14,
-              fontFamily: 'Inter, sans-serif', background: C.bg, outline: 'none',
+              fontFamily: 'Satoshi, sans-serif', background: C.bg, outline: 'none',
               boxSizing: 'border-box',
             }}
           />
@@ -2733,7 +2732,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                 position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
                 background: C.muted, color: '#fff', border: 'none', borderRadius: '50%',
                 width: 20, height: 20, cursor: 'pointer', fontSize: 12, lineHeight: '20px',
-                textAlign: 'center', padding: 0, fontFamily: 'Inter, sans-serif',
+                textAlign: 'center', padding: 0, fontFamily: 'Satoshi, sans-serif',
               }}
             >✕</button>
           )}
@@ -2762,7 +2761,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <button onClick={e => { sfx.click(); openEdit(r, e); }}
                             style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8,
-                              padding: '3px 10px', fontSize: 11, fontWeight: 600, color: C.muted, cursor: 'pointer', fontFamily: 'Inter' }}>
+                              padding: '3px 10px', fontSize: 11, fontWeight: 600, color: C.muted, cursor: 'pointer', fontFamily: 'Satoshi' }}>
                             Edit
                           </button>
                           <span style={{
@@ -2865,13 +2864,13 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
               <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
                 autoCapitalize="words"
                 style={{ width:'100%', padding:'11px 14px', borderRadius:10, border:`1.5px solid ${C.border}`,
-                  fontSize:14, fontFamily:'Inter, sans-serif', outline:'none', background:C.white, boxSizing:'border-box' }} />
+                  fontSize:14, fontFamily:'Satoshi, sans-serif', outline:'none', background:C.white, boxSizing:'border-box' }} />
             </div>
             <div style={{ marginBottom:24 }}>
               <label style={{ display:'block', fontSize:13, fontWeight:600, marginBottom:6 }}>Club / Group</label>
               <select value={editForm.group} onChange={e => setEditForm(f => ({ ...f, group: e.target.value }))}
                 style={{ width:'100%', padding:'11px 14px', borderRadius:10, border:`1.5px solid ${C.border}`,
-                  fontSize:14, fontFamily:'Inter, sans-serif', background:C.white, boxSizing:'border-box' }}>
+                  fontSize:14, fontFamily:'Satoshi, sans-serif', background:C.white, boxSizing:'border-box' }}>
                 {GROUPS.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
               </select>
             </div>
@@ -3030,7 +3029,7 @@ function CreateEventPage({ setPage, runners }) {
       <div style={{ marginBottom: 28 }}>
         <button
           onClick={() => { sfx.click(); setPage('events'); }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter', marginBottom: 8 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Satoshi', marginBottom: 8 }}
         >
           ← Back to Events
         </button>
@@ -3073,7 +3072,7 @@ function CreateEventPage({ setPage, runners }) {
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Group</label>
               <select value={form.group} onChange={e => setForm({ ...form, group: e.target.value })}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white }}>
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi, sans-serif', background: C.white }}>
                 {GROUPS.filter(g => !g.archived).map(g => <option key={g.id}>{g.name}</option>)}
               </select>
             </div>
@@ -3082,7 +3081,7 @@ function CreateEventPage({ setPage, runners }) {
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Format</label>
               <select value={form.format} onChange={e => setForm({ ...form, format: e.target.value })}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white }}>
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi, sans-serif', background: C.white }}>
                 {['Pursuit', 'Scratch', 'Relay'].map(o => <option key={o}>{o}</option>)}
               </select>
               {FORMAT_HINTS[form.format] && (
@@ -3099,7 +3098,7 @@ function CreateEventPage({ setPage, runners }) {
                 if (e.target.value === '__custom__') { setShowCustomCourse(true); }
                 else { setForm({ ...form, course: e.target.value }); setShowCustomCourse(false); }
               }}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white }}>
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi, sans-serif', background: C.white }}>
                 {allCourses.map(o => <option key={o}>{o}</option>)}
                 <option value="__custom__">+ Add custom course…</option>
               </select>
@@ -3107,7 +3106,7 @@ function CreateEventPage({ setPage, runners }) {
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                   <input value={customCourseInput} onChange={e => setCustomCourseInput(e.target.value)}
                     placeholder="e.g. 3km Park Route" autoCapitalize="words"
-                    style={{ flex: 1, padding: '8px 12px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', background: C.white }} />
+                    style={{ flex: 1, padding: '8px 12px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', background: C.white }} />
                   <Button size="sm" disabled={!customCourseInput.trim()} onClick={() => {
                     const name = customCourseInput.trim();
                     setCustomCourses(prev => [...prev, name]);
@@ -3128,7 +3127,7 @@ function CreateEventPage({ setPage, runners }) {
               <div key={f.key} style={{ marginBottom: 16 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
                 <input type={f.type} value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter, sans-serif', background: C.white }} />
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi, sans-serif', background: C.white }} />
               </div>
             ))}
 
@@ -3467,7 +3466,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                   style={{
                     background: C.success, color: C.white, border: 'none',
                     borderRadius: 12, padding: '11px 22px', fontSize: 15, fontWeight: 800,
-                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                    cursor: 'pointer', fontFamily: 'Satoshi, sans-serif',
                     boxShadow: '0 4px 14px rgba(22,163,74,0.35)',
                     letterSpacing: '-0.01em', flex: 1,
                   }}
@@ -3522,7 +3521,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                     onChange={e => setLateForm({ name: e.target.value })}
                     placeholder="e.g. Mia Robinson"
                     autoCapitalize="words"
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Inter', marginBottom: 16, boxSizing: 'border-box' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: `1.5px solid ${C.border}`, fontSize: 14, fontFamily: 'Satoshi', marginBottom: 16, boxSizing: 'border-box' }}
                     autoFocus
                   />
                   <div style={{ display: 'flex', gap: 10 }}>
@@ -3653,7 +3652,7 @@ function RunEventPage({ setPage, runners, setRunners, setRaceResult }) {
                 background: tapCount >= presentCount ? '#ccc' : C.orange,
                 color: C.white, fontSize: 22, fontWeight: 800, border: 'none',
                 cursor: tapCount >= presentCount ? 'default' : 'pointer',
-                fontFamily: 'Inter, sans-serif', marginBottom: 16,
+                fontFamily: 'Satoshi, sans-serif', marginBottom: 16,
                 animation: tapping ? 'flash 0.3s ease' : undefined,
                 transition: 'background 0.15s',
               }}
@@ -4135,7 +4134,7 @@ function ResultsPage({ setPage, runners, setRunners, raceResult }) {
                   <button onClick={() => setEditMode(false)} style={{ background: C.orange, border: 'none', borderRadius: 8, padding: '4px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer', color: C.white }}>Done</button>
                 </div>
               ) : (
-                <button onClick={startEdit} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 12px', fontSize: 12, cursor: 'pointer', color: C.muted, fontFamily: 'Inter, sans-serif' }}>
+                <button onClick={startEdit} style={{ background: 'none', border: `1px solid ${C.border}`, borderRadius: 8, padding: '4px 12px', fontSize: 12, cursor: 'pointer', color: C.muted, fontFamily: 'Satoshi, sans-serif' }}>
                   ✏️ Edit Order
                 </button>
               )
@@ -4328,7 +4327,7 @@ function RunnerProfilePage({ runner, setPage, runners }) {
     <div className="fade-in">
       <button
         onClick={() => { sfx.click(); setPage('members'); }}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Inter', marginBottom: 16 }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 14, fontFamily: 'Satoshi', marginBottom: 16 }}
       >
         ← Back to Members
       </button>
@@ -4530,7 +4529,7 @@ function LeaderboardPage({ runners }) {
             onChange={e => setGroup(e.target.value)}
             style={{
               padding: '8px 12px', borderRadius: 999, border: `1.5px solid ${C.border}`,
-              fontSize: 13, fontFamily: 'Inter, sans-serif', background: C.white, cursor: 'pointer',
+              fontSize: 13, fontFamily: 'Satoshi, sans-serif', background: C.white, cursor: 'pointer',
             }}
           >
             {groups.map(g => <option key={g}>{g}</option>)}
@@ -4640,7 +4639,7 @@ function ToastContainer({ toasts }) {
         <div key={t.id} style={{
           background: t.type === 'error' ? C.danger : '#1a1a1a',
           color: '#fff', borderRadius: 12, padding: '11px 16px',
-          fontSize: 13, fontWeight: 600, fontFamily: 'Inter, sans-serif',
+          fontSize: 13, fontWeight: 600, fontFamily: 'Satoshi, sans-serif',
           boxShadow: '0 4px 20px rgba(0,0,0,0.22)',
           animation: 'slideInToast 0.22s ease-out',
           display: 'flex', alignItems: 'center', gap: 8, maxWidth: 280,
