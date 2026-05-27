@@ -369,16 +369,24 @@ const sfx = (() => {
   };
 })();
 
-// ── Nav icons (Lucide SVG paths, inline — no CDN needed) ─────────────────────
-const NAV_ICON_PATHS = {
-  dashboard:   <><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></>,
-  groups:      <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
-  members:     <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
-  events:      <><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></>,
-  leaderboard: <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></>,
-  orgs:        <><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></>,
-  billing:     <><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></>,
-  runevent:    <><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></>,
+// ── Icons (Lucide SVG paths, inline — no CDN needed) ─────────────────────────
+const ICONS = {
+  // Navigation
+  dashboard:    <><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></>,
+  groups:       <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+  members:      <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+  events:       <><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></>,
+  leaderboard:  <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></>,
+  orgs:         <><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></>,
+  billing:      <><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></>,
+  runevent:     <><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></>,
+  // General UI
+  flame:        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/>,
+  star:         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
+  mail:         <><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>,
+  pound:        <><path d="M18 7c0-5.333-8-5.333-8 0"/><path d="M10 7v14"/><path d="M6 21h12"/><path d="M6 13h10"/></>,
+  'check-circle': <><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></>,
+  clock:        <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
 };
 
 function NavIcon({ name, size = 18, style = {} }) {
@@ -386,7 +394,7 @@ function NavIcon({ name, size = 18, style = {} }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
       style={{ display: 'block', flexShrink: 0, ...style }}>
-      {NAV_ICON_PATHS[name] || null}
+      {ICONS[name] || null}
     </svg>
   );
 }
@@ -486,7 +494,10 @@ function StatCard({ label, value, sub, color, icon, onClick }) {
       <div style={{ padding: '18px 20px 16px', background: bgTint }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
           <div style={{ color: C.muted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', lineHeight: 1.3 }}>{label}</div>
-          {icon && <span style={{ fontSize: 16, opacity: 0.7 }}>{icon}</span>}
+          {icon && (ICONS[icon]
+            ? <NavIcon name={icon} size={16} style={{ opacity: 0.6, color: color || C.muted }} />
+            : <span style={{ fontSize: 16, opacity: 0.7 }}>{icon}</span>
+          )}
         </div>
         <div style={{ fontSize: 28, fontWeight: 800, color: color || C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{displayed}</div>
         {sub && (
@@ -508,7 +519,7 @@ function EmptyState({ icon, heading, sub, action }) {
         width: 64, height: 64, borderRadius: '50%', background: C.bgSubtle,
         border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center',
         justifyContent: 'center', margin: '0 auto 16px', fontSize: 28,
-      }}>{icon}</div>
+      }}>{ICONS[icon] ? <NavIcon name={icon} size={26} style={{ color: C.muted }} /> : icon}</div>
       <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6, letterSpacing: '-0.01em' }}>{heading}</div>
       {sub && <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, maxWidth: 260, margin: '0 auto' }}>{sub}</div>}
       {action && <div style={{ marginTop: 16 }}>{action}</div>}
@@ -1085,10 +1096,10 @@ function SuperAdminDashboard({ setPage }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Total Organisations" value="24" sub="+3 this month" icon="🏫" onClick={() => { sfx.click(); setPage('organisations'); }} />
-        <StatCard label="Total Runners" value="5,842" sub="+218 this month" color={C.orange} icon="🏃" onClick={() => { sfx.click(); setPage('organisations'); }} />
-        <StatCard label="Total Events" value="486" sub="All time" icon="📅" onClick={() => { sfx.click(); setPage('organisations'); }} />
-        <StatCard label="Monthly Revenue" value="£1,176" sub="+£205 this month" color={C.success} icon="💷" onClick={() => { sfx.click(); setPage('billing'); }} />
+        <StatCard label="Total Organisations" value="24" sub="+3 this month" icon="orgs" onClick={() => { sfx.click(); setPage('organisations'); }} />
+        <StatCard label="Total Runners" value="5,842" sub="+218 this month" color={C.orange} icon="members" onClick={() => { sfx.click(); setPage('organisations'); }} />
+        <StatCard label="Total Events" value="486" sub="All time" icon="events" onClick={() => { sfx.click(); setPage('organisations'); }} />
+        <StatCard label="Monthly Revenue" value="£1,176" sub="+£205 this month" color={C.success} icon="pound" onClick={() => { sfx.click(); setPage('billing'); }} />
       </div>
 
       {/* Chart */}
@@ -1437,7 +1448,7 @@ function OrganisationsPage({ setPage }) {
             </div>
           ))}
           {EVENTS.filter(e => e.status === 'completed').length === 0 && (
-            <EmptyState icon="📅" heading="No events yet" sub="Completed events will appear here." />
+            <EmptyState icon="events" heading="No events yet" sub="Completed events will appear here." />
           )}
         </Card>
 
@@ -1577,7 +1588,7 @@ function OrganisationsPage({ setPage }) {
       {tab === 'invites' && (
         <Card>
           {invites.length === 0 && (
-            <EmptyState icon="✉️" heading="No invitations yet" sub='Use "Invite Admin" to onboard a new school.' />
+            <EmptyState icon="mail" heading="No invitations yet" sub='Use "Invite Admin" to onboard a new school.' />
           )}
           {invites.map(inv => {
             const s = inviteStatusBadge(inv.status);
@@ -1661,9 +1672,9 @@ function BillingPage() {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Monthly Revenue" value="£205" sub="4 active plans" color={C.success} icon="💷" />
-        <StatCard label="Active Licences" value="4" sub="2 Pro, 2 Standard" icon="✅" />
-        <StatCard label="Trials" value="1" sub="Expires 1 Jun" color={C.warning} icon="⏳" />
+        <StatCard label="Monthly Revenue" value="£205" sub="4 active plans" color={C.success} icon="pound" />
+        <StatCard label="Active Licences" value="4" sub="2 Pro, 2 Standard" icon="check-circle" />
+        <StatCard label="Trials" value="1" sub="Expires 1 Jun" color={C.warning} icon="clock" />
       </div>
 
       <Card style={{ marginBottom: 24 }}>
@@ -1792,10 +1803,10 @@ function SchoolAdminDashboard({ setPage, runners }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Total Runners" value={String(liveRunners.length)} sub="+8 this term" color={C.orange} icon="🏃" onClick={() => { sfx.click(); setPage('members'); }} />
-        <StatCard label="Active Groups" value="4" sub="All active" icon="👥" onClick={() => { sfx.click(); setPage('groups'); }} />
-        <StatCard label="Events This Term" value="18" sub="6 remaining" icon="📅" onClick={() => { sfx.click(); setPage('events'); }} />
-        <StatCard label="Series Leader" value={leaderName} sub={`${leader?.points?.toLocaleString() ?? '—'} pts`} color={C.purple} icon="🏆" onClick={() => { sfx.click(); setPage('leaderboard'); }} />
+        <StatCard label="Total Runners" value={String(liveRunners.length)} sub="+8 this term" color={C.orange} icon="members" onClick={() => { sfx.click(); setPage('members'); }} />
+        <StatCard label="Active Groups" value="4" sub="All active" icon="groups" onClick={() => { sfx.click(); setPage('groups'); }} />
+        <StatCard label="Events This Term" value="18" sub="6 remaining" icon="events" onClick={() => { sfx.click(); setPage('events'); }} />
+        <StatCard label="Series Leader" value={leaderName} sub={`${leader?.points?.toLocaleString() ?? '—'} pts`} color={C.purple} icon="leaderboard" onClick={() => { sfx.click(); setPage('leaderboard'); }} />
       </div>
 
       {/* Groups grid */}
@@ -1839,7 +1850,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
             <div style={{ fontWeight: 700, fontSize: 16 }}>Upcoming Events</div>
             <Button variant="outline" size="sm" onClick={() => { sfx.click(); setPage('events'); }}>View all</Button>
           </div>
-          {upcomingEvents.length === 0 && <EmptyState icon="📅" heading="No upcoming events" sub="Create an event to get started." />}
+          {upcomingEvents.length === 0 && <EmptyState icon="events" heading="No upcoming events" sub="Create an event to get started." />}
           {upcomingEvents.map(ev => (
             <div key={ev.id} style={{ padding: '12px 0', borderBottom: `1px solid ${C.border}` }}>
               <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{ev.name}</div>
@@ -1857,7 +1868,7 @@ function SchoolAdminDashboard({ setPage, runners }) {
             <div style={{ fontWeight: 700, fontSize: 16 }}>Recent Results</div>
             <Button variant="outline" size="sm" onClick={() => { sfx.click(); setPage('events'); }}>View all</Button>
           </div>
-          {recentEvents.length === 0 && <EmptyState icon="🏁" heading="No results yet" sub="Completed events will show here." />}
+          {recentEvents.length === 0 && <EmptyState icon="runevent" heading="No results yet" sub="Completed events will show here." />}
           {recentEvents.map(ev => (
             <div key={ev.id} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -1931,10 +1942,10 @@ function LeadDashboard({ setPage, user, setSelectedRunner }) {
         gap: isMobile ? 10 : 16,
         marginBottom: isMobile ? 16 : 28,
       }}>
-        <StatCard label="Runners" value={String(myRunners.length)} sub="In your group" color={C.orange} icon="🏃" onClick={() => { sfx.click(); setPage('members'); }} />
-        <StatCard label="Upcoming" value={String(upcoming.length)} sub="Events scheduled" icon="📅" onClick={() => { sfx.click(); setPage('events'); }} />
-        <StatCard label="Streak Leader" value={streakLeader ? streakLeader.name.split(' ')[0] : '—'} sub={`${streakLeader?.streak ?? 0} events in a row`} color={C.success} icon="🔥" onClick={() => { sfx.click(); setSelectedRunner(streakLeader); setPage('runnerprofile'); }} />
-        <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} icon="⭐" onClick={() => { sfx.click(); setSelectedRunner(mostImproved); setPage('runnerprofile'); }} />
+        <StatCard label="Runners" value={String(myRunners.length)} sub="In your group" color={C.orange} icon="members" onClick={() => { sfx.click(); setPage('members'); }} />
+        <StatCard label="Upcoming" value={String(upcoming.length)} sub="Events scheduled" icon="events" onClick={() => { sfx.click(); setPage('events'); }} />
+        <StatCard label="Streak Leader" value={streakLeader ? streakLeader.name.split(' ')[0] : '—'} sub={`${streakLeader?.streak ?? 0} events in a row`} color={C.success} icon="flame" onClick={() => { sfx.click(); setSelectedRunner(streakLeader); setPage('runnerprofile'); }} />
+        <StatCard label="Top Level" value={mostImproved ? `L${mostImproved.level}` : '—'} sub={mostImproved?.name?.split(' ')[0] ?? ''} color={C.purple} icon="star" onClick={() => { sfx.click(); setSelectedRunner(mostImproved); setPage('runnerprofile'); }} />
       </div>
 
       <Card style={{ background: C.orangeGradient, color: C.white, marginBottom: isMobile ? 16 : 28, border: 'none', boxShadow: '0 4px 20px rgba(232,82,10,0.28)' }}>
@@ -2436,7 +2447,7 @@ function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
         </div>
         <Card style={{ padding: 0 }}>
           {leadInvites.length === 0 && (
-            <EmptyState icon="👤" heading="No leads invited yet" sub='Use "Invite Lead" to add a group lead.' />
+            <EmptyState icon="members" heading="No leads invited yet" sub='Use "Invite Lead" to add a group lead.' />
           )}
           {leadInvites.map(inv => {
             const s = inviteStatusBadge(inv.status);
@@ -2958,7 +2969,7 @@ function EventsPage({ setPage }) {
             <div style={{ fontWeight: 700, fontSize: 15 }}>Upcoming</div>
             <Badge label={upcoming.length} bg={C.blueLight} color={C.blue} />
           </div>
-          {upcoming.length === 0 && <EmptyState icon="📅" heading="No upcoming events" sub="Create an event to get started." />}
+          {upcoming.length === 0 && <EmptyState icon="events" heading="No upcoming events" sub="Create an event to get started." />}
           {upcoming.map(ev => <EventCard key={ev.id} ev={ev} />)}
         </Card>
 
@@ -2967,7 +2978,7 @@ function EventsPage({ setPage }) {
             <div style={{ fontWeight: 700, fontSize: 15 }}>Recent Results</div>
             <Badge label={completed.length} bg={C.bgSubtle} color={C.muted} />
           </div>
-          {completed.length === 0 && <EmptyState icon="🏁" heading="No completed events yet" sub="Results will appear here after your first race." />}
+          {completed.length === 0 && <EmptyState icon="runevent" heading="No completed events yet" sub="Results will appear here after your first race." />}
           {completed.map(ev => <EventCard key={ev.id} ev={ev} />)}
         </Card>
       </div>
@@ -4420,10 +4431,10 @@ function RunnerProfilePage({ runner, setPage, runners }) {
 
       {/* Stats */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <StatCard label="Personal Best" value={runner.pb} sub="Fastest time" icon="⏱" />
-        <StatCard label="Events Run" value={String(Math.max(runner.times?.length || 0, Math.floor(runner.points / 80)))} sub="All time" icon="📅" />
-        <StatCard label="Current Streak" value={runner.streak} sub="events" color={C.orange} icon="🔥" />
-        <StatCard label="Total Points" value={runner.points.toLocaleString()} sub={CURRENT_TERM} color={C.purple} icon="⭐" />
+        <StatCard label="Personal Best" value={runner.pb} sub="Fastest time" icon="clock" />
+        <StatCard label="Events Run" value={String(Math.max(runner.times?.length || 0, Math.floor(runner.points / 80)))} sub="All time" icon="events" />
+        <StatCard label="Current Streak" value={runner.streak} sub="events" color={C.orange} icon="flame" />
+        <StatCard label="Total Points" value={runner.points.toLocaleString()} sub={CURRENT_TERM} color={C.purple} icon="star" />
       </div>
 
       {/* Level chart */}
