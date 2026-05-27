@@ -6,13 +6,16 @@
   <title>Carrot Chase</title>
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700,800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Satoshi', sans-serif; background: #FAF6F1; color: #1a1a1a; line-height: 1.5; -webkit-font-smoothing: antialiased; }
-    h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.025em; }
+    h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.02em; }
     p { line-height: 1.6; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #FAF6F1; }
@@ -382,7 +385,7 @@ function Card({ children, style, className, onClick }) {
 function Button({ children, onClick, variant='primary', size='md', disabled, style }) {
   const base = {
     borderRadius: 999, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
-    fontFamily: 'Satoshi, sans-serif', fontWeight: 600, transition: 'all 0.15s',
+    fontFamily: 'Satoshi, sans-serif', fontWeight: 700, transition: 'all 0.15s',
     display: 'inline-flex', alignItems: 'center', gap: 6, opacity: disabled ? 0.5 : 1,
   };
   const sizes = {
@@ -2614,7 +2617,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                 n: 2, icon: '✏️', title: 'Fill in your runners',
                 body: (<>
                   Open the file in Excel, Google Sheets, or Numbers and add one runner per row:
-                  <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', marginTop: 8, fontFamily: 'monospace', fontSize: 12, lineHeight: 1.8 }}>
+                  <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', marginTop: 8, fontFamily: "'JetBrains Mono', monospace", fontSize: 12, lineHeight: 1.8 }}>
                     <div style={{ color: C.muted, fontWeight: 700 }}>name, group, year</div>
                     <div>Emma Johnson, Year 5 Running Club, Year 5</div>
                     <div>Oliver Smith, Year 6 Running Club, Year 6</div>
@@ -2772,7 +2775,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                       </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: 12, cursor: 'pointer' }}
                     onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}>
-                    <div><span style={{ color: C.muted }}>ID </span><span style={{ fontFamily: 'monospace' }}>{r.id}</span></div>
+                    <div><span style={{ color: C.muted }}>ID </span><span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{r.id}</span></div>
                     <div><span style={{ color: C.muted }}>PB </span><span style={{ fontWeight: 600 }}>{r.pb}</span></div>
                     <div><span style={{ color: C.muted }}>Streak </span><span style={{ color: C.orange, fontWeight: 700 }}>{r.streak}<span className={r.streak >= 10 ? 'streak-flame' : ''}>🔥</span></span></div>
                     <div><span style={{ color: C.muted }}>Points </span><span style={{ fontWeight: 700 }}>{r.points.toLocaleString()}</span></div>
@@ -2806,7 +2809,7 @@ function MembersPage({ setPage, setSelectedRunner, groupFilter, setGroupFilter, 
                       style={{ borderBottom: `1px solid ${C.border}`, cursor: 'pointer' }}
                       onClick={() => { sfx.click(); setSelectedRunner(r); setPage('runnerprofile'); }}
                     >
-                      <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: 12, color: C.muted }}>{r.id}</td>
+                      <td style={{ padding: '12px', fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: C.muted }}>{r.id}</td>
                       <td style={{ padding: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{
@@ -4352,7 +4355,7 @@ function RunnerProfilePage({ runner, setPage, runners }) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ fontSize: 20, fontWeight: 800, color: C.white, marginBottom: 2, lineHeight: 1.2 }}>{runner.name}</h1>
-            <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.65)', marginBottom: 10 }}>{runner.id}</div>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'rgba(255,255,255,0.65)', marginBottom: 10 }}>{runner.id}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <div style={{ background: 'rgba(255,255,255,0.22)', border: '1.5px solid rgba(255,255,255,0.3)', color: C.white, borderRadius: 999, padding: '3px 11px', fontSize: 13, fontWeight: 700 }}>
                 Level {runner.level}
