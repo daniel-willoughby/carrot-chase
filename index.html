@@ -1494,98 +1494,40 @@ const ORG_CRESTS = {
   </>,
 
   // ─── 6. Hillside Business Group ───────────────────────────────
-  // Castle turret | Per fess azure & sable | Sun rising over a castle
+  // Aggressively dull corporate identity: abstract hill mark + sans-serif
+  // wordmark + management-consultancy tagline. No crown, no shield, no motto.
   6: (cid) => <>
-    {/* Castle turret crown — battlement silhouette */}
+    {/* Soft card backdrop, just barely there */}
+    <rect x="6" y="16" width="88" height="100" rx="4" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="0.6"/>
+
+    {/* Abstract "ascending hills" mark — the obligatory growth metaphor */}
     <g>
-      <rect x="34" y="6" width="32" height="8" fill="#4B5563"/>
-      <rect x="34" y="2" width="4" height="4" fill="#4B5563"/>
-      <rect x="42" y="2" width="4" height="4" fill="#4B5563"/>
-      <rect x="48" y="2" width="4" height="4" fill="#4B5563"/>
-      <rect x="54" y="2" width="4" height="4" fill="#4B5563"/>
-      <rect x="62" y="2" width="4" height="4" fill="#4B5563"/>
-      <rect x="48" y="9" width="4" height="4" fill="#1F2937"/>
-      <line x1="34" y1="11" x2="66" y2="11" stroke="#1F2937" strokeWidth="0.5" opacity="0.6"/>
+      {/* Far hill (lightest) */}
+      <path d="M18,52 L30,34 L42,52 Z" fill="#94A3B8"/>
+      {/* Mid hill */}
+      <path d="M30,52 L46,28 L62,52 Z" fill="#475569"/>
+      {/* Near hill (deepest) */}
+      <path d="M46,52 L62,24 L78,52 Z" fill="#1E3A8A"/>
+      {/* Sun / accent dot — the one splash of colour every consultancy allows itself */}
+      <circle cx="70" cy="30" r="3.5" fill="#F59E0B"/>
+      {/* Baseline */}
+      <line x1="14" y1="52" x2="86" y2="52" stroke="#CBD5E1" strokeWidth="0.6"/>
     </g>
 
-    <defs>
-      <clipPath id={`${cid}-s`}><path d={SHIELD}/></clipPath>
-    </defs>
-    <path d={SHIELD} fill="#1F2937"/>
-    <g clipPath={`url(#${cid}-s)`}>
-      {/* Sky top half with embattled fess line */}
-      <path d="M12,14 L88,14 L88,52 L82,52 L82,56 L76,56 L76,52 L70,52 L70,56 L64,56 L64,52 L58,52 L58,56 L52,56 L52,52 L46,52 L46,56 L40,56 L40,52 L34,52 L34,56 L28,56 L28,52 L22,52 L22,56 L16,56 L16,52 L12,52 Z" fill="#60A5FA"/>
+    {/* Wordmark */}
+    <text x="50" y="74" textAnchor="middle" fill="#0F172A"
+      fontSize="11" fontWeight="700" fontFamily="Helvetica, Arial, sans-serif" letterSpacing="1.4">HILLSIDE</text>
+    <text x="50" y="85" textAnchor="middle" fill="#64748B"
+      fontSize="5.5" fontWeight="500" fontFamily="Helvetica, Arial, sans-serif" letterSpacing="4">GROUP</text>
 
-      {/* Sun rising */}
-      <g>
-        <circle cx="50" cy="36" r="9" fill="#FBBF24"/>
-        <g stroke="#FBBF24" strokeWidth="1.3" strokeLinecap="round">
-          <line x1="50" y1="20" x2="50" y2="23"/>
-          <line x1="38" y1="26" x2="40" y2="28"/>
-          <line x1="60" y1="28" x2="62" y2="26"/>
-          <line x1="33" y1="36" x2="36" y2="36"/>
-          <line x1="64" y1="36" x2="67" y2="36"/>
-          <line x1="40" y1="44" x2="42" y2="46"/>
-          <line x1="60" y1="44" x2="58" y2="46"/>
-        </g>
-        {/* Sun face hint */}
-        <circle cx="46" cy="35" r="0.8" fill="#92400E"/>
-        <circle cx="54" cy="35" r="0.8" fill="#92400E"/>
-        <path d="M46,39 Q50,42 54,39" stroke="#92400E" strokeWidth="0.7" fill="none"/>
-      </g>
+    {/* Thin divider — extremely corporate */}
+    <line x1="38" y1="92" x2="62" y2="92" stroke="#CBD5E1" strokeWidth="0.6"/>
 
-      {/* Castle */}
-      <g>
-        {/* Curtain wall */}
-        <rect x="24" y="80" width="52" height="32" fill="#9CA3AF"/>
-        {/* Battlements on curtain wall */}
-        <rect x="24" y="76" width="4" height="4" fill="#9CA3AF"/>
-        <rect x="32" y="76" width="4" height="4" fill="#9CA3AF"/>
-        <rect x="40" y="76" width="4" height="4" fill="#9CA3AF"/>
-        <rect x="48" y="76" width="4" height="4" fill="#9CA3AF"/>
-        <rect x="56" y="76" width="4" height="4" fill="#9CA3AF"/>
-        <rect x="64" y="76" width="4" height="4" fill="#9CA3AF"/>
-        <rect x="72" y="76" width="4" height="4" fill="#9CA3AF"/>
-
-        {/* Left tower */}
-        <rect x="20" y="68" width="14" height="44" fill="#D1D5DB"/>
-        <rect x="20" y="64" width="3" height="4" fill="#D1D5DB"/>
-        <rect x="25" y="64" width="3" height="4" fill="#D1D5DB"/>
-        <rect x="30" y="64" width="3" height="4" fill="#D1D5DB"/>
-        {/* Left tower conical roof */}
-        <path d="M20,64 L27,55 L34,64 Z" fill="#7F1D1D"/>
-        <circle cx="27" cy="54" r="0.8" fill="#FBBF24"/>
-
-        {/* Right tower */}
-        <rect x="66" y="68" width="14" height="44" fill="#D1D5DB"/>
-        <rect x="66" y="64" width="3" height="4" fill="#D1D5DB"/>
-        <rect x="71" y="64" width="3" height="4" fill="#D1D5DB"/>
-        <rect x="76" y="64" width="3" height="4" fill="#D1D5DB"/>
-        {/* Right tower conical roof */}
-        <path d="M66,64 L73,55 L80,64 Z" fill="#7F1D1D"/>
-        <circle cx="73" cy="54" r="0.8" fill="#FBBF24"/>
-
-        {/* Tower windows */}
-        <rect x="25" y="74" width="3" height="5" rx="0.5" fill="#1F2937"/>
-        <rect x="71" y="74" width="3" height="5" rx="0.5" fill="#1F2937"/>
-        <rect x="25" y="86" width="3" height="5" rx="0.5" fill="#1F2937"/>
-        <rect x="71" y="86" width="3" height="5" rx="0.5" fill="#1F2937"/>
-
-        {/* Gateway (arched) */}
-        <path d="M44,112 L44,94 Q44,89 50,89 Q56,89 56,94 L56,112 Z" fill="#1F2937"/>
-        <path d="M45,94 Q45,90 50,90 Q55,90 55,94" fill="none" stroke="#FBBF24" strokeWidth="0.4"/>
-        {/* Portcullis bars */}
-        <line x1="46" y1="94" x2="46" y2="106" stroke="#6B7280" strokeWidth="0.4"/>
-        <line x1="50" y1="93" x2="50" y2="106" stroke="#6B7280" strokeWidth="0.4"/>
-        <line x1="54" y1="94" x2="54" y2="106" stroke="#6B7280" strokeWidth="0.4"/>
-        <line x1="46" y1="98" x2="54" y2="98" stroke="#6B7280" strokeWidth="0.4"/>
-        <line x1="46" y1="102" x2="54" y2="102" stroke="#6B7280" strokeWidth="0.4"/>
-      </g>
-    </g>
-    <path d={SHIELD} fill="none" stroke="#0F172A" strokeWidth="2.5"/>
-    <path d={SHIELD_INNER} fill="none" stroke="#E5E7EB" strokeWidth="0.8" opacity="0.4"/>
-
-    <MottoBanner text="HILLSIDE GROUP" color="#D1D5DB" dark="#4B5563"/>
+    {/* Tagline */}
+    <text x="50" y="102" textAnchor="middle" fill="#94A3B8"
+      fontSize="3.6" fontWeight="400" fontFamily="Helvetica, Arial, sans-serif" letterSpacing="1">STRATEGIC SOLUTIONS</text>
+    <text x="50" y="108" textAnchor="middle" fill="#94A3B8"
+      fontSize="3.6" fontWeight="400" fontFamily="Helvetica, Arial, sans-serif" letterSpacing="1">FOR TOMORROW</text>
   </>,
 };
 
