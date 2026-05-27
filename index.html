@@ -1975,7 +1975,7 @@ const SEED_LEAD_INVITES = [
 ];
 
 // ── GROUPS PAGE ──────────────────────────────────────────────────────────────
-function GroupsPage({ setPage, setMemberGroupFilter }) {
+function GroupsPage({ setPage, setMemberGroupFilter, runners, setRunners }) {
   const isMobile = useIsMobile();
   const [groups, setGroups] = useState(GROUPS);
   const [showNewModal, setShowNewModal] = useState(false);
@@ -1985,6 +1985,9 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteForm, setInviteForm] = useState({ email: '', name: '', groups: [] });
   const [inviteSent, setInviteSent] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showMergeModal, setShowMergeModal] = useState(false);
+  const [mergeName, setMergeName] = useState('');
 
   const GROUP_TYPES = ['Running Club', 'Breakfast Club', 'PE Class', 'After-School Club', 'Cross Country'];
 
@@ -2001,6 +2004,48 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
     if (status === 'accepted') return { label: 'Accepted', bg: C.successLight, color: C.success };
     if (status === 'expired')  return { label: 'Expired',  bg: C.dangerLight,  color: C.danger  };
     return { label: 'Sent', bg: C.blueLight, color: C.blue };
+  }
+
+  function toggleSelect(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function openMergeModal() {
+    const sel = groups.filter(g => selectedIds.has(g.id));
+    const biggest = sel.reduce((a, b) => (a.members >= b.members ? a : b), sel[0]);
+    setMergeName(biggest?.name || '');
+    setShowMergeModal(true);
+  }
+
+  function handleMerge() {
+    if (!mergeName.trim() || selectedIds.size < 2) return;
+    sfx.confirm();
+    const selectedGroups = groups.filter(g => selectedIds.has(g.id));
+    const selectedNames = new Set(selectedGroups.map(g => g.name));
+    const targetName = mergeName.trim();
+    const totalMembers = selectedGroups.reduce((sum, g) => sum + (g.members || 0), 0);
+    const biggest = selectedGroups.reduce((a, b) => (a.members >= b.members ? a : b), selectedGroups[0]);
+    // Reassign runners: swap any matched group name for targetName (deduplicated)
+    if (runners && setRunners) {
+      setRunners(rs => rs.map(r => {
+        const current = rGroups(r);
+        const hasMatch = current.some(n => selectedNames.has(n));
+        if (!hasMatch) return r;
+        const filtered = current.filter(n => !selectedNames.has(n));
+        return { ...r, groups: [...filtered, targetName] };
+      }));
+    }
+    // Replace selected group records with one merged group
+    const mergedGroup = { ...biggest, id: Date.now(), name: targetName, members: totalMembers };
+    setGroups(gs => [...gs.filter(g => !selectedIds.has(g.id)), mergedGroup]);
+    setSelectedIds(new Set());
+    setShowMergeModal(false);
+    setMergeName('');
+    toast(`Merged into "${targetName}"`);
   }
 
   const Modal = ({ title, onClose, children }) => (
@@ -2098,20 +2143,39 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
           <h1 style={{ fontSize: isMobile ? 22 : 26, fontWeight: 800 }}>Groups</h1>
           <p style={{ color: C.muted, marginTop: 4, fontSize: isMobile ? 13 : 14 }}>Manage your running groups</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+          {selectedIds.size >= 2 && (
+            <Button size="sm" style={{ background: C.purple, boxShadow: `0 2px 8px rgba(124,58,237,0.3)` }} onClick={() => { sfx.click(); openMergeModal(); }}>
+              ⇢ Merge {selectedIds.size} groups
+            </Button>
+          )}
+          {selectedIds.size > 0 && (
+            <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>Clear</Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => setShowInviteModal(true)}>{isMobile ? '✉️ Invite' : '✉️ Invite Lead'}</Button>
           <Button size="sm" onClick={() => { setEditGroup(null); setNewForm({ name: '', type: 'Running Club', lead: '' }); setShowNewModal(true); }}>+ New Group</Button>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill,minmax(300px,1fr))', gap: isMobile ? 12 : 20 }}>
-        {groups.filter(g => !g.archived).map(g => (
-          <Card key={g.id}>
+        {groups.filter(g => !g.archived).map(g => {
+          const isSelected = selectedIds.has(g.id);
+          return (
+          <Card key={g.id} style={isSelected ? { border: `2px solid ${C.purple}`, boxShadow: `0 0 0 3px ${_isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.08)'}` } : {}}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: 12, background: C.orangeLight,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-              }}>{g.name.charAt(0)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleSelect(g.id)}
+                  onClick={e => e.stopPropagation()}
+                  style={{ width: 16, height: 16, accentColor: C.purple, cursor: 'pointer', flexShrink: 0 }}
+                />
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12, background: C.orangeLight,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+                }}>{g.name.charAt(0)}</div>
+              </div>
               <Badge label={`${g.members} runners`} bg={C.orangeLight} color={C.orange} />
             </div>
             <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.01em', marginBottom: 4 }}>{g.name}</div>
@@ -2140,8 +2204,60 @@ function GroupsPage({ setPage, setMemberGroupFilter }) {
               </Button>
             </div>
           </Card>
-        ))}
+          );
+        })}
       </div>
+
+      {/* Merge Modal */}
+      {showMergeModal && (() => {
+        const sel = groups.filter(g => selectedIds.has(g.id));
+        const totalMembers = sel.reduce((sum, g) => sum + (g.members || 0), 0);
+        return (
+          <Modal title="Merge groups" onClose={() => setShowMergeModal(false)}>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 13, color: C.muted, marginBottom: 10 }}>Merging {sel.length} groups ({totalMembers} runners total)</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+                {sel.map(g => (
+                  <div key={g.id} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '8px 12px', borderRadius: 10,
+                    background: C.bgSubtle, border: `1px solid ${C.border}`,
+                  }}>
+                    <span style={{ fontWeight: 600, fontSize: 14 }}>{g.name}</span>
+                    <span style={{ fontSize: 12, color: C.muted }}>{g.members} runners</span>
+                  </div>
+                ))}
+              </div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Merged group name</label>
+              <input
+                type="text"
+                value={mergeName}
+                onChange={e => setMergeName(e.target.value)}
+                autoCapitalize="words"
+                style={{
+                  width: '100%', padding: '11px 14px', borderRadius: 10,
+                  border: `1.5px solid ${C.border}`, fontSize: 14,
+                  fontFamily: 'Inter, sans-serif', outline: 'none',
+                  background: C.white, boxSizing: 'border-box',
+                }}
+              />
+              <div style={{ fontSize: 12, color: C.muted, marginTop: 8 }}>
+                ⚠ The source groups will be removed. All runners will be moved to the merged group.
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <Button variant="secondary" onClick={() => setShowMergeModal(false)}>Cancel</Button>
+              <Button
+                disabled={!mergeName.trim()}
+                style={{ background: C.purple, boxShadow: `0 2px 8px rgba(124,58,237,0.25)` }}
+                onClick={handleMerge}
+              >
+                Merge groups
+              </Button>
+            </div>
+          </Modal>
+        );
+      })()}
 
       {/* New Group Modal */}
       {showNewModal && (
@@ -4585,7 +4701,7 @@ function App() {
       case 'billing':
         return <BillingPage />;
       case 'groups':
-        return <GroupsPage setPage={setPage} setMemberGroupFilter={setMemberGroupFilter} />;
+        return <GroupsPage setPage={setPage} setMemberGroupFilter={setMemberGroupFilter} runners={runners} setRunners={setRunners} />;
       case 'members':
         return <MembersPage setPage={setPage} setSelectedRunner={setSelectedRunner} groupFilter={memberGroupFilter} setGroupFilter={setMemberGroupFilter} runners={runners} setRunners={setRunners} />;
       case 'events':
