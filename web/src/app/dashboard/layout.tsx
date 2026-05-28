@@ -7,6 +7,7 @@ import {
   type NavItem,
   type Role,
 } from "@/components/layout/sidebar";
+import { OfflineReplayer } from "@/components/offline-replayer";
 
 const ROLE_LABEL: Record<Role, string> = {
   super_admin: "Super Admin",
@@ -28,6 +29,7 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { href: "/dashboard/school", label: "Dashboard", icon: "dashboard" },
     { href: "/dashboard/school/groups", label: "Groups", icon: "groups" },
     { href: "/dashboard/school/members", label: "Members", icon: "members" },
+    { href: "/dashboard/school/courses", label: "Courses", icon: "runevent" },
     { href: "/dashboard/school/events", label: "Events", icon: "events" },
     {
       href: "/dashboard/school/leaderboard",
@@ -95,6 +97,7 @@ export default async function DashboardLayout({
         <div className="mx-auto max-w-[1200px] lg:pt-0 lg:pb-0">{children}</div>
       </main>
       <MobileBottomNav navItems={navItems} />
+      <OfflineReplayer />
     </div>
   );
 }

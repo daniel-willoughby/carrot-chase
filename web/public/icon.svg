@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FEF0E7"/>
+      <stop offset="100%" stop-color="#FAF6F1"/>
+    </linearGradient>
+    <linearGradient id="carrot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF7A2F"/>
+      <stop offset="100%" stop-color="#D04A08"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Leafy top -->
+  <g fill="#16A34A">
+    <path d="M256 110 Q230 70 200 90 Q220 110 220 150 Q200 130 180 150 Q210 170 220 200 L256 180 Z"/>
+    <path d="M256 110 Q282 70 312 90 Q292 110 292 150 Q312 130 332 150 Q302 170 292 200 L256 180 Z"/>
+    <path d="M256 100 Q256 60 240 50 Q236 80 256 100 Z"/>
+    <path d="M256 100 Q256 60 272 50 Q276 80 256 100 Z"/>
+  </g>
+  <!-- Carrot body -->
+  <path d="M256 180 L320 220 Q310 360 256 440 Q202 360 192 220 Z" fill="url(#carrot)"/>
+  <!-- Ridge highlights -->
+  <g stroke="#FFFFFF" stroke-width="2" opacity="0.35" fill="none" stroke-linecap="round">
+    <path d="M232 230 Q236 320 250 410"/>
+    <path d="M260 220 Q262 320 268 420"/>
+    <path d="M286 232 Q278 320 270 412"/>
+  </g>
+  <!-- Ridge shadows -->
+  <g stroke="#7A2A04" stroke-width="2" opacity="0.18" fill="none" stroke-linecap="round">
+    <path d="M222 250 Q230 330 244 410"/>
+    <path d="M296 252 Q284 332 270 410"/>
+  </g>
+</svg>

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { logAuditEvent } from "@/lib/audit";
 import type { Database } from "@/lib/supabase/database.types";
 
 type OrgType = Database["public"]["Enums"]["org_type"];
@@ -24,17 +25,23 @@ export async function createOrganisationAction(
     return { error: "Invalid organisation type." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("organisations").insert({
-    name,
-    org_type,
-    location,
-    status: "active",
-  });
+  const { data: org, error } = await supabase
+    .from("organisations")
+    .insert({ name, org_type, location, status: "active" })
+    .select("id")
+    .single();
 
   if (error) {
     console.error("[organisations] create error:", error);
     return { error: error.message };
   }
+
+  await logAuditEvent(supabase, {
+    action: "organisation.create",
+    targetTable: "organisations",
+    targetId: org?.id,
+    metadata: { name, org_type, location },
+  });
 
   revalidatePath("/dashboard/super/organisations");
   revalidatePath("/dashboard/super");
@@ -46,6 +53,14 @@ export async function setOrganisationStatusAction(
   status: OrgStatus,
 ) {
   const supabase = await createClient();
+
+  // Capture previous status for the audit trail
+  const { data: prev } = await supabase
+    .from("organisations")
+    .select("status")
+    .eq("id", orgId)
+    .single();
+
   const { error } = await supabase
     .from("organisations")
     .update({ status })
@@ -55,6 +70,13 @@ export async function setOrganisationStatusAction(
     console.error("[organisations] status update error:", error);
     return { error: error.message };
   }
+
+  await logAuditEvent(supabase, {
+    action: "organisation.status_change",
+    targetTable: "organisations",
+    targetId: orgId,
+    metadata: { from: prev?.status ?? null, to: status },
+  });
 
   revalidatePath("/dashboard/super/organisations");
   return { ok: true };

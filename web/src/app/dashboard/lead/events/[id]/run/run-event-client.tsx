@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
 import { levelColor, fmtSecs } from "@/lib/theme/level";
+import { useRouter } from "next/navigation";
 import {
   commitResultsAction,
   addLateArrivalAction,
   type Finisher,
 } from "./actions";
+import { enqueueResult, isOnline } from "@/lib/offline/result-queue";
 
 type Runner = {
   id: string;
@@ -86,6 +88,7 @@ export function RunEventClient({
   runners: Runner[];
 }) {
   const showToast = useToast();
+  const router = useRouter();
   const audioRef = useRef<AudioContext | null>(null);
 
   function getAudio() {
@@ -417,9 +420,45 @@ export function RunEventClient({
     }
 
     startTransition(async () => {
-      const res = await commitResultsAction(eventId, finishers);
-      if (res && "error" in res && res.error) {
-        showToast(res.error, "error");
+      // Offline-first: if no network, queue + bail. The OfflineReplayer
+      // drains the queue when we come back online.
+      if (!isOnline()) {
+        try {
+          await enqueueResult(eventId, finishers);
+          showToast(
+            "Saved locally — will sync when back online",
+            "success",
+          );
+          router.push("/dashboard/lead/events");
+        } catch (err) {
+          showToast(
+            err instanceof Error ? err.message : "Could not save locally",
+            "error",
+          );
+        }
+        return;
+      }
+
+      try {
+        const res = await commitResultsAction(eventId, finishers);
+        if (res && "error" in res && res.error) {
+          showToast(res.error, "error");
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        // Server action's success path throws NEXT_REDIRECT — let it propagate
+        if (msg.includes("NEXT_REDIRECT")) throw err;
+        // Network failure mid-flight: queue + recover.
+        try {
+          await enqueueResult(eventId, finishers);
+          showToast(
+            "Network failed — saved locally, will retry",
+            "success",
+          );
+          router.push("/dashboard/lead/events");
+        } catch {
+          showToast("Could not save results", "error");
+        }
       }
     });
   }

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
+import { LeadAssignment } from "./lead-assignment";
 
 export default async function GroupDetailPage({
   params,
@@ -36,6 +37,19 @@ export default async function GroupDetailPage({
     .from("group_leads")
     .select("lead_id, profiles(full_name, email)")
     .eq("group_id", id);
+
+  // Available leads = profiles in this org with role 'lead' not yet assigned.
+  const assignedIds = new Set((leadRows ?? []).map((l) => l.lead_id));
+  const { data: orgLeads } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .eq("organisation_id", group.organisation_id)
+    .eq("role", "lead")
+    .is("deleted_at", null);
+
+  const availableLeads = (orgLeads ?? []).filter(
+    (l) => !assignedIds.has(l.id),
+  );
 
   return (
     <div className="fade-in">
@@ -114,32 +128,11 @@ export default async function GroupDetailPage({
           <p className="mt-1 text-sm text-[color:var(--muted)]">
             Multi-lead assignment is supported (per US-09).
           </p>
-          {(leadRows ?? []).length === 0 ? (
-            <p className="mt-4 text-sm text-[color:var(--muted)]">
-              No leads assigned yet. Invite a lead from the Members section
-              once invitations are wired up.
-            </p>
-          ) : (
-            <ul className="mt-4 space-y-2">
-              {(leadRows ?? []).map((l) =>
-                l.profiles ? (
-                  <li
-                    key={l.lead_id}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <div>
-                      <div className="font-semibold">
-                        {l.profiles.full_name || l.profiles.email}
-                      </div>
-                      <div className="text-xs text-[color:var(--muted)]">
-                        {l.profiles.email}
-                      </div>
-                    </div>
-                  </li>
-                ) : null,
-              )}
-            </ul>
-          )}
+          <LeadAssignment
+            groupId={group.id}
+            assigned={leadRows ?? []}
+            availableLeads={availableLeads}
+          />
         </Card>
       </div>
     </div>

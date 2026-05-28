@@ -17,25 +17,43 @@ export default async function NewEventPage() {
     .map((row) => row.groups)
     .filter((g) => g && !g.deleted_at);
 
-  // Member counts per group.
+  // Member counts + roster per group (roster powers the Review step).
   const groupIds = groupList.map((g) => g.id);
   const { data: memberships } = groupIds.length
     ? await supabase
         .from("runner_groups")
-        .select("group_id")
+        .select(
+          "group_id, runners!inner(id, full_name, current_level, personal_best_seconds, deleted_at)",
+        )
         .in("group_id", groupIds)
     : { data: [] };
 
-  const counts = new Map<string, number>();
+  const rostersByGroup = new Map<
+    string,
+    { id: string; name: string; level: number; pb: number | null }[]
+  >();
   for (const m of memberships ?? []) {
-    counts.set(m.group_id, (counts.get(m.group_id) ?? 0) + 1);
+    const r = m.runners;
+    if (!r || r.deleted_at) continue;
+    const list = rostersByGroup.get(m.group_id) ?? [];
+    list.push({
+      id: r.id,
+      name: r.full_name,
+      level: r.current_level,
+      pb: r.personal_best_seconds,
+    });
+    rostersByGroup.set(m.group_id, list);
   }
 
-  const groups = groupList.map((g) => ({
-    id: g.id,
-    name: g.name,
-    memberCount: counts.get(g.id) ?? 0,
-  }));
+  const groups = groupList.map((g) => {
+    const roster = rostersByGroup.get(g.id) ?? [];
+    return {
+      id: g.id,
+      name: g.name,
+      memberCount: roster.length,
+      roster: roster.sort((a, b) => a.level - b.level),
+    };
+  });
 
   // Courses: platform presets + own org's custom courses (RLS handles scoping).
   const { data: courses } = await supabase
