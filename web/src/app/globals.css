@@ -1,0 +1,312 @@
+@import "tailwindcss";
+
+/* =============================================================================
+ * Carrot Chase — Theme tokens (ported from prototype)
+ * Light is :root, dark is [data-theme="dark"]. The ThemeProvider sets the
+ * attribute on <html> based on localStorage. Components consume via var(--x).
+ * ========================================================================== */
+
+:root {
+  /* surfaces */
+  --background: #faf6f1;
+  --background-subtle: #f5efe8;
+  --foreground: #1a1a1a;
+  --foreground-secondary: #3d3530;
+  --muted: #7a6f68;
+  --border: #e3d8ce;
+  --border-strong: #c8b8a8;
+  --card: #ffffff;
+  --card-fg: #1a1a1a;
+
+  /* brand */
+  --orange: #e8520a;
+  --orange-dark: #d04a08;
+  --orange-light: #fef0e7;
+  --orange-gradient: linear-gradient(135deg, #ec560c 0%, #d04a08 100%);
+
+  /* status */
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --blue: #2563eb;
+  --blue-light: #dbeafe;
+  --purple: #7c3aed;
+  --purple-light: #ede9fe;
+
+  /* shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  --ring: rgba(232, 82, 10, 0.4);
+
+  /* level palette */
+  --level-elite-bg: #fef3c7;
+  --level-elite-fg: #92400e;
+  --level-elite-border: #fde68a;
+  --level-good-bg: #dcfce7;
+  --level-good-fg: #166534;
+  --level-good-border: #bbf7d0;
+  --level-dev-bg: #dbeafe;
+  --level-dev-fg: #1e40af;
+  --level-dev-border: #bfdbfe;
+  --level-base-bg: #f3f4f6;
+  --level-base-fg: #374151;
+  --level-base-border: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  --background: #13151a;
+  --background-subtle: #1a1d24;
+  --foreground: #f0ede8;
+  --foreground-secondary: #c8c0b8;
+  --muted: #7a7570;
+  --border: #2e3340;
+  --border-strong: #3d4455;
+  --card: #1e2128;
+  --card-fg: #f0ede8;
+
+  --orange: #ff6b2b;
+  --orange-dark: #e8520a;
+  --orange-light: #2d1508;
+  --orange-gradient: linear-gradient(135deg, #ff6b2b 0%, #e8520a 100%);
+
+  --success: #22c55e;
+  --success-light: #0c2518;
+  --danger: #f87171;
+  --danger-light: #280c0c;
+  --warning: #fbbf24;
+  --warning-light: #271c08;
+  --blue: #60a5fa;
+  --blue-light: #0c1c30;
+  --purple: #a78bfa;
+  --purple-light: #180c30;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.5);
+
+  --level-elite-bg: #271c08;
+  --level-elite-fg: #fbbf24;
+  --level-elite-border: #78450a;
+  --level-good-bg: #0c2518;
+  --level-good-fg: #22c55e;
+  --level-good-border: #0f4020;
+  --level-dev-bg: #0c1c30;
+  --level-dev-fg: #60a5fa;
+  --level-dev-border: #0f2a4a;
+  --level-base-bg: #1a1d24;
+  --level-base-fg: #c8c0b8;
+  --level-base-border: #2e3340;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-subtle: var(--background-subtle);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-card: var(--card);
+  --color-card-fg: var(--card-fg);
+  --color-orange: var(--orange);
+  --color-orange-dark: var(--orange-dark);
+  --color-orange-light: var(--orange-light);
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-danger: var(--danger);
+  --color-danger-light: var(--danger-light);
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-blue: var(--blue);
+  --color-blue-light: var(--blue-light);
+  --color-purple: var(--purple);
+  --color-purple-light: var(--purple-light);
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01";
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+p {
+  line-height: 1.6;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--orange);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--orange) !important;
+  outline-offset: 0;
+  border-color: var(--orange) !important;
+}
+
+.bg-orange-gradient {
+  background: var(--orange-gradient);
+}
+
+.card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.11), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.tr-hover {
+  transition: background 0.1s;
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in {
+  animation: fade-in 0.35s ease-out;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  animation: confetti-fall linear forwards;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes flash {
+  0%,
+  100% {
+    background: #d4520a;
+  }
+  50% {
+    background: #ff7a2f;
+  }
+}
+.tap-flash {
+  animation: flash 0.3s ease;
+}
+
+@keyframes streak-flame {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+}
+.streak-flame {
+  display: inline-block;
+  animation: streak-flame 1.2s ease-in-out infinite;
+}
+
+@keyframes tap-pulse {
+  0% {
+    box-shadow: 0 4px 20px rgba(232, 82, 10, 0.35),
+      0 0 0 0 rgba(232, 82, 10, 0.4);
+  }
+  70% {
+    box-shadow: 0 4px 20px rgba(232, 82, 10, 0.35),
+      0 0 0 22px rgba(232, 82, 10, 0);
+  }
+  100% {
+    box-shadow: 0 4px 20px rgba(232, 82, 10, 0.35),
+      0 0 0 0 rgba(232, 82, 10, 0);
+  }
+}
+.tap-pulse {
+  animation: tap-pulse 1.6s ease-out infinite;
+}
+
+@keyframes countdown {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 283;
+  }
+}
+
+@keyframes slide-in-toast {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.slide-in-toast {
+  animation: slide-in-toast 0.25s ease-out;
+}
