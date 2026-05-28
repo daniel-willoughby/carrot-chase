@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { LineChart } from "@/components/ui/line-chart";
 import { StatCard } from "@/components/ui/stat-card";
+import { NavIcon } from "@/components/ui/nav-icon";
 
 function firstName(full?: string | null, email?: string | null) {
   if (full) return full.split(" ")[0];
@@ -61,31 +62,57 @@ export default async function SchoolAdminDashboard() {
   return (
     <div className="fade-in">
       <header className="mb-7">
-        <h1 className="text-[34px] font-extrabold leading-none tracking-tight">
+        <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[26px]">
           {profile?.organisations?.name ?? "Dashboard"}
         </h1>
-        <p className="mt-1.5 text-[15px] text-[color:var(--muted)]">
+        <p className="mt-1 text-[13px] text-[color:var(--muted)] sm:text-sm">
           Welcome back, {firstName(profile?.full_name, profile?.email)}. Here&apos;s
           how your school is doing.
         </p>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+        <Link href="/dashboard/school/members" className="block">
+          <StatCard
+            label="Members"
+            value={members ?? 0}
+            trend={
+              (membersNew ?? 0) > 0
+                ? { dir: "up", text: `+${membersNew} this month` }
+                : { dir: "flat", text: "No new this month" }
+            }
+            tone="orange"
+            accented
+            icon={<NavIcon name="members" size={16} />}
+            onClick={() => {}}
+          />
+        </Link>
+        <Link href="/dashboard/school/groups" className="block">
+          <StatCard
+            label="Active groups"
+            value={groups ?? 0}
+            sub="Currently running"
+            icon={<NavIcon name="groups" size={16} />}
+            onClick={() => {}}
+          />
+        </Link>
+        <Link href="/dashboard/school/events" className="block">
+          <StatCard
+            label="Events this term"
+            value={events ?? 0}
+            sub="All time"
+            icon={<NavIcon name="events" size={16} />}
+            onClick={() => {}}
+          />
+        </Link>
         <StatCard
-          label="Members"
-          value={members ?? 0}
-          trend={
-            (membersNew ?? 0) > 0
-              ? { dir: "up", text: `+${membersNew} this month` }
-              : { dir: "flat", text: "No new this month" }
-          }
-          tone="orange"
+          label="Annual ROI"
+          value="—"
+          sub="Phase 2 billing"
+          tone="success"
           accented
-          icon={<span>◉</span>}
+          icon={<NavIcon name="pound" size={16} />}
         />
-        <StatCard label="Active groups" value={groups ?? 0} sub="Currently running" icon={<span>▥</span>} />
-        <StatCard label="Events this term" value={events ?? 0} sub="All time" icon={<span>▦</span>} />
-        <StatCard label="Annual ROI" value="—" sub="Phase 2 billing" tone="success" accented icon={<span>£</span>} />
       </div>
 
       <section className="mt-6">

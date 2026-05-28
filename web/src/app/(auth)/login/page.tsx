@@ -12,21 +12,23 @@ export default function LoginPage() {
   );
 
   return (
-    <div>
-      <h1 className="text-2xl font-extrabold tracking-tight text-[color:var(--foreground)]">
-        Sign in
-      </h1>
-      <p className="mt-1 text-sm text-[color:var(--muted)]">
-        Use the email and password from your invitation.
+    <>
+      <h2 className="text-[26px] font-extrabold tracking-tight">Sign in</h2>
+      <p
+        className="mb-8 mt-1.5 text-sm"
+        style={{ color: "var(--muted)" }}
+      >
+        Welcome back. Sign in to your account.
       </p>
 
-      <form action={formAction} className="mt-6 space-y-4">
-        <FormField label="Email" required>
+      <form action={formAction} className="space-y-4">
+        <FormField label="Email address" required>
           <Input
             id="email"
             name="email"
             type="email"
             autoComplete="email"
+            placeholder="you@example.com"
             required
           />
         </FormField>
@@ -37,6 +39,7 @@ export default function LoginPage() {
             name="password"
             type="password"
             autoComplete="current-password"
+            placeholder="••••••••"
             required
           />
         </FormField>
@@ -47,14 +50,22 @@ export default function LoginPage() {
           </div>
         )}
 
-        <Button type="submit" disabled={isPending} className="w-full justify-center">
-          {isPending ? "Signing in…" : "Sign in →"}
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isPending}
+          className="w-full justify-center"
+        >
+          {isPending ? "Signing in…" : "Sign in"}
         </Button>
 
-        <p className="text-center text-xs text-[color:var(--muted)]">
-          2FA is required for all accounts. You will set it up on first login.
+        <p
+          className="text-center text-[11px]"
+          style={{ color: "var(--muted)" }}
+        >
+          Two-factor authentication is required for all accounts.
         </p>
       </form>
-    </div>
+    </>
   );
 }

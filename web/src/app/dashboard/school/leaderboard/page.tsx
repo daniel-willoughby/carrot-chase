@@ -107,8 +107,78 @@ export default async function SchoolLeaderboardPage() {
           </div>
         </div>
 
-        <table className="w-full text-sm">
-          <thead className="hidden lg:table-header-group">
+        {/* Mobile: card rows */}
+        <div className="lg:hidden">
+          {standings.map((r, i) => {
+            const lc = levelColor(r.current_level);
+            return (
+              <div
+                key={r.id}
+                className="flex items-center gap-3 px-4 py-3"
+                style={{
+                  borderBottom: "1px solid var(--border)",
+                  background: i < 3 ? RANK_BG[i] : "transparent",
+                }}
+              >
+                <div
+                  className="w-7 shrink-0 text-center text-sm font-extrabold"
+                  style={{
+                    color:
+                      i === 0
+                        ? "var(--warning)"
+                        : i === 2
+                          ? "var(--orange)"
+                          : "var(--muted)",
+                  }}
+                >
+                  {i < 3 ? medals[i] : i + 1}
+                </div>
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-extrabold"
+                  style={{
+                    background: "var(--orange-light)",
+                    color: "var(--orange)",
+                  }}
+                >
+                  {r.full_name[0]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-bold">
+                    {r.full_name}
+                  </div>
+                  <div className="text-[11px]" style={{ color: "var(--muted)" }}>
+                    {r.events} event{r.events === 1 ? "" : "s"} · {r.pbs} PB
+                    {r.pbs === 1 ? "" : "s"}
+                  </div>
+                </div>
+                <span
+                  className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold"
+                  style={{ background: lc.bg, color: lc.color }}
+                >
+                  L{r.current_level}
+                </span>
+                <div className="shrink-0 text-right">
+                  <div
+                    className="text-sm font-extrabold"
+                    style={{ color: "var(--orange)" }}
+                  >
+                    {r.points.toLocaleString()}
+                  </div>
+                  <div
+                    className="text-[11px]"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    {r.streak_count}🔥
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop: full table */}
+        <table className="hidden w-full text-sm lg:table">
+          <thead>
             <tr
               className="text-left text-xs font-semibold"
               style={{

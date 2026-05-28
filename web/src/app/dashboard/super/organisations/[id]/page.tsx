@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
+import { OrgCrest } from "@/components/ui/org-crest";
 import type { Database } from "@/lib/supabase/database.types";
 
 type OrgStatus = Database["public"]["Enums"]["org_status"];
@@ -68,16 +69,21 @@ export default async function OrganisationDetailPage({
         </Link>
       </div>
 
-      <PageHeader
-        title={org.name}
-        description={
-          <>
-            {TYPE_LABEL[org.org_type] ?? org.org_type}
-            {org.location && ` · ${org.location}`}
-          </>
-        }
-        actions={<Badge tone={STATUS_TONE[org.status]}>{org.status}</Badge>}
-      />
+      <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between lg:mb-7">
+        <div className="flex items-center gap-4">
+          <OrgCrest orgKey={org.id} size={64} />
+          <div>
+            <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[26px]">
+              {org.name}
+            </h1>
+            <p className="mt-1 text-[13px] text-[color:var(--muted)] sm:text-sm">
+              {TYPE_LABEL[org.org_type] ?? org.org_type}
+              {org.location && ` · ${org.location}`}
+            </p>
+          </div>
+        </div>
+        <Badge tone={STATUS_TONE[org.status]}>{org.status}</Badge>
+      </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Groups" value={groups ?? 0} tone="orange" />

@@ -68,6 +68,9 @@ export function StatCard({
 }: Props) {
   const cfg = toneConfig[tone];
   const showAccent = accented && tone !== "neutral";
+  // Prototype parity: every StatCard has a visible 3px top stripe — coloured
+  // when toned, tan when neutral.
+  const topAccent = showAccent ? cfg.accent : "var(--border-strong)";
 
   return (
     <div
@@ -77,7 +80,7 @@ export function StatCard({
         "shadow-[0_4px_16px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)]",
         onClick ? "card-hover cursor-pointer" : "",
       ].join(" ")}
-      style={{ borderTop: showAccent ? `3px solid ${cfg.accent}` : undefined }}
+      style={{ borderTop: `3px solid ${topAccent}` }}
     >
       <div
         className="px-5 py-4"
@@ -121,9 +124,8 @@ export function StatCard({
                     : "var(--muted)",
             }}
           >
-            <span aria-hidden>
-              {trend.dir === "up" ? "↑" : trend.dir === "down" ? "↓" : "→"}
-            </span>
+            {trend.dir === "up" && <span aria-hidden>↑</span>}
+            {trend.dir === "down" && <span aria-hidden>↓</span>}
             <span>{trend.text}</span>
           </div>
         )}

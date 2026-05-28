@@ -49,8 +49,12 @@ export function Sidebar({ role, roleLabel, userName, userInitial, navItems }: Pr
 
   return (
     <aside
-      className="fixed left-0 top-0 z-[100] hidden h-screen w-[240px] flex-col border-r lg:flex"
-      style={{ background: "var(--card)", borderColor: "var(--border)" }}
+      className="fixed inset-y-0 left-0 z-[100] hidden w-[240px] border-r lg:grid"
+      style={{
+        background: "var(--card)",
+        borderColor: "var(--border)",
+        gridTemplateRows: "auto minmax(0, 1fr) auto",
+      }}
     >
       {/* Logo */}
       <div
@@ -74,7 +78,7 @@ export function Sidebar({ role, roleLabel, userName, userInitial, navItems }: Pr
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-3">
+      <nav className="overflow-y-auto p-3">
         {navItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (

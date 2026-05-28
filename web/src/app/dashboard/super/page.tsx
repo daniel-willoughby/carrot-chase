@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { LineChart } from "@/components/ui/line-chart";
 import { StatCard } from "@/components/ui/stat-card";
+import { NavIcon } from "@/components/ui/nav-icon";
+import { OrgCrest } from "@/components/ui/org-crest";
 import type { Database } from "@/lib/supabase/database.types";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -92,53 +94,65 @@ export default async function SuperAdminDashboard() {
   return (
     <div className="fade-in">
       <header className="mb-7">
-        <h1 className="text-[34px] font-extrabold leading-none tracking-tight text-[color:var(--foreground)]">
+        <h1 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] sm:text-[26px]">
           Dashboard
         </h1>
-        <p className="mt-1.5 text-[15px] text-[color:var(--muted)]">
+        <p className="mt-1 text-[13px] text-[color:var(--muted)] sm:text-sm">
           Welcome back, {firstName(profile?.full_name, profile?.email)}. Here&apos;s
           what&apos;s happening.
         </p>
       </header>
 
       {/* Stat tiles */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Total Organisations"
-          value={orgs ?? 0}
-          trend={
-            (orgsNew ?? 0) > 0
-              ? { dir: "up", text: `+${orgsNew} this month` }
-              : { dir: "flat", text: "No new this month" }
-          }
-          icon={<span>▤</span>}
-        />
-        <StatCard
-          label="Total Runners"
-          value={(runners ?? 0).toLocaleString("en-GB")}
-          trend={
-            (runnersNew ?? 0) > 0
-              ? { dir: "up", text: `+${runnersNew} this month` }
-              : { dir: "flat", text: "No new this month" }
-          }
-          tone="orange"
-          accented
-          icon={<span>◉</span>}
-        />
-        <StatCard
-          label="Total Events"
-          value={eventsAll ?? 0}
-          sub="All time"
-          icon={<span>▦</span>}
-        />
-        <StatCard
-          label="Monthly Revenue"
-          value="£0"
-          sub="MVP — manual invoicing"
-          tone="success"
-          accented
-          icon={<span>£</span>}
-        />
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+        <Link href="/dashboard/super/organisations" className="block">
+          <StatCard
+            label="Total Organisations"
+            value={orgs ?? 0}
+            trend={
+              (orgsNew ?? 0) > 0
+                ? { dir: "up", text: `+${orgsNew} this month` }
+                : { dir: "flat", text: "No new this month" }
+            }
+            icon={<NavIcon name="orgs" size={16} />}
+            onClick={() => {}}
+          />
+        </Link>
+        <Link href="/dashboard/super/organisations" className="block">
+          <StatCard
+            label="Total Runners"
+            value={(runners ?? 0).toLocaleString("en-GB")}
+            trend={
+              (runnersNew ?? 0) > 0
+                ? { dir: "up", text: `+${runnersNew} this month` }
+                : { dir: "flat", text: "No new this month" }
+            }
+            tone="orange"
+            accented
+            icon={<NavIcon name="members" size={16} />}
+            onClick={() => {}}
+          />
+        </Link>
+        <Link href="/dashboard/super/organisations" className="block">
+          <StatCard
+            label="Total Events"
+            value={eventsAll ?? 0}
+            sub="All time"
+            icon={<NavIcon name="events" size={16} />}
+            onClick={() => {}}
+          />
+        </Link>
+        <Link href="/dashboard/super/billing" className="block">
+          <StatCard
+            label="Monthly Revenue"
+            value="£0"
+            sub="MVP — manual invoicing"
+            tone="success"
+            accented
+            icon={<NavIcon name="pound" size={16} />}
+            onClick={() => {}}
+          />
+        </Link>
       </div>
 
       {/* Runner growth chart */}
@@ -202,9 +216,7 @@ export default async function SuperAdminDashboard() {
                   >
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[color:var(--background-subtle)] text-base">
-                          🏫
-                        </div>
+                        <OrgCrest orgKey={o.id} size={32} />
                         <span className="font-bold text-[color:var(--foreground)]">
                           {o.name}
                         </span>

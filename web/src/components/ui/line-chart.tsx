@@ -22,8 +22,12 @@ export function LineChart({
   const innerW = width - padding.left - padding.right;
   const innerH = height - padding.top - padding.bottom;
 
-  const max = Math.max(...data.map((d) => d.value));
-  const min = Math.min(0, ...data.map((d) => d.value));
+  // Use 0 as the baseline so flat/empty series render along the bottom rather
+  // than producing a negative y-axis.
+  const rawMax = Math.max(...data.map((d) => d.value));
+  const allZeroOrEmpty = rawMax <= 0;
+  const max = allZeroOrEmpty ? 10 : rawMax;
+  const min = 0;
   const range = max - min || 1;
 
   // Y-axis ticks (4 evenly spaced)
@@ -63,6 +67,20 @@ export function LineChart({
         </linearGradient>
       </defs>
 
+      {allZeroOrEmpty && (
+        <text
+          x={width / 2}
+          y={padding.top + innerH / 2}
+          textAnchor="middle"
+          fontSize="13"
+          fill="var(--muted)"
+          fontFamily="Satoshi, sans-serif"
+          fontWeight={600}
+        >
+          No data yet
+        </text>
+      )}
+
       {/* Y-axis ticks + grid lines */}
       {yTicks.map((tick, i) => {
         const y = padding.top + (innerH * i) / 4;
@@ -91,14 +109,31 @@ export function LineChart({
         );
       })}
 
-      {/* Area + line */}
-      <path d={areaPath} fill="url(#area-fade)" />
-      <path d={linePath} fill="none" stroke={colour} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-
-      {/* Dots */}
-      {points.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3.5" fill="white" stroke={colour} strokeWidth="2" />
-      ))}
+      {/* Area + line — only render when we have non-zero data */}
+      {!allZeroOrEmpty && (
+        <>
+          <path d={areaPath} fill="url(#area-fade)" />
+          <path
+            d={linePath}
+            fill="none"
+            stroke={colour}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {points.map((p, i) => (
+            <circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r="3.5"
+              fill="white"
+              stroke={colour}
+              strokeWidth="2"
+            />
+          ))}
+        </>
+      )}
 
       {/* X-axis labels */}
       {points.map((p, i) => (

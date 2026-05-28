@@ -124,75 +124,153 @@ export default async function BillingPage() {
             />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr
-                  className="text-left text-xs uppercase tracking-[0.06em]"
-                  style={{
-                    background: "var(--background-subtle)",
-                    borderBottom: "1px solid var(--border)",
-                    color: "var(--muted)",
-                  }}
-                >
-                  <th className="px-5 py-3 font-semibold">Organisation</th>
-                  <th className="px-3 py-3 font-semibold">Invoiced</th>
-                  <th className="px-3 py-3 font-semibold">Paid</th>
-                  <th className="px-3 py-3 font-semibold">Outstanding</th>
-                  <th className="px-3 py-3 font-semibold">Renewal</th>
-                  <th className="px-3 py-3 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {list.map((r) => {
-                  const owe = r.invoiced - r.paid;
-                  return (
-                    <tr
-                      key={r.id}
-                      className="tr-hover"
-                      style={{ borderBottom: "1px solid var(--border)" }}
+          <>
+            {/* Mobile: card rows */}
+            <div className="flex flex-col gap-2.5 p-4 lg:hidden">
+              {list.map((r) => {
+                const owe = r.invoiced - r.paid;
+                return (
+                  <div
+                    key={r.id}
+                    className="rounded-xl border p-3.5"
+                    style={{
+                      borderColor: "var(--border)",
+                      background: "var(--background)",
+                    }}
+                  >
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <div className="text-sm font-bold">{r.name}</div>
+                      <Badge tone={badgeTone(r.status)}>
+                        {r.status ?? "—"}
+                      </Badge>
+                    </div>
+                    <div
+                      className="grid grid-cols-3 gap-x-3 gap-y-1.5 text-[11px]"
+                      style={{ color: "var(--muted)" }}
                     >
-                      <td className="px-5 py-3 font-semibold">{r.name}</td>
-                      <td className="px-3 py-3 font-mono">
-                        {formatPounds(r.invoiced)}
-                      </td>
-                      <td
-                        className="px-3 py-3 font-mono"
-                        style={{ color: "var(--success)" }}
+                      <div>
+                        <div>Invoiced</div>
+                        <div
+                          className="font-mono text-sm font-semibold"
+                          style={{ color: "var(--foreground)" }}
+                        >
+                          {formatPounds(r.invoiced)}
+                        </div>
+                      </div>
+                      <div>
+                        <div>Paid</div>
+                        <div
+                          className="font-mono text-sm font-semibold"
+                          style={{ color: "var(--success)" }}
+                        >
+                          {formatPounds(r.paid)}
+                        </div>
+                      </div>
+                      <div>
+                        <div>Owed</div>
+                        <div
+                          className="font-mono text-sm font-bold"
+                          style={{
+                            color:
+                              owe > 0 ? "var(--warning)" : "var(--muted)",
+                          }}
+                        >
+                          {formatPounds(owe)}
+                        </div>
+                      </div>
+                      <div className="col-span-3">
+                        <span>Renews </span>
+                        <span
+                          className="font-semibold"
+                          style={{ color: "var(--foreground)" }}
+                        >
+                          {r.ends
+                            ? new Date(r.ends).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop: table */}
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr
+                    className="text-left text-xs uppercase tracking-[0.06em]"
+                    style={{
+                      background: "var(--background-subtle)",
+                      borderBottom: "1px solid var(--border)",
+                      color: "var(--muted)",
+                    }}
+                  >
+                    <th className="px-5 py-3 font-semibold">Organisation</th>
+                    <th className="px-3 py-3 font-semibold">Invoiced</th>
+                    <th className="px-3 py-3 font-semibold">Paid</th>
+                    <th className="px-3 py-3 font-semibold">Outstanding</th>
+                    <th className="px-3 py-3 font-semibold">Renewal</th>
+                    <th className="px-3 py-3 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {list.map((r) => {
+                    const owe = r.invoiced - r.paid;
+                    return (
+                      <tr
+                        key={r.id}
+                        className="tr-hover"
+                        style={{ borderBottom: "1px solid var(--border)" }}
                       >
-                        {formatPounds(r.paid)}
-                      </td>
-                      <td
-                        className="px-3 py-3 font-mono font-bold"
-                        style={{
-                          color: owe > 0 ? "var(--warning)" : "var(--muted)",
-                        }}
-                      >
-                        {formatPounds(owe)}
-                      </td>
-                      <td
-                        className="px-3 py-3 text-xs"
-                        style={{ color: "var(--muted)" }}
-                      >
-                        {r.ends
-                          ? new Date(r.ends).toLocaleDateString("en-GB", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })
-                          : "—"}
-                      </td>
-                      <td className="px-3 py-3">
-                        <Badge tone={badgeTone(r.status)}>
-                          {r.status ?? "—"}
-                        </Badge>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <td className="px-5 py-3 font-semibold">{r.name}</td>
+                        <td className="px-3 py-3 font-mono">
+                          {formatPounds(r.invoiced)}
+                        </td>
+                        <td
+                          className="px-3 py-3 font-mono"
+                          style={{ color: "var(--success)" }}
+                        >
+                          {formatPounds(r.paid)}
+                        </td>
+                        <td
+                          className="px-3 py-3 font-mono font-bold"
+                          style={{
+                            color:
+                              owe > 0 ? "var(--warning)" : "var(--muted)",
+                          }}
+                        >
+                          {formatPounds(owe)}
+                        </td>
+                        <td
+                          className="px-3 py-3 text-xs"
+                          style={{ color: "var(--muted)" }}
+                        >
+                          {r.ends
+                            ? new Date(r.ends).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : "—"}
+                        </td>
+                        <td className="px-3 py-3">
+                          <Badge tone={badgeTone(r.status)}>
+                            {r.status ?? "—"}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </Card>
     </div>

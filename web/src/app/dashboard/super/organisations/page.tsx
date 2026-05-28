@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { OrgCrest } from "@/components/ui/org-crest";
 import { NewOrganisationModal } from "./new-organisation-modal";
 import { StatusToggle } from "./status-toggle";
 import type { Database } from "@/lib/supabase/database.types";
@@ -110,71 +111,133 @@ export default async function OrganisationsPage() {
           </p>
         </Card>
       ) : (
-        <Card className="overflow-hidden p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[color:var(--border)] bg-[color:var(--background-subtle)] text-left text-[11px] uppercase tracking-[0.06em] text-[color:var(--muted)]">
-                  <th className="px-6 py-3 font-semibold">Name</th>
-                  <th className="px-4 py-3 font-semibold">Type</th>
-                  <th className="px-4 py-3 font-semibold">Location</th>
-                  <th className="px-4 py-3 font-semibold">Runners</th>
-                  <th className="px-4 py-3 font-semibold">Events</th>
-                  <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-6 py-3 text-right font-semibold"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {orgs.map((o) => (
-                  <tr
-                    key={o.id}
-                    className="border-b border-[color:var(--border)] last:border-0 hover:bg-[color:var(--background-subtle)]/40"
-                  >
-                    <td className="px-6 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[color:var(--background-subtle)] text-base">
-                          🏫
-                        </div>
-                        <Link
-                          href={`/dashboard/super/organisations/${o.id}`}
-                          className="font-bold text-[color:var(--foreground)] hover:text-[color:var(--orange)]"
-                        >
-                          {o.name}
-                        </Link>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-[color:var(--foreground-secondary)]">
+        <>
+          {/* Mobile: card list */}
+          <div className="flex flex-col gap-2.5 lg:hidden">
+            {orgs.map((o) => (
+              <Link
+                key={o.id}
+                href={`/dashboard/super/organisations/${o.id}`}
+                className="rounded-xl border border-[color:var(--border)] p-3.5"
+                style={{ background: "var(--card)" }}
+              >
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <OrgCrest orgKey={o.id} size={32} />
+                    <div className="font-bold text-sm">{o.name}</div>
+                  </div>
+                  <Badge tone={STATUS_TONE[o.status]}>{o.status}</Badge>
+                </div>
+                <div
+                  className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs"
+                  style={{ color: "var(--muted)" }}
+                >
+                  <div>
+                    Type{" "}
+                    <span
+                      className="font-semibold"
+                      style={{ color: "var(--foreground)" }}
+                    >
                       {TYPE_LABEL[o.org_type] ?? o.org_type}
-                    </td>
-                    <td className="px-4 py-3 text-[color:var(--muted)]">
+                    </span>
+                  </div>
+                  <div>
+                    Location{" "}
+                    <span
+                      className="font-semibold"
+                      style={{ color: "var(--foreground)" }}
+                    >
                       {o.location || "—"}
-                    </td>
-                    <td className="px-4 py-3 font-bold tabular-nums">
+                    </span>
+                  </div>
+                  <div>
+                    Runners{" "}
+                    <span
+                      className="font-semibold tabular-nums"
+                      style={{ color: "var(--foreground)" }}
+                    >
                       {runnerCount.get(o.id) ?? 0}
-                    </td>
-                    <td className="px-4 py-3 font-bold tabular-nums">
+                    </span>
+                  </div>
+                  <div>
+                    Events{" "}
+                    <span
+                      className="font-semibold tabular-nums"
+                      style={{ color: "var(--foreground)" }}
+                    >
                       {eventCount.get(o.id) ?? 0}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge tone={STATUS_TONE[o.status]}>{o.status}</Badge>
-                    </td>
-                    <td className="px-6 py-3 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        <StatusToggle orgId={o.id} status={o.status} />
-                        <Link
-                          href={`/dashboard/super/organisations/${o.id}`}
-                          className="text-sm font-semibold text-[color:var(--orange)] hover:underline"
-                        >
-                          View →
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-        </Card>
+
+          {/* Desktop: full table */}
+          <Card className="hidden overflow-hidden p-0 lg:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[color:var(--border)] bg-[color:var(--background-subtle)] text-left text-[11px] uppercase tracking-[0.06em] text-[color:var(--muted)]">
+                    <th className="px-6 py-3 font-semibold">Name</th>
+                    <th className="px-4 py-3 font-semibold">Type</th>
+                    <th className="px-4 py-3 font-semibold">Location</th>
+                    <th className="px-4 py-3 font-semibold">Runners</th>
+                    <th className="px-4 py-3 font-semibold">Events</th>
+                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-6 py-3 text-right font-semibold"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orgs.map((o) => (
+                    <tr
+                      key={o.id}
+                      className="border-b border-[color:var(--border)] last:border-0 hover:bg-[color:var(--background-subtle)]/40"
+                    >
+                      <td className="px-6 py-3">
+                        <div className="flex items-center gap-3">
+                          <OrgCrest orgKey={o.id} size={32} />
+                          <Link
+                            href={`/dashboard/super/organisations/${o.id}`}
+                            className="font-bold text-[color:var(--foreground)] hover:text-[color:var(--orange)]"
+                          >
+                            {o.name}
+                          </Link>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-[color:var(--foreground-secondary)]">
+                        {TYPE_LABEL[o.org_type] ?? o.org_type}
+                      </td>
+                      <td className="px-4 py-3 text-[color:var(--muted)]">
+                        {o.location || "—"}
+                      </td>
+                      <td className="px-4 py-3 font-bold tabular-nums">
+                        {runnerCount.get(o.id) ?? 0}
+                      </td>
+                      <td className="px-4 py-3 font-bold tabular-nums">
+                        {eventCount.get(o.id) ?? 0}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge tone={STATUS_TONE[o.status]}>{o.status}</Badge>
+                      </td>
+                      <td className="px-6 py-3 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <StatusToggle orgId={o.id} status={o.status} />
+                          <Link
+                            href={`/dashboard/super/organisations/${o.id}`}
+                            className="text-sm font-semibold text-[color:var(--orange)] hover:underline"
+                          >
+                            View →
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   );
