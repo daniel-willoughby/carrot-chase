@@ -150,24 +150,50 @@ export default async function LeadDashboard() {
             icon={<NavIcon name="events" size={16} />}
           />
         </Link>
-        <StatCard
-          label="Streak Leader"
-          value={
-            streakLeader ? streakLeader.full_name.split(" ")[0] : "—"
-          }
-          sub={`${streakLeader?.streak_count ?? 0} events in a row`}
-          tone="success"
-          accented
-          icon={<NavIcon name="flame" size={16} />}
-        />
-        <StatCard
-          label="Top Level"
-          value={topLevel ? `L${topLevel.current_level}` : "—"}
-          sub={topLevel ? topLevel.full_name.split(" ")[0] : ""}
-          tone="purple"
-          accented
-          icon={<NavIcon name="star" size={16} />}
-        />
+        {streakLeader ? (
+          <Link href={`/dashboard/lead/runners/${streakLeader.id}`}>
+            <StatCard
+              label="Streak Leader"
+              value={streakLeader.full_name.split(" ")[0]}
+              sub={`${streakLeader.streak_count} events in a row`}
+              tone="success"
+              accented
+              icon={<NavIcon name="flame" size={16} />}
+              onClick={() => {}}
+            />
+          </Link>
+        ) : (
+          <StatCard
+            label="Streak Leader"
+            value="—"
+            sub="0 events in a row"
+            tone="success"
+            accented
+            icon={<NavIcon name="flame" size={16} />}
+          />
+        )}
+        {topLevel ? (
+          <Link href={`/dashboard/lead/runners/${topLevel.id}`}>
+            <StatCard
+              label="Top Level"
+              value={`L${topLevel.current_level}`}
+              sub={topLevel.full_name.split(" ")[0]}
+              tone="purple"
+              accented
+              icon={<NavIcon name="star" size={16} />}
+              onClick={() => {}}
+            />
+          </Link>
+        ) : (
+          <StatCard
+            label="Top Level"
+            value="—"
+            sub=""
+            tone="purple"
+            accented
+            icon={<NavIcon name="star" size={16} />}
+          />
+        )}
       </div>
 
       {/* Hero: next event */}
