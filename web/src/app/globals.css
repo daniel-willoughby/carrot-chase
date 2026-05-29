@@ -3,7 +3,9 @@
 /* =============================================================================
  * Carrot Chase — Theme tokens (ported from prototype)
  * Light is :root, dark is [data-theme="dark"]. The ThemeProvider sets the
- * attribute on <html> based on localStorage. Components consume via var(--x).
+ * attribute on <html> from a cc_theme cookie. Components consume via var(--x).
+ * The dark block lives inside @layer base so Tailwind v4's lightning-css
+ * doesn't tree-shake it as "unused custom CSS."
  * ========================================================================== */
 
 :root {
@@ -58,46 +60,46 @@
   --level-base-border: #e5e7eb;
 }
 
-[data-theme="dark"] {
-  --background: #13151a;
-  --background-subtle: #1a1d24;
-  --foreground: #f0ede8;
-  --foreground-secondary: #c8c0b8;
-  --muted: #7a7570;
-  --border: #2e3340;
-  --border-strong: #3d4455;
-  --card: #1e2128;
-  --card-fg: #f0ede8;
+:root[data-theme="dark"] {
+    --background: #13151a;
+    --background-subtle: #1a1d24;
+    --foreground: #f0ede8;
+    --foreground-secondary: #c8c0b8;
+    --muted: #7a7570;
+    --border: #2e3340;
+    --border-strong: #3d4455;
+    --card: #1e2128;
+    --card-fg: #f0ede8;
 
-  --orange: #ff6b2b;
-  --orange-dark: #e8520a;
-  --orange-light: #2d1508;
-  --orange-gradient: linear-gradient(135deg, #ff6b2b 0%, #e8520a 100%);
+    --orange: #ff6b2b;
+    --orange-dark: #e8520a;
+    --orange-light: #2d1508;
+    --orange-gradient: linear-gradient(135deg, #ff6b2b 0%, #e8520a 100%);
 
-  --success: #22c55e;
-  --success-light: #0c2518;
-  --danger: #f87171;
-  --danger-light: #280c0c;
-  --warning: #fbbf24;
-  --warning-light: #271c08;
-  --blue: #60a5fa;
-  --blue-light: #0c1c30;
-  --purple: #a78bfa;
-  --purple-light: #180c30;
+    --success: #22c55e;
+    --success-light: #0c2518;
+    --danger: #f87171;
+    --danger-light: #280c0c;
+    --warning: #fbbf24;
+    --warning-light: #271c08;
+    --blue: #60a5fa;
+    --blue-light: #0c1c30;
+    --purple: #a78bfa;
+    --purple-light: #180c30;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.5);
 
-  --level-elite-bg: #271c08;
-  --level-elite-fg: #fbbf24;
-  --level-elite-border: #78450a;
-  --level-good-bg: #0c2518;
-  --level-good-fg: #22c55e;
-  --level-good-border: #0f4020;
-  --level-dev-bg: #0c1c30;
-  --level-dev-fg: #60a5fa;
-  --level-dev-border: #0f2a4a;
+    --level-elite-bg: #271c08;
+    --level-elite-fg: #fbbf24;
+    --level-elite-border: #78450a;
+    --level-good-bg: #0c2518;
+    --level-good-fg: #22c55e;
+    --level-good-border: #0f4020;
+    --level-dev-bg: #0c1c30;
+    --level-dev-fg: #60a5fa;
+    --level-dev-border: #0f2a4a;
   --level-base-bg: #1a1d24;
   --level-base-fg: #c8c0b8;
   --level-base-border: #2e3340;

@@ -49,10 +49,11 @@ export function Sidebar({ role, roleLabel, userName, userInitial, navItems }: Pr
 
   return (
     <aside
-      className="fixed inset-y-0 left-0 z-[100] hidden w-[240px] border-r lg:grid"
+      className="fixed inset-y-0 left-0 z-[100] hidden w-[240px] overflow-hidden border-r lg:grid"
       style={{
         background: "var(--card)",
         borderColor: "var(--border)",
+        gridTemplateColumns: "minmax(0, 1fr)",
         gridTemplateRows: "auto minmax(0, 1fr) auto",
       }}
     >
@@ -106,13 +107,13 @@ export function Sidebar({ role, roleLabel, userName, userInitial, navItems }: Pr
         style={{ borderTop: "1px solid var(--border)" }}
       >
         <div
-          className="mb-2.5 rounded-xl px-3 py-2.5"
+          className="mb-2.5 overflow-hidden rounded-xl px-3 py-2.5"
           style={{
             background: "var(--background)",
             border: "1px solid var(--border)",
           }}
         >
-          <div className="flex items-center gap-2.5">
+          <div className="flex w-full items-center gap-2.5">
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
               style={{
@@ -123,8 +124,14 @@ export function Sidebar({ role, roleLabel, userName, userInitial, navItems }: Pr
             >
               {userInitial}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-bold">{userName}</div>
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <div
+                className="truncate text-[13px] font-bold"
+                title={userName}
+                style={{ minWidth: 0, maxWidth: "100%" }}
+              >
+                {userName}
+              </div>
               <span
                 className="mt-0.5 inline-block rounded-full px-2 py-px text-[10px] font-bold"
                 style={{ background: pillBg, color: pillColor }}
