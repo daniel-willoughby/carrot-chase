@@ -46,6 +46,11 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
       label: "Leaderboard",
       icon: "leaderboard",
     },
+    {
+      href: "/dashboard/lead/run",
+      label: "Run Event",
+      icon: "runevent",
+    },
   ],
 };
 
