@@ -70,8 +70,45 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Role-scoped path enforcement: a stale prefetched link to another role's
+  // dashboard (e.g. lead trying /dashboard/super) is bounced to the user's
+  // own dashboard rather than letting the role-mismatched page render and
+  // surface as a TypeError when the client router fetches the RSC payload.
+  if (user) {
+    const wrongRolePath = ROLE_PATHS.find(
+      (p) => path.startsWith(p.prefix) && p.allowedFor !== undefined,
+    );
+    if (wrongRolePath) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      const role = profile?.role;
+      if (role && wrongRolePath.allowedFor !== role) {
+        const target = ROLE_HOME[role] ?? "/login";
+        const url = request.nextUrl.clone();
+        url.pathname = target;
+        url.search = "";
+        return rscAwareRedirect(request, url);
+      }
+    }
+  }
+
   return supabaseResponse;
 }
+
+const ROLE_PATHS = [
+  { prefix: "/dashboard/super", allowedFor: "super_admin" as const },
+  { prefix: "/dashboard/school", allowedFor: "school_admin" as const },
+  { prefix: "/dashboard/lead", allowedFor: "lead" as const },
+];
+
+const ROLE_HOME: Record<string, string> = {
+  super_admin: "/dashboard/super",
+  school_admin: "/dashboard/school",
+  lead: "/dashboard/lead",
+};
 
 /**
  * Redirect that works for both regular navigations AND React Server Component
