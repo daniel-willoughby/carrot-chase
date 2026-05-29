@@ -56,8 +56,12 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Logged in but hasn't completed 2FA, trying to access anything other than
-  // the 2FA challenge or login flow -> bounce to /two-factor
-  if (user && !AAL2_EXEMPT.some((p) => path.startsWith(p))) {
+  // the 2FA challenge or login flow -> bounce to /two-factor.
+  // Demo accounts (@demo.carrotchase.com) bypass AAL2 enforcement so you can
+  // walk every role end-to-end without setting up TOTP per user.
+  const isDemoUser =
+    user?.email?.endsWith("@demo.carrotchase.com") ?? false;
+  if (user && !isDemoUser && !AAL2_EXEMPT.some((p) => path.startsWith(p))) {
     const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aal && aal.currentLevel !== "aal2") {
       const url = request.nextUrl.clone();
