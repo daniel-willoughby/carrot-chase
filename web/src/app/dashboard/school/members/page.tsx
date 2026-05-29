@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CsvImportModal } from "./csv-import-modal";
 import { NewRunnerModal } from "./new-runner-modal";
-import { levelColor, fmtSecs } from "@/lib/theme/level";
+import { levelColor, fmtSecs, posPoints } from "@/lib/theme/level";
 
 export default async function MembersPage({
   searchParams,
@@ -47,6 +47,25 @@ export default async function MembersPage({
   const { data: runners } = await runnersQuery;
   const list = runners ?? [];
 
+  // Aggregate term points per runner from results.
+  const runnerIds = list.map((r) => r.id);
+  const { data: results } = runnerIds.length
+    ? await supabase
+        .from("results")
+        .select("runner_id, finish_position")
+        .in("runner_id", runnerIds)
+    : { data: [] as { runner_id: string; finish_position: number }[] };
+
+  const pointsByRunner = new Map<string, number>();
+  for (const r of results ?? []) {
+    if (r.finish_position > 0) {
+      pointsByRunner.set(
+        r.runner_id,
+        (pointsByRunner.get(r.runner_id) ?? 0) + posPoints(r.finish_position - 1),
+      );
+    }
+  }
+
   return (
     <div className="fade-in">
       <header className="mb-5 flex flex-col items-start justify-between gap-3 lg:mb-7 lg:flex-row lg:items-center">
@@ -62,6 +81,18 @@ export default async function MembersPage({
           </p>
         </div>
         <div className="flex w-full items-center gap-2 lg:w-auto">
+          <a
+            href="/runners-template.csv"
+            download
+            className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
+            style={{
+              border: "1px solid var(--border)",
+              background: "var(--card)",
+              color: "var(--foreground-secondary)",
+            }}
+          >
+            ↓ CSV Template
+          </a>
           <CsvImportModal groups={groups ?? []} />
           <NewRunnerModal groups={groups ?? []} />
         </div>
@@ -200,11 +231,16 @@ export default async function MembersPage({
                     <th className="px-5 py-3 font-semibold">Level</th>
                     <th className="px-5 py-3 font-semibold">PB</th>
                     <th className="px-5 py-3 font-semibold">Streak</th>
+                    <th className="px-5 py-3 font-semibold">Points</th>
+                    <th className="px-5 py-3 text-right font-semibold"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {list.map((r) => {
                     const lc = levelColor(r.current_level);
+                    const initial =
+                      r.full_name.trim()[0]?.toUpperCase() ?? "?";
+                    const pts = pointsByRunner.get(r.id) ?? 0;
                     return (
                       <tr
                         key={r.id}
@@ -212,7 +248,24 @@ export default async function MembersPage({
                         style={{ borderBottom: "1px solid var(--border)" }}
                       >
                         <td className="px-5 py-3 font-semibold">
-                          {r.full_name}
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-extrabold"
+                              style={{
+                                background: "var(--orange-light)",
+                                color: "var(--orange)",
+                              }}
+                              aria-hidden
+                            >
+                              {initial}
+                            </div>
+                            <Link
+                              href={`/dashboard/lead/runners/${r.id}`}
+                              className="hover:text-[color:var(--orange)]"
+                            >
+                              {r.full_name}
+                            </Link>
+                          </div>
                         </td>
                         <td
                           className="px-5 py-3 font-mono text-xs"
@@ -245,6 +298,24 @@ export default async function MembersPage({
                           style={{ color: "var(--foreground-secondary)" }}
                         >
                           {r.streak_count > 0 ? `🔥 ${r.streak_count}` : "—"}
+                        </td>
+                        <td
+                          className="px-5 py-3 font-extrabold"
+                          style={{ color: "var(--orange)" }}
+                        >
+                          {pts > 0 ? pts.toLocaleString() : "—"}
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <Link
+                            href={`/dashboard/lead/runners/${r.id}`}
+                            className="rounded-full border-2 px-3 py-1 text-xs font-bold"
+                            style={{
+                              borderColor: "var(--orange)",
+                              color: "var(--orange)",
+                            }}
+                          >
+                            View →
+                          </Link>
                         </td>
                       </tr>
                     );

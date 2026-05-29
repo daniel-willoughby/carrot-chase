@@ -188,6 +188,11 @@ async function main() {
     password: "demo1234",
     fullName: "James Carter",
   });
+  const superAdminId = await findOrCreateUser({
+    email: "alex@demo.carrotchase.com",
+    password: "demo1234",
+    fullName: "Alex Knight",
+  });
   await upsertProfile({
     id: schoolAdminId,
     fullName: "Sarah Mitchell",
@@ -201,6 +206,14 @@ async function main() {
     email: "james@demo.carrotchase.com",
     role: "lead",
     orgId,
+  });
+  // Super admin is org-agnostic — they administer across all schools.
+  await upsertProfile({
+    id: superAdminId,
+    fullName: "Alex Knight",
+    email: "alex@demo.carrotchase.com",
+    role: "super_admin",
+    orgId: null,
   });
   console.log();
 
@@ -356,6 +369,7 @@ async function main() {
 
   console.log("\n✅ Done.\n");
   console.log("Sign in at http://localhost:3000/login as:");
+  console.log("  Super Admin:  alex@demo.carrotchase.com  / demo1234");
   console.log("  School Admin: sarah@demo.carrotchase.com / demo1234");
   console.log("  Lead:         james@demo.carrotchase.com / demo1234");
   console.log("\n2FA is bypassed automatically for @demo.carrotchase.com.");
