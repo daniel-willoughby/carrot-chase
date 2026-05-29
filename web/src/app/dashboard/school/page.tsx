@@ -21,11 +21,19 @@ export default async function SchoolAdminDashboard() {
   } = await supabase.auth.getUser();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email, organisation_id, organisations(id, name)")
+    .select("full_name, email, organisation_id")
     .eq("id", user!.id)
     .single();
 
   const orgId = profile?.organisation_id;
+  const { data: org } = orgId
+    ? await supabase
+        .from("organisations")
+        .select("name")
+        .eq("id", orgId)
+        .single()
+    : { data: null };
+  void org;
   const startOfTerm = new Date();
   startOfTerm.setMonth(startOfTerm.getMonth() - 3);
 
