@@ -20,9 +20,17 @@ export async function commitResultsAction(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
 
+  // The SQL function `commit_event_results` reads `raw_time_seconds` from
+  // each finisher payload. Translate from our client-side `finish_seconds`
+  // (kept for clarity) before invoking the RPC.
+  const payload = finishers.map((f) => ({
+    runner_id: f.runner_id,
+    raw_time_seconds: f.finish_seconds,
+  }));
+
   const { error } = await supabase.rpc("commit_event_results", {
     p_event_id: eventId,
-    p_finishers: finishers,
+    p_finishers: payload,
   });
 
   if (error) {
@@ -30,10 +38,10 @@ export async function commitResultsAction(
     return { error: error.message };
   }
 
-  await supabase
-    .from("events")
-    .update({ status: "completed" })
-    .eq("id", eventId);
+  // commit_event_results already marks the event completed inside the
+  // transaction — no need to do it again here. (Leaving the second update
+  // in place was the source of an inconsistent state where a failed RPC
+  // still flipped the event to "completed" with no rows in results.)
 
   revalidatePath(`/dashboard/lead/events/${eventId}`);
   revalidatePath("/dashboard/lead/events");
