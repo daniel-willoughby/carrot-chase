@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { NavIcon } from "@/components/ui/nav-icon";
 import { eventDate } from "@/lib/term";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -33,67 +32,6 @@ const FORMAT_LABEL: Record<string, string> = {
   pursuit: "Pursuit",
 };
 
-function EventRow({ ev }: { ev: EventRow }) {
-  const isUpcoming = ev.status === "scheduled" || ev.status === "in_progress";
-  const accent =
-    ev.status === "scheduled"
-      ? "var(--orange)"
-      : ev.status === "completed"
-        ? "var(--success)"
-        : "var(--muted)";
-
-  return (
-    <div
-      className="py-3.5"
-      style={{
-        borderBottom: "1px solid var(--border)",
-        borderLeft: `3px solid ${accent}`,
-        paddingLeft: 12,
-        marginLeft: -4,
-      }}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="mb-0.5 text-sm font-bold truncate">
-            {ev.groups?.name} · {ev.courses?.name}
-          </div>
-          <div
-            className="mb-1.5 text-xs"
-            style={{ color: "var(--muted)" }}
-          >
-            {eventDate(ev.scheduled_at)} · {ev.courses?.distance_metres}m
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Badge tone="orange">{FORMAT_LABEL[ev.format] ?? ev.format}</Badge>
-            <Badge tone={STATUS_TONE[ev.status]}>{ev.status.replace("_", " ")}</Badge>
-          </div>
-        </div>
-        {isUpcoming && (
-          <Link
-            href={`/dashboard/lead/events/${ev.id}/run`}
-            className="shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold text-white"
-            style={{ background: "var(--orange-gradient)" }}
-          >
-            Run →
-          </Link>
-        )}
-        {ev.status === "completed" && (
-          <Link
-            href={`/dashboard/lead/events/${ev.id}/results`}
-            className="shrink-0 rounded-full border-2 px-3.5 py-1.5 text-xs font-bold"
-            style={{
-              borderColor: "var(--orange)",
-              color: "var(--orange)",
-            }}
-          >
-            Results →
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default async function LeadEventsPage() {
   const supabase = await createClient();
 
@@ -104,7 +42,7 @@ export default async function LeadEventsPage() {
   const groupIds = (leadGroups ?? []).map((g) => g.group_id);
 
   const events: EventRow[] = groupIds.length
-    ? ((
+    ? (((
         await supabase
           .from("events")
           .select(
@@ -113,73 +51,234 @@ export default async function LeadEventsPage() {
           .in("group_id", groupIds)
           .is("deleted_at", null)
           .order("scheduled_at", { ascending: false })
-      ).data as EventRow[] | null) ?? []
+      ).data as EventRow[] | null) ?? [])
     : [];
 
-  const upcoming = events.filter(
-    (e) => e.status === "scheduled" || e.status === "in_progress",
-  );
-  const completed = events.filter((e) => e.status === "completed");
+  // Per-event roster size
+  const eventIdToCount = new Map<string, number>();
+  if (events.length) {
+    const eventGroupIds = [
+      ...new Set(events.map((e) => e.groups).map(() => null).filter(Boolean)),
+    ];
+    void eventGroupIds; // not used; we recompute below
+    // Fetch per-group runner counts to estimate event roster
+    const allGroupIds = [
+      ...new Set(
+        events
+          .map((e) => (e as unknown as { group_id?: string }).group_id)
+          .filter(Boolean) as string[],
+      ),
+    ];
+    if (allGroupIds.length) {
+      const { data: rg } = await supabase
+        .from("runner_groups")
+        .select("group_id")
+        .in("group_id", allGroupIds);
+      const counts = new Map<string, number>();
+      for (const r of rg ?? []) {
+        counts.set(r.group_id, (counts.get(r.group_id) ?? 0) + 1);
+      }
+      for (const e of events) {
+        const gId = (e as unknown as { group_id?: string }).group_id;
+        if (gId) eventIdToCount.set(e.id, counts.get(gId) ?? 0);
+      }
+    }
+  }
 
   return (
     <div className="fade-in">
-      <header className="mb-6 flex items-center justify-between gap-3 lg:mb-7">
+      <header className="mb-6 flex flex-col items-start justify-between gap-3 lg:mb-7 lg:flex-row lg:items-center">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight lg:text-2xl">
+          <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[26px]">
             Events
           </h1>
           <p
-            className="mt-0.5 text-xs lg:text-sm"
+            className="mt-1 text-[13px] sm:text-sm"
             style={{ color: "var(--muted)" }}
           >
-            Scheduled and past events
+            All scheduled and past events
           </p>
         </div>
-        <Link
-          href="/dashboard/lead/events/new"
-          className="shrink-0 rounded-full px-4 py-2 text-sm font-bold text-white lg:px-5 lg:py-2.5"
-          style={{
-            background: "var(--orange-gradient)",
-            boxShadow: "0 2px 8px rgba(232,82,10,0.28)",
-          }}
-        >
-          + Create
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/lead/events/new"
+            className="rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors lg:px-4 lg:py-2 lg:text-sm"
+            style={{
+              border: "1px solid var(--border)",
+              background: "var(--card)",
+              color: "var(--foreground-secondary)",
+            }}
+          >
+            + Create Event
+          </Link>
+        </div>
       </header>
 
-      <Card className="mb-4 lg:mb-6">
-        <div className="mb-1 flex items-center justify-between">
-          <div className="text-[15px] font-bold tracking-tight">Upcoming</div>
-          <Badge tone="blue">{upcoming.length}</Badge>
-        </div>
-        {upcoming.length === 0 ? (
-          <EmptyState
-            icon="events"
-            title="No upcoming events"
-            description="Create an event to get started."
-          />
-        ) : (
-          upcoming.map((ev) => <EventRow key={ev.id} ev={ev} />)
-        )}
-      </Card>
-
-      <Card>
-        <div className="mb-1 flex items-center justify-between">
-          <div className="text-[15px] font-bold tracking-tight">
-            Recent Results
+      {events.length === 0 ? (
+        <EmptyState
+          icon="events"
+          title="No events yet"
+          description="Create your first event to get started."
+        />
+      ) : (
+        <>
+          {/* Mobile: cards */}
+          <div className="flex flex-col gap-2.5 lg:hidden">
+            {events.map((ev) => {
+              const isUpcoming =
+                ev.status === "scheduled" || ev.status === "in_progress";
+              const accent =
+                ev.status === "scheduled"
+                  ? "var(--orange)"
+                  : ev.status === "completed"
+                    ? "var(--success)"
+                    : "var(--muted)";
+              return (
+                <div
+                  key={ev.id}
+                  className="rounded-xl border p-3.5"
+                  style={{
+                    borderColor: "var(--border)",
+                    background: "var(--card)",
+                    borderLeft: `3px solid ${accent}`,
+                  }}
+                >
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold">
+                        {ev.groups?.name} · {ev.courses?.name}
+                      </div>
+                      <div
+                        className="mt-0.5 text-xs"
+                        style={{ color: "var(--muted)" }}
+                      >
+                        {eventDate(ev.scheduled_at)} ·{" "}
+                        {ev.courses?.distance_metres}m
+                      </div>
+                    </div>
+                    {isUpcoming && (
+                      <Link
+                        href={`/dashboard/lead/events/${ev.id}/run`}
+                        className="shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold text-white"
+                        style={{ background: "var(--orange-gradient)" }}
+                      >
+                        Run →
+                      </Link>
+                    )}
+                    {ev.status === "completed" && (
+                      <Link
+                        href={`/dashboard/lead/events/${ev.id}/results`}
+                        className="shrink-0 rounded-full border-2 px-3.5 py-1.5 text-xs font-bold"
+                        style={{
+                          borderColor: "var(--orange)",
+                          color: "var(--orange)",
+                        }}
+                      >
+                        Results →
+                      </Link>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge tone="orange">
+                      {FORMAT_LABEL[ev.format] ?? ev.format}
+                    </Badge>
+                    <Badge tone={STATUS_TONE[ev.status]}>
+                      {ev.status.replace("_", " ")}
+                    </Badge>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <Badge tone="neutral">{completed.length}</Badge>
-        </div>
-        {completed.length === 0 ? (
-          <EmptyState
-            icon="runevent"
-            title="No completed events yet"
-            description="Results will appear here after your first race."
-          />
-        ) : (
-          completed.map((ev) => <EventRow key={ev.id} ev={ev} />)
-        )}
-      </Card>
+
+          {/* Desktop: prototype-style table */}
+          <Card className="hidden p-0 lg:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr
+                    className="text-left text-xs"
+                    style={{
+                      borderBottom: "1px solid var(--border)",
+                      color: "var(--muted)",
+                    }}
+                  >
+                    <th className="px-5 py-3 font-semibold">Event</th>
+                    <th className="px-3 py-3 font-semibold">Group</th>
+                    <th className="px-3 py-3 font-semibold">Date</th>
+                    <th className="px-3 py-3 font-semibold">Format</th>
+                    <th className="px-3 py-3 font-semibold">Runners</th>
+                    <th className="px-3 py-3 font-semibold">Status</th>
+                    <th className="px-5 py-3 text-right font-semibold"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {events.map((ev) => {
+                    const isUpcoming =
+                      ev.status === "scheduled" || ev.status === "in_progress";
+                    return (
+                      <tr
+                        key={ev.id}
+                        className="tr-hover"
+                        style={{ borderBottom: "1px solid var(--border)" }}
+                      >
+                        <td className="px-5 py-3 font-bold">
+                          {ev.courses?.name ?? "Event"}
+                        </td>
+                        <td
+                          className="px-3 py-3 text-xs"
+                          style={{ color: "var(--muted)" }}
+                        >
+                          {ev.groups?.name ?? "—"}
+                        </td>
+                        <td
+                          className="px-3 py-3 text-xs"
+                          style={{ color: "var(--muted)" }}
+                        >
+                          {eventDate(ev.scheduled_at)}
+                        </td>
+                        <td className="px-3 py-3">
+                          <Badge tone="orange">
+                            {FORMAT_LABEL[ev.format] ?? ev.format}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-3 font-semibold">
+                          {eventIdToCount.get(ev.id) ?? "—"}
+                        </td>
+                        <td className="px-3 py-3">
+                          <Badge tone={STATUS_TONE[ev.status]}>
+                            {ev.status.replace("_", " ")}
+                          </Badge>
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          {isUpcoming && (
+                            <Link
+                              href={`/dashboard/lead/events/${ev.id}/run`}
+                              className="rounded-full px-3.5 py-1.5 text-xs font-bold text-white"
+                              style={{ background: "var(--orange-gradient)" }}
+                            >
+                              Run →
+                            </Link>
+                          )}
+                          {ev.status === "completed" && (
+                            <Link
+                              href={`/dashboard/lead/events/${ev.id}/results`}
+                              className="text-xs font-semibold"
+                              style={{ color: "var(--orange)" }}
+                            >
+                              Results →
+                            </Link>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

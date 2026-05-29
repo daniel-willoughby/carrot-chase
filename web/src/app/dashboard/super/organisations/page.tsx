@@ -69,17 +69,12 @@ export default async function OrganisationsPage() {
 
   return (
     <div className="fade-in">
-      <header className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-[32px] font-extrabold leading-none tracking-tight text-[color:var(--foreground)]">
-            Organisations
-          </h1>
-          <p className="mt-1.5 text-[15px] text-[color:var(--muted)]">
-            Every school, club, and partner using Carrot Chase
-          </p>
-        </div>
+      <header className="mb-6 flex items-center justify-between gap-3 lg:mb-7">
+        <h1 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] sm:text-[26px]">
+          Organisations
+        </h1>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="md" disabled>
+          <Button variant="outline" size="sm" disabled>
             ✉ Invite Admin
           </Button>
           <NewOrganisationModal />

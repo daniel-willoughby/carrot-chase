@@ -104,7 +104,7 @@ export default async function SuperAdminDashboard() {
       </header>
 
       {/* Stat tiles */}
-      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <Link href="/dashboard/super/organisations" className="block">
           <StatCard
             label="Total Organisations"

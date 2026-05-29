@@ -56,49 +56,47 @@ export default async function BillingPage() {
   return (
     <div className="fade-in">
       <header className="mb-6 lg:mb-7">
-        <h1 className="text-xl font-extrabold tracking-tight lg:text-2xl">
+        <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[26px]">
           Billing
         </h1>
         <p
-          className="mt-0.5 text-xs lg:text-sm"
+          className="mt-1 text-[13px] sm:text-sm"
           style={{ color: "var(--muted)" }}
         >
-          Licences and invoices — MVP: manual invoicing
+          Manage licences and invoices
         </p>
       </header>
 
-      <div className="mb-5 grid grid-cols-2 gap-3 lg:mb-7 lg:grid-cols-4 lg:gap-4">
+      <div className="mb-6 grid gap-3 sm:grid-cols-3 sm:gap-4 lg:mb-7">
         <StatCard
-          label="Invoiced"
-          value={formatPounds(totalInvoiced)}
-          sub="All time"
+          label="Monthly Revenue"
+          value={formatPounds(totalPaid)}
+          sub={`${activeCount} active plan${activeCount === 1 ? "" : "s"}`}
           tone="success"
           accented
           icon={<NavIcon name="pound" size={16} />}
         />
         <StatCard
-          label="Paid"
-          value={formatPounds(totalPaid)}
-          sub="Received"
-          tone="blue"
-          accented
-          icon={<NavIcon name="check-circle" size={16} />}
-        />
-        <StatCard
-          label="Outstanding"
-          value={formatPounds(outstanding)}
-          sub="Awaiting payment"
-          tone={outstanding > 0 ? "warning" : "neutral"}
-          accented={outstanding > 0}
-          icon={<NavIcon name="clock" size={16} />}
-        />
-        <StatCard
-          label="Licences"
+          label="Active Licences"
           value={activeCount}
-          sub={`${trialCount} on trial`}
-          tone="orange"
-          accented
+          sub={
+            activeCount > 0
+              ? `${activeCount} on plan`
+              : "No active plans"
+          }
           icon={<NavIcon name="check-circle" size={16} />}
+        />
+        <StatCard
+          label="Trials"
+          value={trialCount}
+          sub={
+            trialCount > 0
+              ? `${trialCount} on trial`
+              : "No trials currently"
+          }
+          tone="warning"
+          accented
+          icon={<NavIcon name="clock" size={16} />}
         />
       </div>
 
@@ -272,6 +270,67 @@ export default async function BillingPage() {
             </div>
           </>
         )}
+      </Card>
+
+      {/* Manual invoice — matches prototype's bottom card */}
+      <Card className="mt-6">
+        <div className="text-base font-bold tracking-tight">Manual Invoice</div>
+        <div className="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <label
+              className="mb-1.5 block text-xs font-semibold"
+              style={{ color: "var(--muted)" }}
+            >
+              Organisation
+            </label>
+            <select
+              className="w-full rounded-xl px-3.5 py-2.5 text-sm"
+              style={{
+                background: "var(--card)",
+                border: "1.5px solid var(--border)",
+                color: "var(--foreground)",
+              }}
+              defaultValue=""
+            >
+              <option value="">Select organisation…</option>
+              {list.map((r) => (
+                <option key={r.id}>{r.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              className="mb-1.5 block text-xs font-semibold"
+              style={{ color: "var(--muted)" }}
+            >
+              Amount
+            </label>
+            <input
+              type="text"
+              placeholder="£49.00"
+              className="w-full rounded-xl px-3.5 py-2.5 text-sm sm:w-32"
+              style={{
+                background: "var(--card)",
+                border: "1.5px solid var(--border)",
+                color: "var(--foreground)",
+              }}
+            />
+          </div>
+          <button
+            type="button"
+            disabled
+            className="rounded-full px-5 py-2.5 text-sm font-bold text-white"
+            style={{
+              background: "var(--orange-gradient)",
+              boxShadow: "0 2px 8px rgba(232,82,10,0.28)",
+              opacity: 0.5,
+              cursor: "not-allowed",
+            }}
+            title="Coming next — Phase 2 Stripe"
+          >
+            Send invoice
+          </button>
+        </div>
       </Card>
     </div>
   );

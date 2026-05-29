@@ -28,7 +28,7 @@ export function NewOrganisationModal() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>+ New organisation</Button>
+      <Button size="sm" onClick={() => setOpen(true)}>+ Add</Button>
 
       <Modal
         open={open}

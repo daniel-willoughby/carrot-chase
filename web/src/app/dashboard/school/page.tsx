@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
-import { LineChart } from "@/components/ui/line-chart";
 import { StatCard } from "@/components/ui/stat-card";
 import { NavIcon } from "@/components/ui/nav-icon";
+import { OrgCrest } from "@/components/ui/org-crest";
+import { AvatarStack } from "@/components/ui/avatar-stack";
+import { CURRENT_TERM, greeting, todayLong, eventDate } from "@/lib/term";
+import { posPoints } from "@/lib/theme/level";
 
 function firstName(full?: string | null, email?: string | null) {
   if (full) return full.split(" ")[0];
@@ -11,75 +14,157 @@ function firstName(full?: string | null, email?: string | null) {
   return "there";
 }
 
-function monthLabels() {
-  const out: { label: string; year: number; month: number }[] = [];
-  const now = new Date();
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    out.push({
-      label: d.toLocaleString("en-GB", { month: "short" }),
-      year: d.getFullYear(),
-      month: d.getMonth(),
-    });
-  }
-  return out;
-}
-
 export default async function SchoolAdminDashboard() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email, organisation_id, organisations(name)")
+    .select("full_name, email, organisation_id, organisations(id, name)")
     .eq("id", user!.id)
     .single();
 
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const orgId = profile?.organisation_id;
+  const startOfTerm = new Date();
+  startOfTerm.setMonth(startOfTerm.getMonth() - 3);
 
   const [
     { count: members },
-    { count: membersNew },
-    { count: groups },
-    { count: events },
-    { data: runnersTimeline },
+    { count: membersNewTerm },
+    { count: groupsActive },
+    { count: eventsTerm },
+    { data: groupsList },
+    { data: results },
   ] = await Promise.all([
     supabase.from("runners").select("*", { count: "exact", head: true }).is("deleted_at", null),
-    supabase.from("runners").select("*", { count: "exact", head: true }).is("deleted_at", null).gte("created_at", startOfMonth.toISOString()),
+    supabase
+      .from("runners")
+      .select("*", { count: "exact", head: true })
+      .is("deleted_at", null)
+      .gte("created_at", startOfTerm.toISOString()),
     supabase.from("groups").select("*", { count: "exact", head: true }).is("deleted_at", null),
-    supabase.from("events").select("*", { count: "exact", head: true }).is("deleted_at", null),
-    supabase.from("runners").select("created_at").is("deleted_at", null).order("created_at"),
+    supabase
+      .from("events")
+      .select("*", { count: "exact", head: true })
+      .is("deleted_at", null)
+      .gte("scheduled_at", startOfTerm.toISOString()),
+    supabase
+      .from("groups")
+      .select("id, name")
+      .is("deleted_at", null)
+      .order("name")
+      .limit(6),
+    supabase
+      .from("results")
+      .select("runner_id, finish_position, runners!inner(id, full_name, current_level)")
+      .gte("created_at", startOfTerm.toISOString()),
   ]);
 
-  const months = monthLabels();
-  const series = months.map(({ label, year, month }) => {
-    const cutoff = new Date(year, month + 1, 1);
-    const count = (runnersTimeline ?? []).filter((r) => new Date(r.created_at) < cutoff).length;
-    return { label, value: count };
-  });
+  // Per-group: count + 5 runners + last/next event
+  const groupIds = (groupsList ?? []).map((g) => g.id);
+  const [{ data: rgRows }, { data: groupEvents }] = await Promise.all([
+    groupIds.length
+      ? supabase
+          .from("runner_groups")
+          .select(
+            "group_id, runners!inner(id, full_name, current_level, deleted_at)",
+          )
+          .in("group_id", groupIds)
+      : { data: [] as never[] },
+    groupIds.length
+      ? supabase
+          .from("events")
+          .select("id, group_id, scheduled_at, status")
+          .in("group_id", groupIds)
+          .is("deleted_at", null)
+      : { data: [] as never[] },
+  ]);
+
+  type RunnerLite = {
+    id: string;
+    full_name: string;
+    current_level: number;
+  };
+  const byGroup = new Map<
+    string,
+    { runners: RunnerLite[]; lastEvent: string | null; nextEvent: string | null }
+  >();
+  for (const g of groupsList ?? []) {
+    byGroup.set(g.id, { runners: [], lastEvent: null, nextEvent: null });
+  }
+  const nowMs = Date.now();
+  for (const row of rgRows ?? []) {
+    const r = row.runners;
+    const bucket = byGroup.get(row.group_id);
+    if (bucket && r && !r.deleted_at && bucket.runners.length < 5) {
+      bucket.runners.push({
+        id: r.id,
+        full_name: r.full_name,
+        current_level: r.current_level,
+      });
+    }
+  }
+  for (const e of groupEvents ?? []) {
+    const bucket = byGroup.get(e.group_id);
+    if (!bucket) continue;
+    const ts = new Date(e.scheduled_at).getTime();
+    if (ts < nowMs) {
+      if (!bucket.lastEvent || new Date(bucket.lastEvent).getTime() < ts) {
+        bucket.lastEvent = e.scheduled_at;
+      }
+    } else {
+      if (!bucket.nextEvent || new Date(bucket.nextEvent).getTime() > ts) {
+        bucket.nextEvent = e.scheduled_at;
+      }
+    }
+  }
+
+  // Series leader = highest points from results
+  type LeaderAgg = { id: string; name: string; points: number };
+  const leaderMap = new Map<string, LeaderAgg>();
+  for (const r of results ?? []) {
+    const runner = r.runners;
+    if (!runner) continue;
+    const cur = leaderMap.get(runner.id) ?? {
+      id: runner.id,
+      name: runner.full_name,
+      points: 0,
+    };
+    if (r.finish_position > 0) cur.points += posPoints(r.finish_position - 1);
+    leaderMap.set(runner.id, cur);
+  }
+  const seriesLeader = [...leaderMap.values()].sort(
+    (a, b) => b.points - a.points,
+  )[0];
+
+  const totalMembers = members ?? 0;
+  const newMembers = membersNewTerm ?? 0;
 
   return (
     <div className="fade-in">
-      <header className="mb-7">
-        <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[26px]">
-          {profile?.organisations?.name ?? "Dashboard"}
-        </h1>
-        <p className="mt-1 text-[13px] text-[color:var(--muted)] sm:text-sm">
-          Welcome back, {firstName(profile?.full_name, profile?.email)}. Here&apos;s
-          how your school is doing.
-        </p>
+      <header className="mb-6 flex items-start gap-4 lg:mb-7">
+        {orgId && <OrgCrest orgKey={orgId} size={56} />}
+        <div className="min-w-0 flex-1">
+          <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[26px]">
+            {greeting()}, {firstName(profile?.full_name, profile?.email)}.
+          </h1>
+          <p className="mt-1 text-[13px]" style={{ color: "var(--muted)" }}>
+            {todayLong()} · {CURRENT_TERM}
+          </p>
+        </div>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
-        <Link href="/dashboard/school/members" className="block">
+      {/* Stats */}
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:mb-7 lg:grid-cols-4">
+        <Link href="/dashboard/school/members">
           <StatCard
-            label="Members"
-            value={members ?? 0}
+            label="Total Runners"
+            value={totalMembers}
             trend={
-              (membersNew ?? 0) > 0
-                ? { dir: "up", text: `+${membersNew} this month` }
-                : { dir: "flat", text: "No new this month" }
+              newMembers > 0
+                ? { dir: "up", text: `+${newMembers} this term` }
+                : { dir: "flat", text: "No new this term" }
             }
             tone="orange"
             accented
@@ -87,73 +172,143 @@ export default async function SchoolAdminDashboard() {
             interactive
           />
         </Link>
-        <Link href="/dashboard/school/groups" className="block">
+        <Link href="/dashboard/school/groups">
           <StatCard
-            label="Active groups"
-            value={groups ?? 0}
-            sub="Currently running"
+            label="Active Groups"
+            value={groupsActive ?? 0}
+            sub="All active"
             icon={<NavIcon name="groups" size={16} />}
             interactive
           />
         </Link>
-        <Link href="/dashboard/school/events" className="block">
+        <Link href="/dashboard/school/events">
           <StatCard
-            label="Events this term"
-            value={events ?? 0}
-            sub="All time"
+            label="Events This Term"
+            value={eventsTerm ?? 0}
+            sub={`${eventsTerm ?? 0} scheduled`}
             icon={<NavIcon name="events" size={16} />}
             interactive
           />
         </Link>
-        <StatCard
-          label="Annual ROI"
-          value="—"
-          sub="Phase 2 billing"
-          tone="success"
-          accented
-          icon={<NavIcon name="pound" size={16} />}
-        />
+        {seriesLeader ? (
+          <Link href={`/dashboard/lead/runners/${seriesLeader.id}`}>
+            <StatCard
+              label="Series Leader"
+              value={
+                seriesLeader.name.split(" ")[0] +
+                " " +
+                (seriesLeader.name.split(" ")[1]?.[0] ?? "")
+              }
+              sub={`${seriesLeader.points.toLocaleString()} pts`}
+              tone="purple"
+              accented
+              icon={<NavIcon name="star" size={16} />}
+              interactive
+            />
+          </Link>
+        ) : (
+          <StatCard
+            label="Series Leader"
+            value="—"
+            sub="0 pts"
+            tone="purple"
+            accented
+            icon={<NavIcon name="star" size={16} />}
+          />
+        )}
       </div>
 
-      <section className="mt-6">
-        <Card>
-          <h3 className="text-lg font-bold tracking-tight">Member Growth (Last 12 Months)</h3>
-          <div className="mt-3">
-            <LineChart data={series} />
+      {/* Groups grid */}
+      <section>
+        <h2 className="mb-4 text-[20px] font-bold tracking-tight">Groups</h2>
+        {(groupsList ?? []).length === 0 ? (
+          <Card>
+            <p className="text-sm" style={{ color: "var(--muted)" }}>
+              No groups yet.{" "}
+              <Link
+                href="/dashboard/school/groups"
+                className="font-semibold"
+                style={{ color: "var(--orange)" }}
+              >
+                Create the first →
+              </Link>
+            </p>
+          </Card>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {(groupsList ?? []).map((g) => {
+              const bucket = byGroup.get(g.id);
+              const runners = bucket?.runners ?? [];
+              const count = runners.length;
+              return (
+                <Link
+                  key={g.id}
+                  href={`/dashboard/school/groups/${g.id}`}
+                  className="block"
+                >
+                  <Card className="card-hover cursor-pointer">
+                    <div className="mb-1 flex items-start justify-between gap-2">
+                      <div className="text-base font-extrabold tracking-tight">
+                        {g.name}
+                      </div>
+                      <span
+                        className="rounded-full px-2.5 py-0.5 text-xs font-bold"
+                        style={{
+                          background: "var(--orange-light)",
+                          color: "var(--orange)",
+                        }}
+                      >
+                        {count}
+                      </span>
+                    </div>
+                    <div
+                      className="mb-3 text-xs"
+                      style={{ color: "var(--muted)" }}
+                    >
+                      {count} runner{count === 1 ? "" : "s"}
+                    </div>
+                    {count > 0 && (
+                      <div className="mb-4">
+                        <AvatarStack runners={runners.map((r) => ({
+                          id: r.id,
+                          name: r.full_name,
+                          level: r.current_level,
+                        }))} max={5} />
+                      </div>
+                    )}
+                    <div
+                      className="flex items-end justify-between text-xs"
+                      style={{ color: "var(--muted)" }}
+                    >
+                      <div>
+                        <div>Last event</div>
+                        <div
+                          className="mt-0.5 text-sm font-semibold"
+                          style={{ color: "var(--foreground)" }}
+                        >
+                          {bucket?.lastEvent
+                            ? eventDate(bucket.lastEvent)
+                            : "—"}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div>Next event</div>
+                        <div
+                          className="mt-0.5 text-sm font-semibold"
+                          style={{ color: "var(--foreground)" }}
+                        >
+                          {bucket?.nextEvent
+                            ? eventDate(bucket.nextEvent)
+                            : "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
-        </Card>
-      </section>
-
-      <section className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <h3 className="text-lg font-bold tracking-tight">Quick actions</h3>
-          <p className="mt-1 text-sm text-[color:var(--muted)]">
-            Get the term moving.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link
-              href="/dashboard/school/groups"
-              className="rounded-full bg-orange-gradient px-4 py-2 text-sm font-bold text-white shadow-[0_2px_8px_rgba(232,82,10,0.28)] hover:opacity-90"
-            >
-              + Create group
-            </Link>
-            <Link
-              href="/dashboard/school/members"
-              className="rounded-full border border-[color:var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[color:var(--foreground-secondary)] hover:bg-[color:var(--background-subtle)]"
-            >
-              Import members
-            </Link>
-          </div>
-        </Card>
-
-        <Card>
-          <h3 className="text-lg font-bold tracking-tight">Coming next</h3>
-          <ul className="mt-3 space-y-1.5 text-sm text-[color:var(--foreground-secondary)]">
-            <li>• Invite Leads via email (E1)</li>
-            <li>• Top runners and streak leaders</li>
-            <li>• Recent events &amp; results</li>
-          </ul>
-        </Card>
+        )}
       </section>
     </div>
   );
