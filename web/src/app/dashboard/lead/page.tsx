@@ -145,8 +145,6 @@ export default async function LeadDashboard() {
             label="Upcoming"
             value={upcoming?.length ?? 0}
             sub="Events scheduled"
-            tone="blue"
-            accented
             icon={<NavIcon name="events" size={16} />}
           />
         </Link>
@@ -219,7 +217,7 @@ export default async function LeadDashboard() {
             className="shrink-0 rounded-full px-5 py-2.5 text-sm font-bold lg:px-7 lg:py-3 lg:text-base"
             style={{ background: "#fff", color: "var(--orange)" }}
           >
-            Run event →
+            Run Event
           </Link>
         </div>
       )}

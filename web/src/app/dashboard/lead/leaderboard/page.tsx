@@ -9,6 +9,7 @@ type Runner = {
   full_name: string;
   current_level: number;
   streak_count: number;
+  groups: string[];
 };
 
 type Result = {
@@ -24,13 +25,21 @@ const RANK_BG = [
   "rgba(255,107,43,0.08)", // 3rd: orange tint
 ];
 
-export default async function LeadLeaderboardPage() {
+export default async function LeadLeaderboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ group?: string }>;
+}) {
+  const { group: groupFilter } = await searchParams;
   const supabase = await createClient();
 
   const { data: leadGroups } = await supabase
     .from("group_leads")
-    .select("group_id");
+    .select("group_id, groups(id, name)");
   const groupIds = (leadGroups ?? []).map((g) => g.group_id);
+  const leadGroupOptions = (leadGroups ?? [])
+    .map((g) => g.groups)
+    .filter((g): g is { id: string; name: string } => !!g);
 
   if (groupIds.length === 0) {
     return (
@@ -55,22 +64,32 @@ export default async function LeadLeaderboardPage() {
     );
   }
 
+  const queriedGroupIds =
+    groupFilter && groupIds.includes(groupFilter) ? [groupFilter] : groupIds;
+
   const { data: rgRows } = await supabase
     .from("runner_groups")
     .select(
-      "runners!inner(id, full_name, current_level, streak_count, deleted_at)",
+      "group_id, groups(name), runners!inner(id, full_name, current_level, streak_count, deleted_at)",
     )
-    .in("group_id", groupIds);
+    .in("group_id", queriedGroupIds);
 
   const runnerMap = new Map<string, Runner>();
   for (const row of rgRows ?? []) {
     const r = row.runners;
-    if (r && !r.deleted_at && !runnerMap.has(r.id)) {
+    if (!r || r.deleted_at) continue;
+    const existing = runnerMap.get(r.id);
+    if (existing) {
+      if (row.groups?.name && !existing.groups.includes(row.groups.name)) {
+        existing.groups.push(row.groups.name);
+      }
+    } else {
       runnerMap.set(r.id, {
         id: r.id,
         full_name: r.full_name,
         current_level: r.current_level,
         streak_count: r.streak_count,
+        groups: row.groups?.name ? [row.groups.name] : [],
       });
     }
   }
@@ -171,15 +190,41 @@ export default async function LeadLeaderboardPage() {
       {/* Full standings */}
       <Card className="p-0">
         <div
-          className="flex items-center justify-between px-5 py-4"
+          className="flex items-center justify-between gap-3 px-5 py-4"
           style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div className="text-base font-bold tracking-tight">
             Full Standings
           </div>
-          <div className="text-xs" style={{ color: "var(--muted)" }}>
-            {standings.length} runner{standings.length === 1 ? "" : "s"}
-          </div>
+          <form action="" method="get" className="flex items-center gap-2">
+            <select
+              name="group"
+              defaultValue={groupFilter ?? ""}
+              className="rounded-full px-3 py-1.5 text-xs font-semibold"
+              style={{
+                border: "1.5px solid var(--border)",
+                background: "var(--card)",
+                color: "var(--foreground)",
+              }}
+            >
+              <option value="">All Groups</option>
+              {leadGroupOptions.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="rounded-full px-3 py-1.5 text-xs font-bold transition-colors"
+              style={{
+                border: "1px solid var(--border)",
+                color: "var(--muted)",
+              }}
+            >
+              Apply
+            </button>
+          </form>
         </div>
 
         {/* Mobile: stacked rows */}
@@ -269,6 +314,7 @@ export default async function LeadLeaderboardPage() {
                 <th className="px-3 py-2.5">#</th>
                 <th className="px-3 py-2.5">Runner</th>
                 <th className="px-3 py-2.5">Level</th>
+                <th className="px-3 py-2.5">Group</th>
                 <th className="px-3 py-2.5">Points</th>
                 <th className="px-3 py-2.5">Events</th>
                 <th className="px-3 py-2.5">🥇</th>
@@ -316,6 +362,12 @@ export default async function LeadLeaderboardPage() {
                       >
                         L{r.current_level}
                       </span>
+                    </td>
+                    <td
+                      className="px-3 py-3 text-xs"
+                      style={{ color: "var(--muted)" }}
+                    >
+                      {r.groups.length > 0 ? r.groups.join(", ") : "—"}
                     </td>
                     <td
                       className="px-3 py-3 font-extrabold"

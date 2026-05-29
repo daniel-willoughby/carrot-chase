@@ -11,18 +11,29 @@ type EventRow = {
   scheduled_at: string;
   format: Database["public"]["Enums"]["event_format"];
   status: Database["public"]["Enums"]["event_status"];
+  group_id: string;
   groups: { name: string } | null;
   courses: { name: string; distance_metres: number } | null;
 };
 
 const STATUS_TONE: Record<
   Database["public"]["Enums"]["event_status"],
-  "blue" | "orange" | "success" | "neutral"
+  "blue" | "orange" | "neutral"
 > = {
   scheduled: "blue",
   in_progress: "orange",
-  completed: "success",
+  completed: "neutral",
   cancelled: "neutral",
+};
+
+const STATUS_LABEL: Record<
+  Database["public"]["Enums"]["event_status"],
+  string
+> = {
+  scheduled: "Upcoming",
+  in_progress: "In progress",
+  completed: "Completed",
+  cancelled: "Cancelled",
 };
 
 const FORMAT_LABEL: Record<string, string> = {
@@ -46,7 +57,7 @@ export default async function LeadEventsPage() {
         await supabase
           .from("events")
           .select(
-            "id, scheduled_at, format, status, groups(name), courses(name, distance_metres)",
+            "id, scheduled_at, format, status, group_id, groups(name), courses(name, distance_metres)",
           )
           .in("group_id", groupIds)
           .is("deleted_at", null)
@@ -54,34 +65,20 @@ export default async function LeadEventsPage() {
       ).data as EventRow[] | null) ?? [])
     : [];
 
-  // Per-event roster size
+  // Per-event roster size — count members of each event's group.
   const eventIdToCount = new Map<string, number>();
   if (events.length) {
-    const eventGroupIds = [
-      ...new Set(events.map((e) => e.groups).map(() => null).filter(Boolean)),
-    ];
-    void eventGroupIds; // not used; we recompute below
-    // Fetch per-group runner counts to estimate event roster
-    const allGroupIds = [
-      ...new Set(
-        events
-          .map((e) => (e as unknown as { group_id?: string }).group_id)
-          .filter(Boolean) as string[],
-      ),
-    ];
-    if (allGroupIds.length) {
-      const { data: rg } = await supabase
-        .from("runner_groups")
-        .select("group_id")
-        .in("group_id", allGroupIds);
-      const counts = new Map<string, number>();
-      for (const r of rg ?? []) {
-        counts.set(r.group_id, (counts.get(r.group_id) ?? 0) + 1);
-      }
-      for (const e of events) {
-        const gId = (e as unknown as { group_id?: string }).group_id;
-        if (gId) eventIdToCount.set(e.id, counts.get(gId) ?? 0);
-      }
+    const allGroupIds = [...new Set(events.map((e) => e.group_id))];
+    const { data: rg } = await supabase
+      .from("runner_groups")
+      .select("group_id")
+      .in("group_id", allGroupIds);
+    const counts = new Map<string, number>();
+    for (const r of rg ?? []) {
+      counts.set(r.group_id, (counts.get(r.group_id) ?? 0) + 1);
+    }
+    for (const e of events) {
+      eventIdToCount.set(e.id, counts.get(e.group_id) ?? 0);
     }
   }
 
@@ -110,6 +107,16 @@ export default async function LeadEventsPage() {
             }}
           >
             + Create Event
+          </Link>
+          <Link
+            href="/dashboard/lead/run"
+            className="rounded-full px-3.5 py-1.5 text-xs font-bold text-white lg:px-4 lg:py-2 lg:text-sm"
+            style={{
+              background: "var(--orange-gradient)",
+              boxShadow: "0 2px 8px rgba(232,82,10,0.28)",
+            }}
+          >
+            Run Event
           </Link>
         </div>
       </header>
@@ -183,7 +190,7 @@ export default async function LeadEventsPage() {
                       {FORMAT_LABEL[ev.format] ?? ev.format}
                     </Badge>
                     <Badge tone={STATUS_TONE[ev.status]}>
-                      {ev.status.replace("_", " ")}
+                      {STATUS_LABEL[ev.status]}
                     </Badge>
                   </div>
                 </div>
@@ -247,7 +254,7 @@ export default async function LeadEventsPage() {
                         </td>
                         <td className="px-3 py-3">
                           <Badge tone={STATUS_TONE[ev.status]}>
-                            {ev.status.replace("_", " ")}
+                            {STATUS_LABEL[ev.status]}
                           </Badge>
                         </td>
                         <td className="px-5 py-3 text-right">
