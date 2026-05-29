@@ -5,6 +5,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { NavIcon } from "@/components/ui/nav-icon";
 import { OrgCrest } from "@/components/ui/org-crest";
 import { AvatarStack } from "@/components/ui/avatar-stack";
+import { Badge } from "@/components/ui/badge";
 import { CURRENT_TERM, greeting, todayLong, eventDate } from "@/lib/term";
 import { posPoints } from "@/lib/theme/level";
 
@@ -65,8 +66,30 @@ export default async function SchoolAdminDashboard() {
       .limit(6),
     supabase
       .from("results")
-      .select("runner_id, finish_position, runners!inner(id, full_name, current_level)")
-      .gte("created_at", startOfTerm.toISOString()),
+      .select("runner_id, finish_position, runners!inner(id, full_name, current_level)"),
+  ]);
+
+  // Upcoming + recent events across the whole school
+  const nowIso = new Date().toISOString();
+  const [{ data: upcomingEvents }, { data: recentEvents }] = await Promise.all([
+    supabase
+      .from("events")
+      .select(
+        "id, scheduled_at, format, status, groups(name), courses(name, distance_metres)",
+      )
+      .is("deleted_at", null)
+      .gte("scheduled_at", nowIso)
+      .order("scheduled_at")
+      .limit(4),
+    supabase
+      .from("events")
+      .select(
+        "id, scheduled_at, format, status, groups(name), courses(name, distance_metres)",
+      )
+      .is("deleted_at", null)
+      .lt("scheduled_at", nowIso)
+      .order("scheduled_at", { ascending: false })
+      .limit(4),
   ]);
 
   // Per-group: count + 5 runners + last/next event
@@ -317,6 +340,93 @@ export default async function SchoolAdminDashboard() {
             })}
           </div>
         )}
+      </section>
+
+      {/* Upcoming + Recent two-column */}
+      <section className="mt-6 grid grid-cols-1 gap-3 lg:mt-7 lg:grid-cols-2 lg:gap-6">
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <div className="text-base font-bold tracking-tight">
+              Upcoming Events
+            </div>
+            <Link
+              href="/dashboard/school/events"
+              className="rounded-full border px-3 py-1 text-xs font-bold"
+              style={{ borderColor: "var(--orange)", color: "var(--orange)" }}
+            >
+              View all
+            </Link>
+          </div>
+          {(upcomingEvents ?? []).length > 0 ? (
+            (upcomingEvents ?? []).map((ev, i, arr) => (
+              <div
+                key={ev.id}
+                className="flex items-center justify-between gap-2 py-3"
+                style={{
+                  borderBottom:
+                    i === arr.length - 1 ? "none" : "1px solid var(--border)",
+                }}
+              >
+                <div className="min-w-0">
+                  <div className="mb-0.5 truncate text-sm font-semibold">
+                    {ev.groups?.name} · {ev.courses?.name}
+                  </div>
+                  <div className="text-xs" style={{ color: "var(--muted)" }}>
+                    {eventDate(ev.scheduled_at)}
+                  </div>
+                  <div className="mt-1.5">
+                    <Badge tone="orange">{ev.format}</Badge>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="py-2 text-sm" style={{ color: "var(--muted)" }}>
+              No upcoming events scheduled.
+            </p>
+          )}
+        </Card>
+
+        <Card>
+          <div className="mb-4 flex items-center justify-between">
+            <div className="text-base font-bold tracking-tight">
+              Recent Results
+            </div>
+            <Link
+              href="/dashboard/school/events"
+              className="rounded-full border px-3 py-1 text-xs font-bold"
+              style={{ borderColor: "var(--orange)", color: "var(--orange)" }}
+            >
+              View all
+            </Link>
+          </div>
+          {(recentEvents ?? []).length > 0 ? (
+            (recentEvents ?? []).map((ev, i, arr) => (
+              <div
+                key={ev.id}
+                className="py-3"
+                style={{
+                  borderBottom:
+                    i === arr.length - 1 ? "none" : "1px solid var(--border)",
+                }}
+              >
+                <div className="mb-0.5 truncate text-sm font-semibold">
+                  {ev.groups?.name} · {ev.courses?.name}
+                </div>
+                <div className="text-xs" style={{ color: "var(--muted)" }}>
+                  {eventDate(ev.scheduled_at)}
+                </div>
+                <div className="mt-1.5">
+                  <Badge tone="neutral">Done</Badge>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="py-2 text-sm" style={{ color: "var(--muted)" }}>
+              No completed events yet.
+            </p>
+          )}
+        </Card>
       </section>
     </div>
   );
