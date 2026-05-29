@@ -159,7 +159,7 @@ export default async function LeadDashboard() {
               tone="success"
               accented
               icon={<NavIcon name="flame" size={16} />}
-              onClick={() => {}}
+              interactive
             />
           </Link>
         ) : (
@@ -181,7 +181,7 @@ export default async function LeadDashboard() {
               tone="purple"
               accented
               icon={<NavIcon name="star" size={16} />}
-              onClick={() => {}}
+              interactive
             />
           </Link>
         ) : (

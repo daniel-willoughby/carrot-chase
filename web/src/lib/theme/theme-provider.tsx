@@ -20,27 +20,33 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const STORAGE_KEY = "cc_theme";
+export const THEME_COOKIE = "cc_theme";
+const ONE_YEAR = 60 * 60 * 24 * 365;
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+function writeThemeCookie(theme: Theme) {
+  if (typeof document === "undefined") return;
+  document.cookie = `${THEME_COOKIE}=${theme}; path=/; max-age=${ONE_YEAR}; samesite=lax`;
+}
 
+export function ThemeProvider({
+  children,
+  initial = "light",
+}: {
+  children: ReactNode;
+  initial?: Theme;
+}) {
+  const [theme, setThemeState] = useState<Theme>(initial);
+
+  // Sync state to the actual DOM attribute on first paint — the server has
+  // already set data-theme based on the cookie, so there's no flash.
   useEffect(() => {
-    const stored = (typeof window !== "undefined"
-      ? window.localStorage.getItem(STORAGE_KEY)
-      : null) as Theme | null;
-    if (stored === "light" || stored === "dark") {
-      setThemeState(stored);
-      document.documentElement.setAttribute("data-theme", stored);
-    }
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
     document.documentElement.setAttribute("data-theme", t);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, t);
-    } catch {}
+    writeThemeCookie(t);
   }, []);
 
   const toggle = useCallback(() => {
@@ -59,11 +65,3 @@ export function useTheme() {
   if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
   return ctx;
 }
-
-/**
- * Inline script injected before paint to avoid a flash of the wrong theme.
- * Rendered in the document <head>.
- */
-export const themeInitScript = `
-(function(){try{var t=localStorage.getItem('${STORAGE_KEY}');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
-`;

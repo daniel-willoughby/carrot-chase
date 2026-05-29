@@ -53,7 +53,8 @@ type Props = {
   tone?: Tone;
   accented?: boolean;
   icon?: ReactNode;
-  onClick?: () => void;
+  /** When true, the card gets the hover-lift treatment — wrap in a <Link> for the actual nav. */
+  interactive?: boolean;
 };
 
 export function StatCard({
@@ -64,7 +65,7 @@ export function StatCard({
   tone = "neutral",
   accented = false,
   icon,
-  onClick,
+  interactive = false,
 }: Props) {
   const cfg = toneConfig[tone];
   const showAccent = accented && tone !== "neutral";
@@ -74,11 +75,10 @@ export function StatCard({
 
   return (
     <div
-      onClick={onClick}
       className={[
         "overflow-hidden rounded-2xl border border-[color:var(--border)] bg-card",
         "shadow-[0_4px_16px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)]",
-        onClick ? "card-hover cursor-pointer" : "",
+        interactive ? "card-hover cursor-pointer" : "",
       ].join(" ")}
       style={{ borderTop: `3px solid ${topAccent}` }}
     >

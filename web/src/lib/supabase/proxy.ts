@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);
-    return NextResponse.redirect(url);
+    return rscAwareRedirect(request, url);
   }
 
   // Logged in but hasn't completed 2FA, trying to access anything other than
@@ -62,9 +62,33 @@ export async function updateSession(request: NextRequest) {
     if (aal && aal.currentLevel !== "aal2") {
       const url = request.nextUrl.clone();
       url.pathname = "/two-factor";
-      return NextResponse.redirect(url);
+      return rscAwareRedirect(request, url);
     }
   }
 
   return supabaseResponse;
+}
+
+/**
+ * Redirect that works for both regular navigations AND React Server Component
+ * payload fetches. RSC requests carry an `RSC: 1` header (or accept
+ * `text/x-component`); when redirected with a normal 307, the client tries
+ * to parse the HTML login page as an RSC payload and throws TypeError. The
+ * `x-middleware-redirect` header tells the Next.js client router to do a
+ * full browser navigation instead.
+ */
+function rscAwareRedirect(request: NextRequest, target: URL) {
+  const isRsc =
+    request.headers.get("RSC") === "1" ||
+    (request.headers.get("Accept") || "").includes("text/x-component");
+  if (isRsc) {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        "x-middleware-redirect": target.toString(),
+        "cache-control": "no-store",
+      },
+    });
+  }
+  return NextResponse.redirect(target);
 }

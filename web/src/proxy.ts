@@ -15,6 +15,11 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Skip everything we don't want auth-gated:
+    //  - Next internals (_next/*, __nextjs_*, _vercel)
+    //  - Public static assets (manifest, service worker, favicon, robots,
+    //    sitemap, any image extension)
+    //  - The seed CSV
+    "/((?!_next/|__nextjs_|_vercel|favicon\\.ico|robots\\.txt|sitemap\\.xml|manifest\\.webmanifest|sw\\.js|runners-template\\.csv|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff2?)$).*)",
   ],
 };

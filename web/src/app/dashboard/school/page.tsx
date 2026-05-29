@@ -84,7 +84,7 @@ export default async function SchoolAdminDashboard() {
             tone="orange"
             accented
             icon={<NavIcon name="members" size={16} />}
-            onClick={() => {}}
+            interactive
           />
         </Link>
         <Link href="/dashboard/school/groups" className="block">
@@ -93,7 +93,7 @@ export default async function SchoolAdminDashboard() {
             value={groups ?? 0}
             sub="Currently running"
             icon={<NavIcon name="groups" size={16} />}
-            onClick={() => {}}
+            interactive
           />
         </Link>
         <Link href="/dashboard/school/events" className="block">
@@ -102,7 +102,7 @@ export default async function SchoolAdminDashboard() {
             value={events ?? 0}
             sub="All time"
             icon={<NavIcon name="events" size={16} />}
-            onClick={() => {}}
+            interactive
           />
         </Link>
         <StatCard

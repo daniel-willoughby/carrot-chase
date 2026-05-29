@@ -115,7 +115,7 @@ export default async function SuperAdminDashboard() {
                 : { dir: "flat", text: "No new this month" }
             }
             icon={<NavIcon name="orgs" size={16} />}
-            onClick={() => {}}
+            interactive
           />
         </Link>
         <Link href="/dashboard/super/organisations" className="block">
@@ -130,7 +130,7 @@ export default async function SuperAdminDashboard() {
             tone="orange"
             accented
             icon={<NavIcon name="members" size={16} />}
-            onClick={() => {}}
+            interactive
           />
         </Link>
         <Link href="/dashboard/super/organisations" className="block">
@@ -139,7 +139,7 @@ export default async function SuperAdminDashboard() {
             value={eventsAll ?? 0}
             sub="All time"
             icon={<NavIcon name="events" size={16} />}
-            onClick={() => {}}
+            interactive
           />
         </Link>
         <Link href="/dashboard/super/billing" className="block">
@@ -150,7 +150,7 @@ export default async function SuperAdminDashboard() {
             tone="success"
             accented
             icon={<NavIcon name="pound" size={16} />}
-            onClick={() => {}}
+            interactive
           />
         </Link>
       </div>
