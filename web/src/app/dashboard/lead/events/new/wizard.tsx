@@ -67,6 +67,15 @@ export function EventWizard({
 
   return (
     <form action={formAction} className="space-y-6">
+      {/* Persist the step-1 fields across step changes — the inputs in
+          step 1 unmount when the wizard advances, so without these hidden
+          copies the FormData submitted on step 3 would be missing every
+          required field except `term` and `notes`. */}
+      <input type="hidden" name="group_id" value={groupId} />
+      <input type="hidden" name="format" value={format} />
+      <input type="hidden" name="course_id" value={courseId} />
+      <input type="hidden" name="scheduled_at" value={scheduledAt} />
+
       {/* Step indicator */}
       <div className="flex items-center gap-2">
         {STEP_LABELS.map((label, i) => {
