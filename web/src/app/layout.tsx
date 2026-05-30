@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
-import { ThemeProvider, THEME_COOKIE } from "@/lib/theme/theme-provider";
+import { ThemeProvider } from "@/lib/theme/theme-provider";
+import { THEME_COOKIE } from "@/lib/theme/cookie";
 import { ToastProvider } from "@/components/ui/toast";
 import { PwaRegistrar } from "@/components/pwa-registrar";
 

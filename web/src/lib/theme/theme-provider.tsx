@@ -20,7 +20,12 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-export const THEME_COOKIE = "cc_theme";
+// Re-export so existing imports from "@/lib/theme/theme-provider" still work,
+// but the actual constant lives in a non-client module to dodge the Next 16
+// server/client import boundary, which turns this string into `undefined`
+// when imported into a Server Component (root layout).
+export { THEME_COOKIE } from "./cookie";
+import { THEME_COOKIE } from "./cookie";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
 function writeThemeCookie(theme: Theme) {
