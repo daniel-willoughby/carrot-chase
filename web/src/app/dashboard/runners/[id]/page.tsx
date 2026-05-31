@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { RemoveRunnerButton } from "./remove-button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/ui/stat-card";
@@ -22,6 +23,22 @@ export default async function RunnerProfilePage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+
+  // Pick the right "Back to Members" target based on the viewer's role —
+  // this route is shared between school_admin, lead, and super_admin so
+  // the back link must land them in the right list.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: viewerProfile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    : { data: null };
+  const backHref =
+    viewerProfile?.role === "school_admin"
+      ? "/dashboard/school/members"
+      : viewerProfile?.role === "super_admin"
+        ? "/dashboard/super"
+        : "/dashboard/lead/members";
 
   const { data: runner } = await supabase
     .from("runners")
@@ -71,15 +88,24 @@ export default async function RunnerProfilePage({
   const pct = mod === 0 ? 0 : Math.round(((10 - mod) / 10) * 100);
   const nextMilestone = mod === 0 ? runner.current_level - 10 : runner.current_level - mod;
 
+  const canRemove =
+    viewerProfile?.role === "school_admin" ||
+    viewerProfile?.role === "super_admin";
+
   return (
     <div className="fade-in">
-      <Link
-        href="/dashboard/lead/members"
-        className="mb-4 inline-block text-sm"
-        style={{ color: "var(--muted)" }}
-      >
-        ← Back to Members
-      </Link>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <Link
+          href={backHref}
+          className="text-sm"
+          style={{ color: "var(--muted)" }}
+        >
+          ← Back to Members
+        </Link>
+        {canRemove && (
+          <RemoveRunnerButton runnerId={runner.id} runnerName={runner.full_name} />
+        )}
+      </div>
 
       {/* Hero */}
       <div

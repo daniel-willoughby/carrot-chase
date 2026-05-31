@@ -12,6 +12,19 @@ const nextConfig: NextConfig = {
     "10.0.0.*",
     "*.local",
   ],
+  // The runner profile used to live under /dashboard/lead/runners/[id],
+  // which 500'd for school admins because the proxy bounced them off
+  // /dashboard/lead. It now lives at the role-agnostic /dashboard/runners/[id].
+  // Keep the old URLs working for cached bookmarks and prefetched RSC links.
+  async redirects() {
+    return [
+      {
+        source: "/dashboard/lead/runners/:id",
+        destination: "/dashboard/runners/:id",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

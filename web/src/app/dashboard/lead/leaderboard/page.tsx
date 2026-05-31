@@ -158,7 +158,7 @@ export default async function LeadLeaderboardPage({
               <Card key={r.id} className="text-center">
                 <div className="mb-1.5 text-3xl lg:text-4xl">{medals[i]}</div>
                 <Link
-                  href={`/dashboard/lead/runners/${r.id}`}
+                  href={`/dashboard/runners/${r.id}`}
                   className="block truncate text-xs font-extrabold lg:text-base"
                 >
                   {r.full_name}
@@ -234,7 +234,7 @@ export default async function LeadLeaderboardPage({
             return (
               <Link
                 key={r.id}
-                href={`/dashboard/lead/runners/${r.id}`}
+                href={`/dashboard/runners/${r.id}`}
                 className="flex items-center gap-3 px-4 py-3"
                 style={{
                   borderBottom: "1px solid var(--border)",
@@ -349,7 +349,7 @@ export default async function LeadLeaderboardPage({
                     </td>
                     <td className="px-3 py-3 font-semibold">
                       <Link
-                        href={`/dashboard/lead/runners/${r.id}`}
+                        href={`/dashboard/runners/${r.id}`}
                         className="hover:text-[color:var(--orange)]"
                       >
                         {r.full_name}

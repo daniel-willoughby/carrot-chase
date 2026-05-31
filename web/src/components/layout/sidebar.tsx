@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOutAction } from "@/app/auth/actions";
 import { NavIcon, type IconName } from "@/components/ui/nav-icon";
 import { useTheme } from "@/lib/theme/theme-provider";
+import { ResetDemoButton } from "./reset-demo-button";
 
 export type NavItem = {
   href: string;
@@ -19,6 +20,8 @@ type Props = {
   roleLabel: string;
   userName: string;
   userInitial: string;
+  /** Used to conditionally show "Reset demo data" for @demo.carrotchase.com users. */
+  userEmail?: string;
   navItems: NavItem[];
 };
 
@@ -30,7 +33,8 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
-export function Sidebar({ role, roleLabel, userName, userInitial, navItems }: Props) {
+export function Sidebar({ role, roleLabel, userName, userInitial, userEmail, navItems }: Props) {
+  const isDemoUser = !!userEmail && userEmail.endsWith("@demo.carrotchase.com");
   const pathname = usePathname();
   const { isDark, toggle } = useTheme();
 
@@ -168,6 +172,12 @@ export function Sidebar({ role, roleLabel, userName, userInitial, navItems }: Pr
             Sign out
           </button>
         </form>
+
+        {isDemoUser && (
+          <div className="mt-2 text-center">
+            <ResetDemoButton />
+          </div>
+        )}
       </div>
     </aside>
   );

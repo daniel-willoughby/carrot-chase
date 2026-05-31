@@ -88,6 +88,7 @@ export default async function DashboardLayout({
         roleLabel={roleLabel}
         userName={userName}
         userInitial={userInitial}
+        userEmail={user.email ?? undefined}
         navItems={navItems}
       />
       <MobileTopBar />

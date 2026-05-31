@@ -105,7 +105,7 @@ export default async function LeadMembersPage() {
               return (
                 <Link
                   key={r.id}
-                  href={`/dashboard/lead/runners/${r.id}`}
+                  href={`/dashboard/runners/${r.id}`}
                   className="flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors"
                   style={{
                     background: "var(--card)",
@@ -232,7 +232,7 @@ export default async function LeadMembersPage() {
                         </td>
                         <td className="px-5 py-3 text-right">
                           <Link
-                            href={`/dashboard/lead/runners/${r.id}`}
+                            href={`/dashboard/runners/${r.id}`}
                             className="text-xs font-semibold transition-colors"
                             style={{ color: "var(--orange)" }}
                           >

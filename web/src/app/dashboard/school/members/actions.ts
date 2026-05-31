@@ -130,3 +130,47 @@ export async function importRunnersAction(
   revalidatePath("/dashboard/school/groups");
   return { ok: true, count: inserted?.length ?? 0 };
 }
+
+/**
+ * Soft-delete a runner. School admins (within their org) and super admins
+ * are allowed. The school_admin RLS UPDATE policy on public.runners is
+ * scoped to organisation_id, so we don't have to re-check the org here —
+ * if the caller is the wrong school's admin the UPDATE simply matches
+ * zero rows and returns ok:false.
+ */
+export async function removeRunnerAction(
+  runnerId: string,
+): Promise<MemberActionState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "school_admin" && profile?.role !== "super_admin") {
+    return { error: "Not authorised." };
+  }
+
+  const { error, count } = await supabase
+    .from("runners")
+    .update({ deleted_at: new Date().toISOString() }, { count: "exact" })
+    .eq("id", runnerId)
+    .is("deleted_at", null);
+
+  if (error) {
+    console.error("[members] remove error:", error);
+    return { error: error.message };
+  }
+  if (!count) return { error: "Runner not found or already removed." };
+
+  revalidatePath("/dashboard/school/members");
+  revalidatePath("/dashboard/school");
+  revalidatePath("/dashboard/school/leaderboard");
+  return { ok: true };
+}

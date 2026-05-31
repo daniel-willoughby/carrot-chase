@@ -114,3 +114,55 @@ export async function unassignLeadAction(groupId: string, leadId: string) {
   revalidatePath(`/dashboard/school/groups/${groupId}`);
   return { ok: true };
 }
+
+/**
+ * Create an invitation for a new Lead. The school admin's RLS INSERT
+ * policy enforces:
+ *   • invited_role in ('lead', 'school_admin')
+ *   • organisation_id matches the caller's org
+ *   • invited_by = auth.uid()
+ *
+ * MVP: only writes the invitations row. The Resend email send is logged
+ * as a follow-up (#45 in the task tracker mentions this). Sending the
+ * actual email will compose the magic link from `invitations.token`.
+ */
+export async function inviteLeadAction(
+  email: string,
+  groupIds: string[],
+): Promise<GroupActionState> {
+  const trimmedEmail = email.trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+    return { error: "Enter a valid email address." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("organisation_id")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.organisation_id) {
+    return { error: "Could not resolve your organisation." };
+  }
+
+  const { error } = await supabase.from("invitations").insert({
+    email: trimmedEmail,
+    invited_role: "lead",
+    organisation_id: profile.organisation_id,
+    group_assignments: groupIds,
+    invited_by: user.id,
+  });
+
+  if (error) {
+    console.error("[invite-lead] insert error:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/school/groups");
+  return { ok: true };
+}

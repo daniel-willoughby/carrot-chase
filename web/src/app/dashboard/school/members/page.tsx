@@ -260,7 +260,7 @@ export default async function MembersPage({
                               {initial}
                             </div>
                             <Link
-                              href={`/dashboard/lead/runners/${r.id}`}
+                              href={`/dashboard/runners/${r.id}`}
                               className="hover:text-[color:var(--orange)]"
                             >
                               {r.full_name}
@@ -307,7 +307,7 @@ export default async function MembersPage({
                         </td>
                         <td className="px-5 py-3 text-right">
                           <Link
-                            href={`/dashboard/lead/runners/${r.id}`}
+                            href={`/dashboard/runners/${r.id}`}
                             className="rounded-full border-2 px-3 py-1 text-xs font-bold"
                             style={{
                               borderColor: "var(--orange)",

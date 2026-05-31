@@ -222,7 +222,7 @@ export default async function SchoolAdminDashboard() {
           />
         </Link>
         {seriesLeader ? (
-          <Link href={`/dashboard/lead/runners/${seriesLeader.id}`}>
+          <Link href={`/dashboard/runners/${seriesLeader.id}`}>
             <StatCard
               label="Series Leader"
               value={

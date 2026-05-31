@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { NewGroupModal } from "./new-group-modal";
 import { ArchiveButton } from "./archive-button";
+import { InviteLeadModal } from "./invite-lead-modal";
 import { eventDate } from "@/lib/term";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -205,6 +206,9 @@ export default async function GroupsPage({
           >
             {showArchived ? "← Active" : "Archived"}
           </Link>
+          {!showArchived && (
+            <InviteLeadModal groups={groups ?? []} />
+          )}
           {!showArchived && <NewGroupModal />}
         </div>
       </header>

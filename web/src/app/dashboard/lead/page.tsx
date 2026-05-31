@@ -149,7 +149,7 @@ export default async function LeadDashboard() {
           />
         </Link>
         {streakLeader ? (
-          <Link href={`/dashboard/lead/runners/${streakLeader.id}`}>
+          <Link href={`/dashboard/runners/${streakLeader.id}`}>
             <StatCard
               label="Streak Leader"
               value={streakLeader.full_name.split(" ")[0]}
@@ -171,7 +171,7 @@ export default async function LeadDashboard() {
           />
         )}
         {topLevel ? (
-          <Link href={`/dashboard/lead/runners/${topLevel.id}`}>
+          <Link href={`/dashboard/runners/${topLevel.id}`}>
             <StatCard
               label="Top Level"
               value={`L${topLevel.current_level}`}
