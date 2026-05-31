@@ -62,39 +62,31 @@ export async function addLateArrivalAction(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organisation_id")
-    .eq("id", user.id)
-    .single();
+  // Leads can't INSERT into public.runners directly under the runner_*
+  // RLS policies — this RPC is a SECURITY DEFINER that validates the
+  // caller actually leads the group and then does the insert + join in
+  // one atomic call. See supabase/migrations/0006_add_late_arrival.sql.
+  const { data, error } = await supabase
+    .rpc("add_late_arrival", {
+      p_group_id: groupId,
+      p_full_name: trimmed,
+    });
 
-  if (!profile?.organisation_id)
-    return { error: "Could not resolve your organisation." };
-
-  const { data: runner, error: runnerErr } = await supabase
-    .from("runners")
-    .insert({
-      organisation_id: profile.organisation_id,
-      full_name: trimmed,
-      current_level: 99,
-      streak_count: 0,
-    })
-    .select("id, full_name, current_level, streak_count, personal_best_seconds")
-    .single();
-
-  if (runnerErr || !runner) {
-    console.error("[late-arrival] runner insert error:", runnerErr);
-    return { error: runnerErr?.message ?? "Could not add runner." };
+  if (error) {
+    console.error("[late-arrival] rpc error:", error);
+    return { error: error.message };
   }
 
-  const { error: linkErr } = await supabase
-    .from("runner_groups")
-    .insert({ runner_id: runner.id, group_id: groupId });
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) return { error: "Could not add runner." };
 
-  if (linkErr) {
-    console.error("[late-arrival] runner_groups insert error:", linkErr);
-    return { error: linkErr.message };
-  }
-
-  return { runner };
+  return {
+    runner: {
+      id: row.id,
+      full_name: row.full_name,
+      current_level: row.current_level,
+      streak_count: row.streak_count,
+      personal_best_seconds: row.personal_best_seconds,
+    },
+  };
 }
