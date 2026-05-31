@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
+import { CancelEventButton } from "./cancel-button";
 
 const FORMAT_LABEL: Record<string, string> = {
   handicap: "Handicap",
@@ -62,7 +63,14 @@ export default async function EventDetailPage({
             · {FORMAT_LABEL[event.format] ?? event.format}
           </>
         }
-        actions={<Badge tone="blue">{event.status}</Badge>}
+        actions={
+          <div className="flex items-center gap-2">
+            <Badge tone="blue">{event.status}</Badge>
+            {event.status === "scheduled" && (
+              <CancelEventButton eventId={event.id} />
+            )}
+          </div>
+        }
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
