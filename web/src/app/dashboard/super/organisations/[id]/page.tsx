@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { OrgCrest } from "@/components/ui/org-crest";
+import { StatusToggle } from "../status-toggle";
 import type { Database } from "@/lib/supabase/database.types";
 
 type OrgStatus = Database["public"]["Enums"]["org_status"];
@@ -82,7 +83,10 @@ export default async function OrganisationDetailPage({
             </p>
           </div>
         </div>
-        <Badge tone={STATUS_TONE[org.status]}>{org.status}</Badge>
+        <div className="flex items-center gap-2">
+          <Badge tone={STATUS_TONE[org.status]}>{org.status}</Badge>
+          <StatusToggle orgId={org.id} status={org.status} />
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">

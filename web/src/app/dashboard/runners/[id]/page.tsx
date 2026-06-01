@@ -84,9 +84,20 @@ export default async function RunnerProfilePage({
     levelHistory.unshift({ label: "Start", value: levelHistory[0].value });
   }
 
+  // Levels count DOWN as a runner improves; Level 0 is the elite top tier.
+  const atTopTier = runner.current_level <= 0;
   const mod = runner.current_level % 10;
-  const pct = mod === 0 ? 0 : Math.round(((10 - mod) / 10) * 100);
-  const nextMilestone = mod === 0 ? runner.current_level - 10 : runner.current_level - mod;
+  const pct = atTopTier
+    ? 100
+    : mod === 0
+      ? 0
+      : Math.round(((10 - mod) / 10) * 100);
+  // Clamp so a runner in the single-digit band never points at a negative
+  // milestone (e.g. an L0 runner would otherwise read "Level -10").
+  const nextMilestone = Math.max(
+    0,
+    mod === 0 ? runner.current_level - 10 : runner.current_level - mod,
+  );
 
   const canRemove =
     viewerProfile?.role === "school_admin" ||
@@ -196,7 +207,9 @@ export default async function RunnerProfilePage({
               className="text-[11px] font-semibold"
               style={{ color: "rgba(255,255,255,0.7)" }}
             >
-              Progress to Level {nextMilestone}
+              {atTopTier
+                ? "Elite level reached 🏆"
+                : `Progress to Level ${nextMilestone}`}
             </div>
             <div className="text-[11px] font-extrabold">{pct}%</div>
           </div>

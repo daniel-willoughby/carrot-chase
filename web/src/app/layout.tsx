@@ -42,6 +42,19 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/*
+          Re-assert the theme from the live cookie before first paint. The
+          server already sets data-theme above, but a cached HTML document or
+          a client-cached shared layout (Next does not refetch layouts on
+          every client navigation) can ship a stale value. This tiny blocking
+          script reads the real cookie at load time and corrects data-theme
+          with no flash — belt-and-braces against any RSC/CDN caching.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=document.cookie.match(/(?:^|;\\s*)${THEME_COOKIE}=(dark|light)/);if(m&&m[1]){document.documentElement.setAttribute('data-theme',m[1]);}}catch(e){}})();`,
+          }}
+        />
         <link rel="preconnect" href="https://api.fontshare.com" />
         <link
           href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700,800&display=swap"
