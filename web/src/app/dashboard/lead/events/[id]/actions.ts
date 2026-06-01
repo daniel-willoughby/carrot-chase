@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logAuditEvent } from "@/lib/audit";
 
 /**
  * Cancel a scheduled event. Lead must lead the event's group (or be a
@@ -43,6 +44,12 @@ export async function cancelEventAction(
     console.error("[events] cancel error:", error);
     return { error: error.message };
   }
+
+  await logAuditEvent(supabase, {
+    action: "event.cancel",
+    targetTable: "events",
+    targetId: eventId,
+  });
 
   revalidatePath("/dashboard/lead/events");
   revalidatePath("/dashboard/lead");

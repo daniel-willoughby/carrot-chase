@@ -24,6 +24,7 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
       icon: "orgs",
     },
     { href: "/dashboard/super/billing", label: "Billing", icon: "billing" },
+    { href: "/dashboard/super/audit", label: "Audit Log", icon: "clock" },
   ],
   school_admin: [
     { href: "/dashboard/school", label: "Dashboard", icon: "dashboard" },

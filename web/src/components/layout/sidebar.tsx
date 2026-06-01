@@ -187,6 +187,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/dashboard/super": "Dashboard",
   "/dashboard/super/organisations": "Organisations",
   "/dashboard/super/billing": "Billing",
+  "/dashboard/super/audit": "Audit Log",
   "/dashboard/school": "Dashboard",
   "/dashboard/school/groups": "Groups",
   "/dashboard/school/members": "Members",

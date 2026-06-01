@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { logAuditEvent } from "@/lib/audit";
 import type { Database } from "@/lib/supabase/database.types";
 
 type GroupType = Database["public"]["Enums"]["group_type"];
@@ -48,16 +49,27 @@ export async function createGroupAction(
     };
   }
 
-  const { error } = await supabase.from("groups").insert({
-    organisation_id: profile.organisation_id,
-    name,
-    group_type,
-  });
+  const { data: group, error } = await supabase
+    .from("groups")
+    .insert({
+      organisation_id: profile.organisation_id,
+      name,
+      group_type,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     console.error("[groups] create error:", error);
     return { error: error.message };
   }
+
+  await logAuditEvent(supabase, {
+    action: "group.create",
+    targetTable: "groups",
+    targetId: group?.id,
+    metadata: { name, group_type },
+  });
 
   revalidatePath("/dashboard/school/groups");
   revalidatePath("/dashboard/school");
@@ -77,6 +89,12 @@ export async function archiveGroupAction(groupId: string) {
     return { error: error.message };
   }
 
+  await logAuditEvent(supabase, {
+    action: "group.archive",
+    targetTable: "groups",
+    targetId: groupId,
+  });
+
   revalidatePath("/dashboard/school/groups");
   return { ok: true };
 }
@@ -89,6 +107,13 @@ export async function restoreGroupAction(groupId: string) {
     .eq("id", groupId);
 
   if (error) return { error: error.message };
+
+  await logAuditEvent(supabase, {
+    action: "group.restore",
+    targetTable: "groups",
+    targetId: groupId,
+  });
+
   revalidatePath("/dashboard/school/groups");
   return { ok: true };
 }
@@ -99,6 +124,14 @@ export async function assignLeadAction(groupId: string, leadId: string) {
     .from("group_leads")
     .insert({ group_id: groupId, lead_id: leadId });
   if (error) return { error: error.message };
+
+  await logAuditEvent(supabase, {
+    action: "group.lead_assign",
+    targetTable: "group_leads",
+    targetId: groupId,
+    metadata: { lead_id: leadId },
+  });
+
   revalidatePath(`/dashboard/school/groups/${groupId}`);
   return { ok: true };
 }
@@ -111,6 +144,14 @@ export async function unassignLeadAction(groupId: string, leadId: string) {
     .eq("group_id", groupId)
     .eq("lead_id", leadId);
   if (error) return { error: error.message };
+
+  await logAuditEvent(supabase, {
+    action: "group.lead_unassign",
+    targetTable: "group_leads",
+    targetId: groupId,
+    metadata: { lead_id: leadId },
+  });
+
   revalidatePath(`/dashboard/school/groups/${groupId}`);
   return { ok: true };
 }
@@ -162,6 +203,16 @@ export async function inviteLeadAction(
     console.error("[invite-lead] insert error:", error);
     return { error: error.message };
   }
+
+  await logAuditEvent(supabase, {
+    action: "invitation.create",
+    targetTable: "invitations",
+    metadata: {
+      email: trimmedEmail,
+      invited_role: "lead",
+      group_count: groupIds.length,
+    },
+  });
 
   revalidatePath("/dashboard/school/groups");
   return { ok: true };

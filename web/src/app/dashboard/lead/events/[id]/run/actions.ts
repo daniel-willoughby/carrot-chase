@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logAuditEvent } from "@/lib/audit";
 
 export type Finisher = {
   runner_id: string;
@@ -42,6 +43,17 @@ export async function commitResultsAction(
   // transaction — no need to do it again here. (Leaving the second update
   // in place was the source of an inconsistent state where a failed RPC
   // still flipped the event to "completed" with no rows in results.)
+
+  // Audit before the redirect — redirect() throws internally to unwind.
+  await logAuditEvent(supabase, {
+    action: "event.commit_results",
+    targetTable: "events",
+    targetId: eventId,
+    metadata: {
+      finishers: payload.length,
+      finished: payload.filter((p) => p.raw_time_seconds != null).length,
+    },
+  });
 
   revalidatePath(`/dashboard/lead/events/${eventId}`);
   revalidatePath("/dashboard/lead/events");

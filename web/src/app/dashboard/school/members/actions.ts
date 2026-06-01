@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { logAuditEvent } from "@/lib/audit";
 
 export type MemberActionState = { error?: string; ok?: boolean; count?: number };
 
@@ -63,6 +64,13 @@ export async function createRunnerAction(
       group_id,
     });
   }
+
+  await logAuditEvent(supabase, {
+    action: "runner.create",
+    targetTable: "runners",
+    targetId: runner?.id,
+    metadata: { full_name, year_group, group_id },
+  });
 
   revalidatePath("/dashboard/school/members");
   return { ok: true };
@@ -126,6 +134,16 @@ export async function importRunnersAction(
     await supabase.from("runner_groups").insert(memberships);
   }
 
+  await logAuditEvent(supabase, {
+    action: "runner.import",
+    targetTable: "runners",
+    metadata: {
+      imported: inserted?.length ?? 0,
+      assigned: memberships.length,
+      default_group_id: defaultGroupId,
+    },
+  });
+
   revalidatePath("/dashboard/school/members");
   revalidatePath("/dashboard/school/groups");
   return { ok: true, count: inserted?.length ?? 0 };
@@ -157,6 +175,13 @@ export async function removeRunnerAction(
     return { error: "Not authorised." };
   }
 
+  // Capture the name before soft-deleting so the audit trail is legible.
+  const { data: target } = await supabase
+    .from("runners")
+    .select("full_name")
+    .eq("id", runnerId)
+    .single();
+
   const { error, count } = await supabase
     .from("runners")
     .update({ deleted_at: new Date().toISOString() }, { count: "exact" })
@@ -168,6 +193,13 @@ export async function removeRunnerAction(
     return { error: error.message };
   }
   if (!count) return { error: "Runner not found or already removed." };
+
+  await logAuditEvent(supabase, {
+    action: "runner.remove",
+    targetTable: "runners",
+    targetId: runnerId,
+    metadata: { full_name: target?.full_name ?? null },
+  });
 
   revalidatePath("/dashboard/school/members");
   revalidatePath("/dashboard/school");
