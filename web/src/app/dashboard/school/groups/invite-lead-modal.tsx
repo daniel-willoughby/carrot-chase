@@ -15,6 +15,7 @@ export function InviteLeadModal({ groups }: { groups: Group[] }) {
   const [email, setEmail] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function toggle(id: string) {
@@ -30,14 +31,22 @@ export function InviteLeadModal({ groups }: { groups: Group[] }) {
     setEmail("");
     setSelected(new Set());
     setError(null);
+    setWarning(null);
   }
 
   function submit() {
     setError(null);
+    setWarning(null);
     startTransition(async () => {
       const res = await inviteLeadAction(email, [...selected]);
       if (res.error) {
         setError(res.error);
+        return;
+      }
+      if (res.emailWarning) {
+        // Invitation saved but email failed — stay open so admin sees the warning.
+        setWarning(res.emailWarning);
+        router.refresh();
         return;
       }
       reset();
@@ -127,6 +136,19 @@ export function InviteLeadModal({ groups }: { groups: Group[] }) {
                 }}
               >
                 {error}
+              </div>
+            )}
+
+            {warning && (
+              <div
+                className="rounded-xl px-3 py-2 text-xs"
+                style={{
+                  background: "var(--warning-light)",
+                  border: "1px solid var(--warning)",
+                  color: "var(--warning)",
+                }}
+              >
+                ⚠ {warning}
               </div>
             )}
 

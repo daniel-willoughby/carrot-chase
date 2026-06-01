@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logAuditEvent } from "@/lib/audit";
+import { sendInviteEmail } from "@/lib/email/send-invite";
 import type { Database } from "@/lib/supabase/database.types";
 
 type GroupType = Database["public"]["Enums"]["group_type"];
@@ -157,20 +158,21 @@ export async function unassignLeadAction(groupId: string, leadId: string) {
 }
 
 /**
- * Create an invitation for a new Lead. The school admin's RLS INSERT
- * policy enforces:
+ * Create an invitation for a new Lead and send the invite email via Resend.
+ *
+ * The school admin's RLS INSERT policy enforces:
  *   • invited_role in ('lead', 'school_admin')
  *   • organisation_id matches the caller's org
  *   • invited_by = auth.uid()
  *
- * MVP: only writes the invitations row. The Resend email send is logged
- * as a follow-up (#45 in the task tracker mentions this). Sending the
- * actual email will compose the magic link from `invitations.token`.
+ * We return the token from the insert so we can compose the magic link
+ * without a second round-trip. Email failure is non-fatal — the invitation
+ * row is committed and the admin sees a warning rather than an error.
  */
 export async function inviteLeadAction(
   email: string,
   groupIds: string[],
-): Promise<GroupActionState> {
+): Promise<GroupActionState & { emailWarning?: string }> {
   const trimmedEmail = email.trim().toLowerCase();
   if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
     return { error: "Enter a valid email address." };
@@ -184,20 +186,25 @@ export async function inviteLeadAction(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("organisation_id")
+    .select("organisation_id, organisations(name)")
     .eq("id", user.id)
     .single();
   if (!profile?.organisation_id) {
     return { error: "Could not resolve your organisation." };
   }
 
-  const { error } = await supabase.from("invitations").insert({
-    email: trimmedEmail,
-    invited_role: "lead",
-    organisation_id: profile.organisation_id,
-    group_assignments: groupIds,
-    invited_by: user.id,
-  });
+  // Insert and get the auto-generated token back in one round-trip.
+  const { data: invitation, error } = await supabase
+    .from("invitations")
+    .insert({
+      email: trimmedEmail,
+      invited_role: "lead",
+      organisation_id: profile.organisation_id,
+      group_assignments: groupIds,
+      invited_by: user.id,
+    })
+    .select("token")
+    .single();
 
   if (error) {
     console.error("[invite-lead] insert error:", error);
@@ -214,6 +221,22 @@ export async function inviteLeadAction(
     },
   });
 
+  // Send the invite email. Non-fatal — row is committed regardless.
+  const orgName =
+    (profile.organisations as { name?: string } | null)?.name ?? "your school";
+  const { error: emailErr } = await sendInviteEmail({
+    to: trimmedEmail,
+    orgName,
+    role: "lead",
+    token: invitation!.token,
+  });
+
   revalidatePath("/dashboard/school/groups");
+
+  if (emailErr) {
+    console.warn("[invite-lead] email not sent:", emailErr);
+    return { ok: true, emailWarning: "Invitation saved but email could not be sent. Copy the link manually." };
+  }
+
   return { ok: true };
 }
