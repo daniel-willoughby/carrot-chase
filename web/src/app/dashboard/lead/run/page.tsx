@@ -41,6 +41,7 @@ export default async function RunEventPicker() {
           )
           .in("group_id", groupIds)
           .is("deleted_at", null)
+          .eq("status", "scheduled")
           .gte("scheduled_at", nowIso)
           .order("scheduled_at")
       ).data as EventRow[] | null) ?? [])

@@ -78,6 +78,7 @@ export default async function SchoolAdminDashboard() {
         "id, scheduled_at, format, status, groups(name), courses(name, distance_metres)",
       )
       .is("deleted_at", null)
+      .eq("status", "scheduled")
       .gte("scheduled_at", nowIso)
       .order("scheduled_at")
       .limit(4),

@@ -77,6 +77,7 @@ export default async function LeadDashboard() {
         )
         .in("group_id", groupIds)
         .is("deleted_at", null)
+        .eq("status", "scheduled")
         .gte("scheduled_at", nowIso)
         .order("scheduled_at")
         .limit(5),
