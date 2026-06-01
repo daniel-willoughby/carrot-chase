@@ -1,5 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+
+// All dashboard pages are per-user and auth-gated — never statically
+// prerender. This also stops the build hanging on Supabase calls during
+// the "Collecting page data" phase.
+export const dynamic = "force-dynamic";
 import {
   MobileBottomNav,
   MobileTopBar,

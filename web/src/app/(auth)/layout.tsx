@@ -8,6 +8,12 @@
  * On mobile both stack vertically; the gradient panel becomes a compact
  * header.
  */
+
+// Auth pages read cookies / hit Supabase (invite token lookup, 2FA factor
+// list) — keep them out of static prerendering so the build never blocks
+// on a network call.
+export const dynamic = "force-dynamic";
+
 export default function AuthLayout({
   children,
 }: {

@@ -39,6 +39,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_role: Database["public"]["Enums"]["user_role"] | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          target_id: string | null
+          target_table: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_role?: Database["public"]["Enums"]["user_role"] | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_role?: Database["public"]["Enums"]["user_role"] | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Relationships: []
+      }
       billing: {
         Row: {
           amount_invoiced_pence: number
@@ -645,6 +678,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_late_arrival: {
+        Args: { p_full_name: string; p_group_id: string }
+        Returns: {
+          current_level: number
+          full_name: string
+          id: string
+          personal_best_seconds: number
+          streak_count: number
+        }[]
+      }
       belongs_to_organisation: { Args: { p_org_id: string }; Returns: boolean }
       calculate_level: { Args: { p_runner_id: string }; Returns: number }
       calculate_stagger: {
@@ -660,7 +703,7 @@ export type Database = {
         Returns: {
           finish_position: number
           is_pb: boolean
-          level_after: number
+          out_level_after: number
           runner_id: string
         }[]
       }
@@ -673,7 +716,17 @@ export type Database = {
       is_school_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       leads_group: { Args: { p_group_id: string }; Returns: boolean }
+      log_audit_event: {
+        Args: {
+          p_action: string
+          p_metadata?: Json
+          p_target_id?: string
+          p_target_table?: string
+        }
+        Returns: string
+      }
       pace_to_level: { Args: { pace_seconds_per_km: number }; Returns: number }
+      reset_demo_data: { Args: never; Returns: undefined }
     }
     Enums: {
       attendance_status: "present" | "dns" | "dnf"

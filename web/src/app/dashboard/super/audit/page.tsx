@@ -12,23 +12,7 @@ import { PageHeader } from "@/components/ui/page-header";
  * already restricts SELECT to super_admins, so a school_admin hitting this
  * URL directly would see an empty table — we also redirect non-super-admins
  * for a cleaner experience.
- *
- * audit_log isn't in the generated Database types yet (regenerate with
- * `supabase gen types typescript --linked` to type it natively). Until then
- * we cast the query builder to a permissive shape — same approach as
- * src/lib/audit.ts uses for the log_audit_event RPC.
  */
-
-type AuditRow = {
-  id: string;
-  actor_id: string | null;
-  actor_role: string | null;
-  action: string;
-  target_table: string | null;
-  target_id: string | null;
-  metadata: Record<string, unknown> | null;
-  created_at: string;
-};
 
 type Tone = "neutral" | "success" | "warning" | "danger" | "blue" | "purple";
 
@@ -72,10 +56,10 @@ function relativeTime(iso: string) {
   });
 }
 
-function summariseMetadata(meta: Record<string, unknown> | null): string {
-  if (!meta) return "";
+function summariseMetadata(meta: unknown): string {
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) return "";
   const parts: string[] = [];
-  for (const [k, v] of Object.entries(meta)) {
+  for (const [k, v] of Object.entries(meta as Record<string, unknown>)) {
     if (v === null || v === undefined || v === "") continue;
     parts.push(`${k}: ${typeof v === "object" ? JSON.stringify(v) : String(v)}`);
   }
@@ -98,23 +82,7 @@ export default async function AuditLogPage() {
     .single();
   if (profile?.role !== "super_admin") redirect("/dashboard");
 
-  // audit_log isn't in the generated types — cast to a permissive builder.
-  const auditClient = supabase as unknown as {
-    from: (table: string) => {
-      select: (cols: string) => {
-        order: (
-          col: string,
-          opts: { ascending: boolean },
-        ) => {
-          limit: (
-            n: number,
-          ) => Promise<{ data: AuditRow[] | null; error: unknown }>;
-        };
-      };
-    };
-  };
-
-  const { data: rows } = await auditClient
+  const { data: rows } = await supabase
     .from("audit_log")
     .select(
       "id, actor_id, actor_role, action, target_table, target_id, metadata, created_at",

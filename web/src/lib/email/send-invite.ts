@@ -12,7 +12,6 @@
 
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
@@ -24,6 +23,17 @@ export async function sendInviteEmail(args: {
   expiresHours?: number;
 }): Promise<{ error?: string }> {
   const { to, orgName, role, token, expiresHours = 72 } = args;
+
+  // Instantiate lazily inside the function — the Resend constructor THROWS
+  // synchronously on a missing/empty key. Doing it at module top-level would
+  // crash any worker that merely imports this module (e.g. Next's build-time
+  // "Collecting page data" phase), deadlocking the build. Degrade gracefully
+  // instead: no key → return a warning the caller surfaces in the UI.
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return { error: "Email not configured (RESEND_API_KEY missing)." };
+  }
+  const resend = new Resend(apiKey);
 
   const inviteUrl = `${SITE_URL}/invite/${token}`;
   const roleLabel =

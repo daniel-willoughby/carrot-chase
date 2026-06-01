@@ -78,14 +78,7 @@ export async function addLateArrivalAction(
   // RLS policies — this RPC is a SECURITY DEFINER that validates the
   // caller actually leads the group and then does the insert + join in
   // one atomic call. See supabase/migrations/0006_add_late_arrival.sql.
-  // add_late_arrival was added after the last `supabase gen types` run;
-  // cast to a permissive shape until types are regenerated.
-  type LateArrivalRpc = (
-    fn: "add_late_arrival",
-    params: { p_group_id: string; p_full_name: string },
-  ) => Promise<{ data: unknown; error: { message: string } | null }>;
-  const rpc = supabase.rpc as unknown as LateArrivalRpc;
-  const { data, error } = await rpc("add_late_arrival", {
+  const { data, error } = await supabase.rpc("add_late_arrival", {
     p_group_id: groupId,
     p_full_name: trimmed,
   });
