@@ -11,7 +11,11 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function resetDemoDataAction(): Promise<{ error?: string; ok?: boolean }> {
   const supabase = await createClient();
-  const { error } = await supabase.rpc("reset_demo_data");
+  // reset_demo_data was added in migration 0008 after the last type-gen run.
+  // Cast to a permissive shape until `supabase gen types typescript --linked`
+  // is re-run — same pattern used in lib/audit.ts for log_audit_event.
+  const rpc = supabase.rpc as unknown as (fn: string) => Promise<{ error: { message: string } | null }>;
+  const { error } = await rpc("reset_demo_data");
   if (error) {
     console.error("[reset-demo] rpc error:", error);
     return { error: error.message };
