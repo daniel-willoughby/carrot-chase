@@ -184,9 +184,15 @@ export async function inviteLeadAction(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
 
+  // Disambiguate the embed: profiles ↔ organisations has TWO FKs
+  // (profiles.organisation_id → organisations.id, and
+  // organisations.primary_admin_id → profiles.id). Without the explicit
+  // relationship hint PostgREST returns PGRST201 and the whole query fails,
+  // which previously surfaced as a misleading "Could not resolve your
+  // organisation." error and blocked all Lead invitations.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("organisation_id, organisations(name)")
+    .select("organisation_id, organisations!profiles_organisation_id_fkey(name)")
     .eq("id", user.id)
     .single();
   if (!profile?.organisation_id) {
