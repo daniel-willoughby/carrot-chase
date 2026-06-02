@@ -1,18 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Every page in this app is per-user and auth-gated — there is no shared,
-  // cacheable content. Setting the client-cache stale times to 0 means a
-  // navigation always refetches the page segment, so freshly-written data
-  // (e.g. the Super Admin audit log) never shows a stale snapshot from an
-  // earlier visit in the same session.
-  experimental: {
-    staleTimes: {
-      dynamic: 0,
-      static: 0,
-    },
-  },
-
   // allowedDevOrigins is dev-only — lets you test on LAN devices (phone,
   // second laptop) without "Blocked cross-origin request" warnings.
   // Has no effect in production.
