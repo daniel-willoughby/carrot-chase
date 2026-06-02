@@ -23,6 +23,16 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Reading the cc_theme cookie below already opts every route into dynamic
+// rendering (cookies() is a request-time API — see Next 16 docs:
+// 01-app/.../functions/cookies.md, "opt a route into dynamic rendering"), so
+// the per-request render always sees the live cookie. We pin it explicitly to
+// guarantee the html shell that carries data-theme is never served from the
+// Full Route Cache / a CDN-cached static render, which was producing a stale
+// data-theme on first visit. force-static would zero out cookies() and break
+// the no-flash SSR entirely, so force-dynamic is the correct choice here.
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
