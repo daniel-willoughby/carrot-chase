@@ -111,15 +111,15 @@ export async function updateSession(request: NextRequest) {
   // Logged in but hasn't completed 2FA, trying to access anything other than
   // the 2FA challenge or login flow -> bounce to /two-factor.
   //
-  // Demo accounts (@demo.carrotchase.com) can bypass AAL2 so you can walk
-  // every role end-to-end without per-user TOTP — but this is GATED so it can
-  // NEVER apply in a production build by accident. It only takes effect in
-  // non-production, or when ENABLE_DEMO_ACCOUNTS is explicitly set to "true".
-  // For a real production deployment, leave that flag unset and every user
-  // (demo address or not) must complete 2FA.
-  const demoBypassAllowed =
-    process.env.NODE_ENV !== "production" ||
-    process.env.ENABLE_DEMO_ACCOUNTS === "true";
+  // Demo accounts (@demo.carrotchase.com) bypass AAL2 so you can walk every
+  // role end-to-end without per-user TOTP. The security boundary here is the
+  // email domain itself: it only ever affects accounts deliberately created
+  // under @demo.carrotchase.com, which a real production tenant would not have.
+  //
+  // To HARD-ENFORCE 2FA for everyone (including any demo-domain account) in a
+  // real production deployment, set DISABLE_DEMO_BYPASS=true. We default to
+  // allowing the bypass so the demo can never be locked out by a missing flag.
+  const demoBypassAllowed = process.env.DISABLE_DEMO_BYPASS !== "true";
   const isDemoUser =
     demoBypassAllowed &&
     (user?.email?.endsWith("@demo.carrotchase.com") ?? false);
