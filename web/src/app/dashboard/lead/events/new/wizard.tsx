@@ -27,7 +27,7 @@ const STEP_LABELS = ["Details", "Review", "Confirm"] as const;
 
 const FORMAT_HINTS: Record<string, string> = {
   handicap:
-    "🐇 Handicap: runners start in staggered groups by level; slower runners go first. Aim: everyone finishes together.",
+    "🐇 Pursuit: runners start in staggered groups by level; slower runners go first. Aim: everyone finishes together.",
   scratch:
     "🏁 Scratch: all runners start simultaneously. First across the line wins outright.",
   relay:
@@ -62,8 +62,14 @@ export function EventWizard({
   const selectedGroup = groups.find((g) => g.id === groupId);
   const selectedCourse = courses.find((c) => c.id === courseId);
   const memberCount = selectedGroup?.memberCount ?? 0;
-  const onCourseMarshals = Math.max(1, Math.ceil(memberCount / 8));
-  const projectedMarshals = onCourseMarshals + 2; // + start + finish
+  const formatLabel =
+    format === "handicap"
+      ? "Pursuit"
+      : format === "scratch"
+        ? "Fun Run"
+        : format === "relay"
+          ? "Relay"
+          : format;
 
   return (
     <form action={formAction} className="space-y-6">
@@ -152,7 +158,7 @@ export function EventWizard({
                 {[
                   {
                     value: "handicap",
-                    label: "Handicap",
+                    label: "Pursuit",
                     sub: "Carrot Algorithm staggered start",
                   },
                   {
@@ -264,44 +270,23 @@ export function EventWizard({
         <Card>
           <h2 className="text-xl font-bold tracking-tight">Review roster</h2>
           <p className="mt-1 text-sm text-[color:var(--muted)]">
-            {selectedGroup?.name} · {format} · {selectedCourse?.name} ·{" "}
+            {selectedGroup?.name} · {formatLabel} · {selectedCourse?.name} ·{" "}
             {selectedCourse?.distance_metres}m
           </p>
 
-          <div
-            className="mt-5 rounded-xl px-4 py-3 text-sm"
-            style={{
-              background: "var(--orange-light)",
-              border: "1px solid var(--orange)",
-            }}
-          >
-            <div className="mb-1.5 font-bold">📋 Marshal requirements</div>
-            <div className="mb-1">
-              <strong>Recommended: {projectedMarshals} marshals</strong> for{" "}
-              {memberCount} runners on {selectedCourse?.name}
-            </div>
-            <ul
-              className="space-y-0.5 text-xs"
-              style={{ color: "var(--muted)" }}
+          {format === "handicap" && (
+            <div
+              className="mt-5 rounded-xl px-4 py-3 text-xs font-semibold"
+              style={{
+                background: "var(--orange-light)",
+                border: "1px solid var(--orange)",
+                color: "var(--orange-dark)",
+              }}
             >
-              <li>• 1 × Start marshal</li>
-              <li>• 1 × Finish marshal</li>
-              <li>
-                • {onCourseMarshals} × On-course marshal
-                {onCourseMarshals !== 1 ? "s" : ""} (approx. 1 per{" "}
-                {Math.ceil(memberCount / Math.max(1, onCourseMarshals))} runners)
-              </li>
-            </ul>
-            {format === "handicap" && (
-              <div
-                className="mt-2 text-xs font-semibold"
-                style={{ color: "var(--orange-dark)" }}
-              >
-                Handicap format — staggered starts by level. Marshals must know
-                start order.
-              </div>
-            )}
-          </div>
+              Pursuit format — runners start in staggered groups by level so the
+              field finishes together.
+            </div>
+          )}
 
           <div className="mt-5">
             <div
@@ -362,7 +347,7 @@ export function EventWizard({
         <Card>
           <h2 className="text-xl font-bold tracking-tight">Confirm event</h2>
           <p className="mt-1 text-sm text-[color:var(--muted)]">
-            Last check before saving. You can add marshal notes here.
+            Last check before saving. You can add notes here.
           </p>
 
           <div
@@ -373,12 +358,7 @@ export function EventWizard({
               { label: "Group", value: selectedGroup?.name ?? "—" },
               {
                 label: "Format",
-                value:
-                  format === "handicap"
-                    ? "Handicap"
-                    : format === "scratch"
-                      ? "Fun Run"
-                      : format,
+                value: formatLabel,
               },
               {
                 label: "Course",
@@ -401,10 +381,6 @@ export function EventWizard({
               {
                 label: "Runners",
                 value: `${memberCount} registered`,
-              },
-              {
-                label: "Marshals",
-                value: `${projectedMarshals} recommended`,
               },
             ].map((item) => (
               <div
@@ -431,20 +407,20 @@ export function EventWizard({
               />
             </FormField>
             <FormField
-              label="Marshal notes"
-              hint="Optional briefing for marshals."
+              label="Notes"
+              hint="Optional notes for this event."
             >
               <Textarea
                 name="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Marshal 1 at the playground gate, marshal 2 at the finish chute…"
+                placeholder="e.g. meet at the playground gate, bring water…"
               />
             </FormField>
 
             {format === "handicap" && (
               <div className="rounded-xl border border-[color:var(--orange)]/30 bg-[color:var(--orange-light)] px-4 py-3 text-sm text-[color:var(--orange-dark)]">
-                <strong>Handicap race</strong> — the Carrot Algorithm calculates
+                <strong>Pursuit race</strong> — the Carrot Algorithm calculates
                 staggered starts based on each runner&apos;s level. Slower
                 runners start earlier.
               </div>

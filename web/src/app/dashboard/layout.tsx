@@ -45,6 +45,7 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   ],
   lead: [
     { href: "/dashboard/lead", label: "Dashboard", icon: "dashboard" },
+    { href: "/dashboard/lead/groups", label: "Groups", icon: "groups" },
     { href: "/dashboard/lead/members", label: "Members", icon: "members" },
     { href: "/dashboard/lead/events", label: "Events", icon: "events" },
     {

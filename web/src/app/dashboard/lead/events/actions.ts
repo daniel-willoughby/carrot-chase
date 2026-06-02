@@ -34,14 +34,6 @@ export async function createEventAction(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
 
-  // Calculate marshal count: 1 per 8 runners + start + finish.
-  const { count: memberCount } = await supabase
-    .from("runner_groups")
-    .select("*", { count: "exact", head: true })
-    .eq("group_id", group_id);
-
-  const marshals_required = Math.max(2, Math.ceil((memberCount ?? 0) / 8) + 2);
-
   const { data: event, error } = await supabase
     .from("events")
     .insert({
@@ -52,7 +44,6 @@ export async function createEventAction(
       scheduled_at: new Date(scheduled_at).toISOString(),
       notes,
       term,
-      marshals_required,
     })
     .select("id")
     .single();

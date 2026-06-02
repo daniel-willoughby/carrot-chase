@@ -138,10 +138,10 @@ export function RunEventClient({
   );
 
   // ── Stagger groups ───────────────────────────────────────────────────────
-  const isHandicap = format === "handicap" || format === "pursuit";
+  const isPursuit = format === "handicap" || format === "pursuit";
 
   const startGroups = useMemo(() => {
-    if (!isHandicap) return [presentRunners];
+    if (!isPursuit) return [presentRunners];
     const slow = presentRunners
       .filter((r) => r.level >= 65)
       .sort((a, b) => carrotTarget(b) - carrotTarget(a));
@@ -152,7 +152,7 @@ export function RunEventClient({
       .filter((r) => r.level < 45)
       .sort((a, b) => carrotTarget(b) - carrotTarget(a));
     return [slow, mid, fast].filter((g) => g.length > 0);
-  }, [presentRunners, isHandicap]);
+  }, [presentRunners, isPursuit]);
 
   function staggerGap(gi: number) {
     if (gi + 1 >= startGroups.length) return 0;
@@ -671,7 +671,7 @@ export function RunEventClient({
             className="mb-4 text-sm"
             style={{ color: "var(--muted)" }}
           >
-            {isHandicap
+            {isPursuit
               ? "Pursuit stagger: slower runners start first for a fair finish."
               : "Scratch start: everyone goes together."}
           </div>

@@ -16,7 +16,7 @@ type EventRow = {
 };
 
 const FORMAT_LABEL: Record<string, string> = {
-  handicap: "Handicap",
+  handicap: "Pursuit",
   scratch: "Fun Run",
   relay: "Relay",
   pursuit: "Pursuit",
