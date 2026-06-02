@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logAuditEvent } from "@/lib/audit";
 
 export type LoginState = { error?: string };
 
@@ -23,6 +24,10 @@ export async function loginAction(
     // Generic message — do not leak whether the email exists.
     return { error: "Invalid email or password." };
   }
+
+  // Record the sign-in. The session is now established, so the deferred
+  // audit write (after the response) still carries the user's identity.
+  await logAuditEvent(supabase, { action: "auth.login", metadata: { email } });
 
   // Successful password auth. The proxy will redirect to /two-factor (challenge)
   // or /two-factor/enrol depending on whether a TOTP factor exists.

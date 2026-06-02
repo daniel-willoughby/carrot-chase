@@ -18,7 +18,10 @@ type Tone = "neutral" | "success" | "warning" | "danger" | "blue" | "purple";
 
 // Human labels + a tone per action. Destructive actions lean warning/danger.
 const ACTION_META: Record<string, { label: string; tone: Tone }> = {
+  "auth.login": { label: "Signed in", tone: "neutral" },
+  "auth.logout": { label: "Signed out", tone: "neutral" },
   "organisation.create": { label: "Created organisation", tone: "success" },
+  "organisation.update": { label: "Edited organisation", tone: "blue" },
   "organisation.status_change": { label: "Changed org status", tone: "warning" },
   "runner.create": { label: "Added runner", tone: "success" },
   "runner.import": { label: "Imported runners", tone: "blue" },
