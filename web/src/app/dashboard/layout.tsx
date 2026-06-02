@@ -13,6 +13,7 @@ import {
   type Role,
 } from "@/components/layout/sidebar";
 import { OfflineReplayer } from "@/components/offline-replayer";
+import { IdleLogout } from "@/components/idle-logout";
 
 const ROLE_LABEL: Record<Role, string> = {
   super_admin: "Super Admin",
@@ -111,6 +112,7 @@ export default async function DashboardLayout({
       </main>
       <MobileBottomNav navItems={navItems} />
       <OfflineReplayer />
+      <IdleLogout />
     </div>
   );
 }

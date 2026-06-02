@@ -119,6 +119,82 @@ export async function restoreGroupAction(groupId: string) {
   return { ok: true };
 }
 
+/**
+ * Add an existing runner to a group. Membership is many-to-many
+ * (runner_groups), so a runner can belong to several groups at once. The
+ * runner_groups_school_admin_all RLS policy restricts this to groups in the
+ * caller's organisation. A duplicate (runner already in the group) is treated
+ * as success rather than an error.
+ */
+export async function addMemberAction(groupId: string, runnerId: string) {
+  const supabase = await createClient();
+
+  const { data: runner } = await supabase
+    .from("runners")
+    .select("full_name")
+    .eq("id", runnerId)
+    .single();
+
+  const { error } = await supabase
+    .from("runner_groups")
+    .insert({ group_id: groupId, runner_id: runnerId });
+
+  // 23505 = unique_violation: the runner is already a member. Idempotent.
+  if (error && error.code !== "23505") {
+    console.error("[groups] add member error:", error);
+    return { error: error.message };
+  }
+
+  await logAuditEvent(supabase, {
+    action: "group.member_add",
+    targetTable: "runner_groups",
+    targetId: groupId,
+    metadata: { runner_id: runnerId, full_name: runner?.full_name ?? null },
+  });
+
+  revalidatePath(`/dashboard/school/groups/${groupId}`);
+  revalidatePath("/dashboard/school/groups");
+  revalidatePath("/dashboard/school/members");
+  return { ok: true };
+}
+
+/**
+ * Remove a runner from a group. Only deletes the runner_groups link — the
+ * runner record and its membership of any other groups are untouched.
+ */
+export async function removeMemberAction(groupId: string, runnerId: string) {
+  const supabase = await createClient();
+
+  const { data: runner } = await supabase
+    .from("runners")
+    .select("full_name")
+    .eq("id", runnerId)
+    .single();
+
+  const { error } = await supabase
+    .from("runner_groups")
+    .delete()
+    .eq("group_id", groupId)
+    .eq("runner_id", runnerId);
+
+  if (error) {
+    console.error("[groups] remove member error:", error);
+    return { error: error.message };
+  }
+
+  await logAuditEvent(supabase, {
+    action: "group.member_remove",
+    targetTable: "runner_groups",
+    targetId: groupId,
+    metadata: { runner_id: runnerId, full_name: runner?.full_name ?? null },
+  });
+
+  revalidatePath(`/dashboard/school/groups/${groupId}`);
+  revalidatePath("/dashboard/school/groups");
+  revalidatePath("/dashboard/school/members");
+  return { ok: true };
+}
+
 export async function assignLeadAction(groupId: string, leadId: string) {
   const supabase = await createClient();
   const { error } = await supabase

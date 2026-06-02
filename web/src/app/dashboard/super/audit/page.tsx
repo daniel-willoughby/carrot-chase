@@ -31,6 +31,8 @@ const ACTION_META: Record<string, { label: string; tone: Tone }> = {
   "group.restore": { label: "Restored group", tone: "blue" },
   "group.lead_assign": { label: "Assigned lead", tone: "blue" },
   "group.lead_unassign": { label: "Unassigned lead", tone: "warning" },
+  "group.member_add": { label: "Added group member", tone: "success" },
+  "group.member_remove": { label: "Removed group member", tone: "warning" },
   "invitation.create": { label: "Invited lead", tone: "blue" },
   "event.cancel": { label: "Cancelled event", tone: "danger" },
   "event.commit_results": { label: "Committed results", tone: "success" },

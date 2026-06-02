@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { LeadAssignment } from "./lead-assignment";
+import { MemberAssignment } from "./member-assignment";
 
 export default async function GroupDetailPage({
   params,
@@ -27,10 +27,26 @@ export default async function GroupDetailPage({
   // Members in this group.
   const { data: runnerGroups } = await supabase
     .from("runner_groups")
-    .select("runner_id, runners(cc_id, full_name, current_level, year_group)")
+    .select("runner_id, runners(id, cc_id, full_name, current_level, year_group)")
     .eq("group_id", id);
 
-  const members = (runnerGroups ?? []).map((rg) => rg.runners).filter(Boolean);
+  const members = (runnerGroups ?? [])
+    .map((rg) => rg.runners)
+    .filter((r): r is NonNullable<typeof r> => Boolean(r))
+    .sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+  // Active runners in this org that aren't already in the group — the pool
+  // the admin can add from. A runner can belong to multiple groups.
+  const memberIds = new Set(members.map((r) => r.id));
+  const { data: orgRunners } = await supabase
+    .from("runners")
+    .select("id, cc_id, full_name, current_level, year_group")
+    .eq("organisation_id", group.organisation_id)
+    .is("deleted_at", null);
+
+  const availableRunners = (orgRunners ?? [])
+    .filter((r) => !memberIds.has(r.id))
+    .sort((a, b) => a.full_name.localeCompare(b.full_name));
 
   // Leads assigned.
   const { data: leadRows } = await supabase
@@ -93,34 +109,17 @@ export default async function GroupDetailPage({
               href={`/dashboard/school/members?group=${id}`}
               className="text-sm font-semibold text-[color:var(--orange)] hover:underline"
             >
-              Manage members →
+              All members →
             </Link>
           </div>
-          {members.length === 0 ? (
-            <EmptyState
-              title="No members yet"
-              description="Import a CSV or add runners manually from the Members section."
-            />
-          ) : (
-            <ul className="divide-y divide-[color:var(--border)]">
-              {members.slice(0, 8).map((r) =>
-                r ? (
-                  <li
-                    key={r.cc_id}
-                    className="flex items-center justify-between py-2 text-sm"
-                  >
-                    <div>
-                      <div className="font-semibold">{r.full_name}</div>
-                      <div className="text-xs text-[color:var(--muted)]">
-                        {r.cc_id} · {r.year_group ?? "—"}
-                      </div>
-                    </div>
-                    <Badge tone="orange">L{r.current_level}</Badge>
-                  </li>
-                ) : null,
-              )}
-            </ul>
-          )}
+          <p className="mb-2 text-sm text-[color:var(--muted)]">
+            Add or remove runners here — a runner can be in more than one group.
+          </p>
+          <MemberAssignment
+            groupId={group.id}
+            members={members}
+            availableRunners={availableRunners}
+          />
         </Card>
 
         <Card>
