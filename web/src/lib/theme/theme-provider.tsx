@@ -33,6 +33,14 @@ function writeThemeCookie(theme: Theme) {
   document.cookie = `${THEME_COOKIE}=${theme}; path=/; max-age=${ONE_YEAR}; samesite=lax`;
 }
 
+function readThemeCookie(): Theme | null {
+  if (typeof document === "undefined") return null;
+  const m = document.cookie.match(
+    new RegExp(`(?:^|;\\s*)${THEME_COOKIE}=(dark|light)`),
+  );
+  return (m?.[1] as Theme) ?? null;
+}
+
 export function ThemeProvider({
   children,
   initial = "light",
@@ -42,11 +50,20 @@ export function ThemeProvider({
 }) {
   const [theme, setThemeState] = useState<Theme>(initial);
 
-  // Sync state to the actual DOM attribute on first paint — the server has
-  // already set data-theme based on the cookie, so there's no flash.
+  // After hydration, reconcile React state with the *live* cookie. The inline
+  // <head> script has already set the correct data-theme on <html> before the
+  // first paint, so this never causes a flash — it only pulls that same value
+  // into React state so theme-aware UI agrees with what's painted.
+  //
+  // We deliberately read the cookie rather than trust the `initial` prop here:
+  // `initial` comes from the server render, which (if ever served stale from a
+  // cache) could overwrite the inline script's correct value with a wrong one.
+  // Reading the cookie guarantees we only ever write the true theme.
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    const live = readThemeCookie() ?? initial;
+    setThemeState(live);
+    document.documentElement.setAttribute("data-theme", live);
+  }, [initial]);
 
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
