@@ -4,6 +4,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { EventWizard } from "./wizard";
 
+// Headroom for this page's Server Actions on cold serverless invocations
+// (an insert plus page revalidation can exceed the default function timeout).
+export const maxDuration = 60;
+
 export default async function NewEventPage() {
   const supabase = await createClient();
 

@@ -14,6 +14,10 @@ const FORMAT_LABEL: Record<string, string> = {
   relay: "Relay",
 };
 
+// Headroom for this page's Server Actions on cold serverless invocations
+// (an insert plus page revalidation can exceed the default function timeout).
+export const maxDuration = 60;
+
 export default async function EventDetailPage({
   params,
 }: {

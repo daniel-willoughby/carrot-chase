@@ -26,6 +26,10 @@ const INVITE_TONE: Record<string, "success" | "blue" | "warning" | "neutral"> =
     revoked: "neutral",
   };
 
+// Headroom for this page's Server Actions on cold serverless invocations
+// (an insert plus page revalidation can exceed the default function timeout).
+export const maxDuration = 60;
+
 export default async function GroupsPage({
   searchParams,
 }: {

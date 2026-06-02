@@ -74,7 +74,13 @@ export async function updateSession(request: NextRequest) {
   // dashboard (e.g. lead trying /dashboard/super) is bounced to the user's
   // own dashboard rather than letting the role-mismatched page render and
   // surface as a TypeError when the client router fetches the RSC payload.
-  if (user) {
+  // Only enforce on GET navigations. Server Actions arrive as POST to the
+  // same path; they aren't navigations (so the redirect guard is moot) and
+  // are already authorised by RLS + the action's own checks. Skipping the
+  // profiles role lookup for non-GET requests removes a Supabase round-trip
+  // from the critical path of every write action, reducing the latency that
+  // pushes cold serverless functions over their timeout.
+  if (user && request.method === "GET") {
     const wrongRolePath = ROLE_PATHS.find(
       (p) => path.startsWith(p.prefix) && p.allowedFor !== undefined,
     );
