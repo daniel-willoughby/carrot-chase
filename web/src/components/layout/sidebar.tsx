@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOutAction } from "@/app/auth/actions";
+import { SignOutForm } from "@/components/layout/sign-out-form";
 import { NavIcon, type IconName } from "@/components/ui/nav-icon";
 import { useTheme } from "@/lib/theme/theme-provider";
 import { ResetDemoButton } from "./reset-demo-button";
@@ -159,7 +159,7 @@ export function Sidebar({ role, roleLabel, userName, userInitial, userEmail, nav
           {isDark ? "Light mode" : "Dark mode"}
         </button>
 
-        <form action={signOutAction}>
+        <SignOutForm>
           <button
             type="submit"
             className="w-full rounded-full py-2 text-[13px] font-medium transition-colors"
@@ -171,7 +171,7 @@ export function Sidebar({ role, roleLabel, userName, userInitial, userEmail, nav
           >
             Sign out
           </button>
-        </form>
+        </SignOutForm>
 
         {isDemoUser && (
           <div className="mt-2 text-center">
@@ -235,7 +235,7 @@ export function MobileTopBar() {
         >
           <NavIcon name={isDark ? "sun" : "moon"} size={18} />
         </button>
-        <form action={signOutAction}>
+        <SignOutForm>
           <button
             type="submit"
             aria-label="Sign out"
@@ -244,7 +244,7 @@ export function MobileTopBar() {
           >
             <NavIcon name="logout" size={18} />
           </button>
-        </form>
+        </SignOutForm>
       </div>
     </header>
   );

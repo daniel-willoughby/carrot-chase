@@ -73,6 +73,24 @@ export async function removeFromQueue(id: number): Promise<void> {
   });
 }
 
+/**
+ * Wipe every queued result. Called on sign-out so a shared school device
+ * doesn't retain children's names/times in IndexedDB after a user leaves.
+ * Best-effort: a failure here must never block logout.
+ */
+export async function clearQueue(): Promise<void> {
+  const db = await open();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, "readwrite");
+    tx.objectStore(STORE).clear();
+    tx.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
 export function isOnline(): boolean {
   if (typeof navigator === "undefined") return true;
   return navigator.onLine !== false;
