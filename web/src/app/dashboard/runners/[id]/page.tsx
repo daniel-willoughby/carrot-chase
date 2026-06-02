@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { RemoveRunnerButton } from "./remove-button";
+import { GdprActions } from "./gdpr-actions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/ui/stat-card";
@@ -102,6 +103,7 @@ export default async function RunnerProfilePage({
   const canRemove =
     viewerProfile?.role === "school_admin" ||
     viewerProfile?.role === "super_admin";
+  const isSuperAdmin = viewerProfile?.role === "super_admin";
 
   return (
     <div className="fade-in">
@@ -113,9 +115,14 @@ export default async function RunnerProfilePage({
         >
           ← Back to Members
         </Link>
-        {canRemove && (
-          <RemoveRunnerButton runnerId={runner.id} runnerName={runner.full_name} />
-        )}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {canRemove && (
+            <RemoveRunnerButton runnerId={runner.id} runnerName={runner.full_name} />
+          )}
+          {isSuperAdmin && (
+            <GdprActions runnerId={runner.id} runnerName={runner.full_name} />
+          )}
+        </div>
       </div>
 
       {/* Hero */}

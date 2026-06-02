@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { THEME_COOKIE } from "@/lib/theme/cookie";
@@ -45,6 +45,10 @@ export default async function RootLayout({
   const stored = cookieStore.get(THEME_COOKIE)?.value;
   const initialTheme: "light" | "dark" = stored === "dark" ? "dark" : "light";
 
+  // CSP nonce set by the proxy (production only). Our one inline script must
+  // carry it to run under the strict script-src policy.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <html
       lang="en-GB"
@@ -62,6 +66,7 @@ export default async function RootLayout({
           with no flash — belt-and-braces against any RSC/CDN caching.
         */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var m=document.cookie.match(/(?:^|;\\s*)${THEME_COOKIE}=(dark|light)/);if(m&&m[1]){document.documentElement.setAttribute('data-theme',m[1]);}}catch(e){}})();`,
           }}

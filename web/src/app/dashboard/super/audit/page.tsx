@@ -29,6 +29,7 @@ const ACTION_META: Record<string, { label: string; tone: Tone }> = {
   "runner.create": { label: "Added runner", tone: "success" },
   "runner.import": { label: "Imported runners", tone: "blue" },
   "runner.remove": { label: "Removed runner", tone: "danger" },
+  "runner.erase": { label: "Erased runner (GDPR)", tone: "danger" },
   "group.create": { label: "Created group", tone: "success" },
   "group.archive": { label: "Archived group", tone: "warning" },
   "group.restore": { label: "Restored group", tone: "blue" },
