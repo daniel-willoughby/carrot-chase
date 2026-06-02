@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OrgCrest } from "@/components/ui/org-crest";
 import { NewOrganisationModal } from "./new-organisation-modal";
 import { StatusToggle } from "./status-toggle";
+import { InviteAdminButton } from "./invite-admin-button";
 import type { Database } from "@/lib/supabase/database.types";
 
 type OrgStatus = Database["public"]["Enums"]["org_status"];
@@ -78,9 +78,6 @@ export default async function OrganisationsPage() {
           Organisations
         </h1>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
-            ✉ Invite Admin
-          </Button>
           <NewOrganisationModal />
         </div>
       </header>
@@ -221,6 +218,7 @@ export default async function OrganisationsPage() {
                       </td>
                       <td className="px-6 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">
+                          <InviteAdminButton orgId={o.id} orgName={o.name} />
                           <StatusToggle orgId={o.id} status={o.status} />
                           <Link
                             href={`/dashboard/super/organisations/${o.id}`}

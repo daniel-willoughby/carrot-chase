@@ -833,6 +833,7 @@ export function RunEventClient({
 
           <button
             onClick={handleTap}
+            data-no-sfx
             disabled={tapTimes.length >= presentRunners.length}
             className={`${tapTimes.length < presentRunners.length && !tapping ? "tap-pulse" : ""} ${tapping ? "tap-flash" : ""} mb-4 w-full rounded-2xl py-9 text-2xl font-extrabold text-white transition-colors`}
             style={{

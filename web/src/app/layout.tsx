@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/lib/theme/theme-provider";
 import { THEME_COOKIE } from "@/lib/theme/cookie";
 import { ToastProvider } from "@/components/ui/toast";
 import { PwaRegistrar } from "@/components/pwa-registrar";
+import { UiSounds } from "@/components/ui-sounds";
 
 export const metadata: Metadata = {
   title: "Carrot Chase",
@@ -82,6 +83,7 @@ export default async function RootLayout({
           <ToastProvider>{children}</ToastProvider>
         </ThemeProvider>
         <PwaRegistrar />
+        <UiSounds />
       </body>
     </html>
   );

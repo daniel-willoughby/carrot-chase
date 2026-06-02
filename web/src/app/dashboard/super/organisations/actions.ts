@@ -3,12 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { logAuditEvent } from "@/lib/audit";
+import { sendInviteEmail } from "@/lib/email/send-invite";
 import type { Database } from "@/lib/supabase/database.types";
 
 type OrgType = Database["public"]["Enums"]["org_type"];
 type OrgStatus = Database["public"]["Enums"]["org_status"];
 
-export type OrgActionState = { error?: string; ok?: boolean };
+export type OrgActionState = {
+  error?: string;
+  ok?: boolean;
+  emailWarning?: string;
+};
 
 const VALID_TYPES: OrgType[] = ["school", "business", "club", "distributor", "mat"];
 
@@ -142,5 +147,72 @@ export async function updateOrganisationAction(
 
   revalidatePath("/dashboard/super/organisations");
   revalidatePath(`/dashboard/super/organisations/${orgId}`);
+  return { ok: true };
+}
+
+/**
+ * Invite a School Admin to a specific organisation. Super Admin only
+ * (invitation_super_admin_all RLS). Writes the invitation row and emails the
+ * sign-up link; email failure is non-fatal (the row is committed regardless).
+ */
+export async function inviteAdminAction(
+  orgId: string,
+  _prev: OrgActionState | undefined,
+  formData: FormData,
+): Promise<OrgActionState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    return { error: "Enter a valid email address." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in." };
+
+  const { data: org } = await supabase
+    .from("organisations")
+    .select("name")
+    .eq("id", orgId)
+    .single();
+
+  const { data: invitation, error } = await supabase
+    .from("invitations")
+    .insert({
+      email,
+      invited_role: "school_admin",
+      organisation_id: orgId,
+      invited_by: user.id,
+    })
+    .select("token")
+    .single();
+
+  if (error) {
+    console.error("[invite-admin] insert error:", error);
+    return { error: error.message };
+  }
+
+  await logAuditEvent(supabase, {
+    action: "invitation.create",
+    targetTable: "invitations",
+    metadata: { email, invited_role: "school_admin", organisation: org?.name ?? null },
+  });
+
+  const { error: emailErr } = await sendInviteEmail({
+    to: email,
+    orgName: org?.name ?? "your organisation",
+    role: "school_admin",
+    token: invitation!.token,
+  });
+
+  revalidatePath("/dashboard/super/organisations");
+
+  if (emailErr) {
+    return {
+      ok: true,
+      emailWarning: "Invitation saved but the email could not be sent.",
+    };
+  }
   return { ok: true };
 }

@@ -39,7 +39,7 @@ export default function LoginPage() {
             name="password"
             type="password"
             autoComplete="current-password"
-            placeholder="••••••••"
+            placeholder="Enter your password"
             required
           />
         </FormField>

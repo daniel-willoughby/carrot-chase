@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { levelColor, fmtSecs } from "@/lib/theme/level";
 import { eventDateTime } from "@/lib/term";
 import { Confetti } from "@/components/ui/confetti";
+import { ResultFanfare } from "./result-fanfare";
 
 const MEDAL_EMOJI: Record<string, string> = {
   gold: "🥇",
@@ -45,6 +46,7 @@ export default async function ResultsPage({
   return (
     <div className="fade-in" style={{ background: "var(--background)" }}>
       <Confetti />
+      <ResultFanfare />
       <div className="mx-auto max-w-[640px] px-4 py-8">
         <div className="mb-2 text-sm">
           <Link

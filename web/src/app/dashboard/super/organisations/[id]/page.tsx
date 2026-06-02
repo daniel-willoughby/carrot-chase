@@ -7,6 +7,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { OrgCrest } from "@/components/ui/org-crest";
 import { StatusToggle } from "../status-toggle";
 import { EditOrganisationModal } from "../edit-organisation-modal";
+import { InviteAdminButton } from "../invite-admin-button";
 import type { Database } from "@/lib/supabase/database.types";
 
 type OrgStatus = Database["public"]["Enums"]["org_status"];
@@ -115,6 +116,7 @@ export default async function OrganisationDetailPage({
         </div>
         <div className="flex items-center gap-2">
           <Badge tone={STATUS_TONE[org.status]}>{org.status}</Badge>
+          <InviteAdminButton orgId={org.id} orgName={org.name} />
           <EditOrganisationModal
             org={{
               id: org.id,
