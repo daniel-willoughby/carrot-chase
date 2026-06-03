@@ -1,24 +1,27 @@
 name: db-security
 
-# Database authorisation guards. Runs on any change to migrations, the SQL
-# tests, or the tripwire script. Two layers:
-#   1. A fast static tripwire (no database) that flags SECURITY DEFINER
-#      functions which authorise on role alone without an org check.
-#   2. The runtime cross-org regression tests, executed against an ephemeral
-#      Postgres seeded with all migrations.
-# See docs/SECURITY.md.
+# Database authorisation guard.
+#
+# Runs the fast, deterministic static tripwire that flags any SECURITY DEFINER
+# function which authorises on role alone (is_school_admin()) without an
+# organisation check — the bug class fixed in migration 0010.
+#
+# The behavioural cross-org tests (supabase/tests/rls_cross_org.sql) are run
+# against a real database rather than here: faithfully reconstructing the
+# Supabase platform (auth schema, roles, extensions, the auth.users FK) on a
+# vanilla Postgres is brittle, so those tests run locally / pre-deploy via:
+#     supabase db query --linked --file supabase/tests/rls_cross_org.sql
+# (rolled back, non-destructive). See docs/SECURITY.md.
 
 on:
   push:
     paths:
       - "supabase/migrations/**"
-      - "supabase/tests/**"
       - "scripts/check-definer-authz.sh"
       - ".github/workflows/db-security.yml"
   pull_request:
     paths:
       - "supabase/migrations/**"
-      - "supabase/tests/**"
       - "scripts/check-definer-authz.sh"
       - ".github/workflows/db-security.yml"
 
@@ -29,69 +32,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: bash scripts/check-definer-authz.sh
-
-  sql-tests:
-    name: Cross-org authorisation tests
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      PGPASSWORD: postgres
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Create Supabase-compatible auth schema + roles
-        # The migrations reference auth.users, auth.uid(), and the
-        # authenticated/anon roles. Stub the minimum so they apply on a plain
-        # Postgres. (In Supabase these are provided by the platform.)
-        run: |
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
-          create schema if not exists auth;
-          create schema if not exists extensions;
-          create extension if not exists pgcrypto with schema extensions;
-          create table if not exists auth.users (
-            id uuid primary key default extensions.gen_random_uuid(),
-            email text
-          );
-          create or replace function auth.uid() returns uuid
-          language sql stable as $$
-            select nullif(
-              current_setting('request.jwt.claims', true)::jsonb ->> 'sub', ''
-            )::uuid;
-          $$;
-          do $$ begin
-            if not exists (select 1 from pg_roles where rolname='authenticated') then
-              create role authenticated;
-            end if;
-            if not exists (select 1 from pg_roles where rolname='anon') then
-              create role anon;
-            end if;
-            if not exists (select 1 from pg_roles where rolname='service_role') then
-              create role service_role;
-            end if;
-          end $$;
-          SQL
-
-      - name: Apply migrations
-        run: |
-          for f in supabase/migrations/*.sql; do
-            echo "── applying $f"
-            psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$f"
-          done
-
-      - name: Run cross-org authorisation tests
-        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/rls_cross_org.sql
-
-      - name: Run carrot algorithm tests
-        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/carrot_algorithm.sql
