@@ -3,7 +3,7 @@
 -- =============================================================================
 -- Enforces the four-level data hierarchy at the database itself.
 -- Cross-organisation access is structurally impossible, not just
--- application-blocked. See stack-report.pdf compliance section.
+-- application-blocked. See docs/SECURITY.md for the compliance model.
 --
 -- Role visibility summary:
 --   super_admin   - all data, every organisation

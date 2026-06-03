@@ -4,7 +4,7 @@
 -- Implements the four-level hierarchy from the product specification:
 --   Platform > Organisation > Group > Event
 --
--- Key decisions baked in here (see stack-report.pdf for full rationale):
+-- Key decisions baked in here:
 --   - Multi-group runner membership via runner_groups junction (US-13)
 --   - Soft deletes on groups and runners (preserve event history)
 --   - Time-series results table (powers ten-event progression chart)
