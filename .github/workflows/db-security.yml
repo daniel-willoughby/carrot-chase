@@ -1,27 +1,26 @@
 name: db-security
 
-# Database authorisation guard.
+# Database authorisation guards.
 #
-# Runs the fast, deterministic static tripwire that flags any SECURITY DEFINER
-# function which authorises on role alone (is_school_admin()) without an
-# organisation check — the bug class fixed in migration 0010.
+#   tripwire   — fast static check (no DB) flagging any SECURITY DEFINER
+#                function that authorises on role alone (is_school_admin())
+#                without an organisation check. The bug class fixed in 0010.
+#   sql-tests  — behavioural cross-org regression tests, run against a REAL
+#                Supabase Postgres (via the Supabase CLI), which provides the
+#                auth schema, auth.uid(), roles and extensions the migrations
+#                depend on. Avoids hand-stubbing the platform on vanilla PG.
 #
-# The behavioural cross-org tests (supabase/tests/rls_cross_org.sql) are run
-# against a real database rather than here: faithfully reconstructing the
-# Supabase platform (auth schema, roles, extensions, the auth.users FK) on a
-# vanilla Postgres is brittle, so those tests run locally / pre-deploy via:
-#     supabase db query --linked --file supabase/tests/rls_cross_org.sql
-# (rolled back, non-destructive). See docs/SECURITY.md.
+# See docs/SECURITY.md.
 
 on:
   push:
     paths:
-      - "supabase/migrations/**"
+      - "supabase/**"
       - "scripts/check-definer-authz.sh"
       - ".github/workflows/db-security.yml"
   pull_request:
     paths:
-      - "supabase/migrations/**"
+      - "supabase/**"
       - "scripts/check-definer-authz.sh"
       - ".github/workflows/db-security.yml"
 
@@ -32,3 +31,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: bash scripts/check-definer-authz.sh
+
+  sql-tests:
+    name: Cross-org authorisation tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Starts the local Supabase Postgres and applies every migration in
+      # supabase/migrations. The real Supabase image ships the auth schema,
+      # auth.uid(), the authenticated/anon/service_role roles and the
+      # pgcrypto/uuid-ossp extensions, so the migrations apply natively.
+      - name: Start local stack (applies migrations)
+        run: supabase start
+
+      # Behavioural regression: an Org A admin must NOT be able to commit
+      # results / add late arrivals for Org B; same-org calls must succeed.
+      # Fixtures are rolled back (non-destructive).
+      - name: Run cross-org authorisation tests
+        run: |
+          psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" \
+            -v ON_ERROR_STOP=1 \
+            -f supabase/tests/rls_cross_org.sql
+
+      - name: Stop local database
+        if: always()
+        run: supabase stop --no-backup
